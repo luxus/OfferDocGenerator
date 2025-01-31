@@ -1,0 +1,7 @@
+{{ DOC_TITLE }}
+
+Allgemeiner Abschnitt 1: {{ section1 }}
+
+Produkt Abschnitt 1.2: {{ section1.2 }}
+
+Währung: {{ CURRENCY }}

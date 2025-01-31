@@ -1,0 +1,7 @@
+{{ DOC_TITLE }}
+
+Common Section 1: {{ section1 }}
+
+Product Section 1.2: {{ section1.2 }}
+
+Currency: {{ CURRENCY }}
