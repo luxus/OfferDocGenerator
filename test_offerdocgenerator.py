@@ -1,7 +1,7 @@
 import os
 import tempfile
 import unittest
-from main import collect_placeholders_for_language, read_txt_file, generate_offers
+from main import collect_placeholders, read_txt_file, generate_offers
 
 
 class TestOfferDocGenerator(unittest.TestCase):
@@ -20,16 +20,30 @@ class TestOfferDocGenerator(unittest.TestCase):
             f.write("English content for section 1.")
         with open(os.path.join(self.textblock_dir, "common", "section1DE.txt"), "w", encoding="utf-8") as f:
             f.write("Deutscher Inhalt für Abschnitt 1.")
-        with open(os.path.join(self.textblock_dir, "products", "MyProduct", "section1.2EN.txt"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(self.textblock_dir, "products", "MyProduct", "section1.2EN.txt"),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write("English product-specific content for section 1.2.")
-        with open(os.path.join(self.textblock_dir, "products", "MyProduct", "section1.2DE.txt"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(self.textblock_dir, "products", "MyProduct", "section1.2DE.txt"),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write("Deutscher produktbezogener Inhalt für Abschnitt 1.2.")
 
         # Create test .dotx templates
         with open(os.path.join(self.input_dir, "baseEN.dotx"), "w", encoding="utf-8") as f:
-            f.write("{{ DOC_TITLE }}\n\nCommon Section 1: {{ section1 }}\n\nProduct Section 1.2: {{ section1.2 }}\n\nCurrency: {{ CURRENCY }}")
+            f.write(
+                "{{ DOC_TITLE }}\n\nCommon Section 1: {{ section1 }}"
+                "\n\nProduct Section 1.2: {{ section1.2 }}\n\nCurrency: {{ CURRENCY }}"
+            )
         with open(os.path.join(self.input_dir, "baseDE.dotx"), "w", encoding="utf-8") as f:
-            f.write("{{ DOC_TITLE }}\n\nAllgemeiner Abschnitt 1: {{ section1 }}\n\nProdukt Abschnitt 1.2: {{ section1.2 }}\n\nWährung: {{ CURRENCY }}")
+            f.write(
+                "{{ DOC_TITLE }}\n\nAllgemeiner Abschnitt 1: {{ section1 }}"
+                "\n\nProdukt Abschnitt 1.2: {{ section1.2 }}\n\nWährung: {{ CURRENCY }}"
+            )
 
     def tearDown(self):
         """Clean up temporary directory."""
@@ -45,15 +59,15 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_collect_placeholders_for_language(self):
         """Test collecting placeholders for different languages."""
-        placeholders = collect_placeholders_for_language(os.path.join(self.textblock_dir, "common"), "EN")
+        placeholders = collect_placeholders(os.path.join(self.textblock_dir, "common"), "EN")
         self.assertIn("section1", placeholders)
         self.assertEqual(placeholders["section1"], "English content for section 1.")
 
-        placeholders = collect_placeholders_for_language(os.path.join(self.textblock_dir, "common"), "DE")
+        placeholders = collect_placeholders(os.path.join(self.textblock_dir, "common"), "DE")
         self.assertIn("section1", placeholders)
         self.assertEqual(placeholders["section1"], "Deutscher Inhalt für Abschnitt 1.")
 
-        placeholders = collect_placeholders_for_language(os.path.join(self.textblock_dir, "common"), "FR")
+        placeholders = collect_placeholders(os.path.join(self.textblock_dir, "common"), "FR")
         self.assertEqual(placeholders, {})
 
     def test_generate_offers(self):
