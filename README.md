@@ -88,18 +88,16 @@ Uses defaults (`textblock=textblock`, `input=input`, `output=output`, `currency=
 
 ## Running Tests
 
-A minimal unittest suite is included at the bottom of `OfferDocGenerator.py`. To run:
+A test suite is included in `test_offerdocgenerator.py`. To run:
 
 ```bash
-python -m unittest OfferDocGenerator.py
+python -m unittest test_offerdocgenerator.py
 ```
-
-(Or separate them into a `test_offerdocgenerator.py` file if preferred.)
 
 ## Requirements
 
 - **Python 3.7+**
-- **`python-docx`**: `pip install python-docx`
+- **`python-docx-template`**: `pip install docxtpl`
 
 ## Contributing
 

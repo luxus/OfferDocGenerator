@@ -41,7 +41,7 @@ Script logic:
 6) Insert a {{CURRENCY}} placeholder as well.
 7) Write out a .docx named "Offer_{productName}_{language}_{currency}.docx" in the output folder.
 
-Note: This script depends on 'python-docx' (pip install python-docx).
+Note: This script depends on 'python-docx-template' (pip install docxtpl).
 
 -- Testing Support --
 Below is a minimal unittest demonstrating partial functionality. In practice, you'd keep tests
@@ -52,9 +52,7 @@ in a separate file (e.g., test_offerdocgenerator.py) and run with 'python -m uni
 import argparse
 import os
 import sys
-import unittest
-
-from docx import Document
+from docxtpl import DocxTemplate
 
 #####################################
 # 1. Argparse for -y mode
@@ -159,29 +157,6 @@ def collect_placeholders_for_language(folder: str, language: str) -> dict:
     return placeholders
 
 
-def replace_placeholders(doc: Document, placeholders: dict):
-    for paragraph in doc.paragraphs:
-        for run in paragraph.runs:
-            text = run.text
-            for ph_key, ph_val in placeholders.items():
-                pattern = f"{{{{{ph_key}}}}}"
-                if pattern in text:
-                    text = text.replace(pattern, ph_val)
-            run.text = text
-
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        text = run.text
-                        for ph_key, ph_val in placeholders.items():
-                            pattern = f"{{{{{ph_key}}}}}"
-                            if pattern in text:
-                                text = text.replace(pattern, ph_val)
-                        run.text = text
-
-
 #####################################
 # 4. Generation Logic
 #####################################
@@ -194,7 +169,7 @@ def generate_offers(settings: dict):
     chosen_lang = settings["lang"]
     chosen_currency = settings["currency"]
 
-    # gather templates
+    # Gather templates
     templates = [f for f in os.listdir(input_folder) if f.lower().endswith(".dotx")]
     if not templates:
         print(f"No .dotx templates found in {input_folder}")
@@ -203,14 +178,14 @@ def generate_offers(settings: dict):
     os.makedirs(output_folder, exist_ok=True)
 
     for template_filename in templates:
-        # guess language from filename
+        # Guess language from filename
         lang_in_name = None
         if "EN" in template_filename.upper():
             lang_in_name = "EN"
         elif "DE" in template_filename.upper():
             lang_in_name = "DE"
         else:
-            lang_in_name = "EN"  # fallback
+            lang_in_name = "EN"  # Fallback
 
         if chosen_lang.lower() != "all" and lang_in_name.lower() != chosen_lang.lower():
             print(f"Skipping {template_filename}; doesn't match {chosen_lang}.")
@@ -218,7 +193,7 @@ def generate_offers(settings: dict):
 
         full_template_path = os.path.join(input_folder, template_filename)
 
-        # find product folders in 'products/'
+        # Find product folders in 'products/'
         products_folder = os.path.join(textblock_folder, "products")
         if not os.path.isdir(products_folder):
             print(f"No 'products' folder found in {textblock_folder}.")
@@ -229,7 +204,7 @@ def generate_offers(settings: dict):
             if not os.path.isdir(product_path):
                 continue
 
-            # gather placeholders
+            # Gather placeholders
             common_folder = os.path.join(textblock_folder, "common")
             common_ph = collect_placeholders_for_language(common_folder, lang_in_name)
             product_ph = collect_placeholders_for_language(product_path, lang_in_name)
@@ -243,12 +218,13 @@ def generate_offers(settings: dict):
             doc_title = f"Offer for {product_name} ({lang_in_name}-{chosen_currency})"
             placeholders["DOC_TITLE"] = doc_title
 
-            doc = Document(full_template_path)
-            replace_placeholders(doc, placeholders)
+            # Render template with placeholders
+            tpl = DocxTemplate(full_template_path)
+            tpl.render(placeholders)
 
             out_filename = f"Offer_{product_name}_{lang_in_name}_{chosen_currency}.docx"
             out_path = os.path.join(output_folder, out_filename)
-            doc.save(out_path)
+            tpl.save(out_path)
             print(f"Generated: {out_path}")
 
 
@@ -260,16 +236,16 @@ def generate_offers(settings: dict):
 def main():
     args = parse_arguments()
 
-    # default settings
+    # Default settings
     defaults = {
-        "textblock": "textblock",  # folder containing common/ and products/
-        "input": "input",  # folder containing .dotx templates
-        "output": "output",  # folder to save .docx files
-        "lang": "all",  # process all languages found in template filenames
-        "currency": "CHF",  # default currency
+        "textblock": "textblock",  # Folder containing common/ and products/
+        "input": "input",  # Folder containing .dotx templates
+        "output": "output",  # Folder to save .docx files
+        "lang": "all",  # Process all languages found in template filenames
+        "currency": "CHF",  # Default currency
     }
 
-    # override defaults if provided
+    # Override defaults if provided
     if args.textblock is not None:
         defaults["textblock"] = args.textblock
     if args.input is not None:
@@ -282,7 +258,7 @@ def main():
         defaults["currency"] = args.currency
 
     if args.yes:
-        # skip prompts, use defaults directly
+        # Skip prompts, use defaults directly
         settings = {
             "textblock_folder": defaults["textblock"],
             "input_folder": defaults["input"],
@@ -291,7 +267,7 @@ def main():
             "currency": defaults["currency"],
         }
     else:
-        # interactive mode
+        # Interactive mode
         if not defaults["input"]:
             defaults["input"] = "input"
 
@@ -302,40 +278,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#####################################
-# 6. Basic Unit Tests (Example)
-#####################################
-
-
-class TestOfferDocGenerator(unittest.TestCase):
-    def test_collect_placeholders_empty_folder(self):
-        # If folder doesn't exist, we expect an empty dict
-        placeholders = collect_placeholders_for_language("nonexistent_folder", "EN")
-        self.assertEqual(
-            placeholders, {}, "Expected empty placeholders for nonexistent folder."
-        )
-
-    def test_read_txt_file_nonexistent(self):
-        # Nonexistent path => ""
-        content = read_txt_file("does_not_exist.txt")
-        self.assertEqual(content, "")
-
-    def test_replace_placeholders_basic(self):
-        # We'll do a minimal doc with one placeholder
-        from docx import Document
-
-        doc = Document()
-        p = doc.add_paragraph("Hello {{NAME}}!")
-
-        placeholders = {"NAME": "World"}
-        replace_placeholders(doc, placeholders)
-
-        # Check the paragraph text is replaced
-        final_text = "".join(run.text for run in doc.paragraphs[0].runs)
-        self.assertEqual(final_text, "Hello World!")
-
-
-# You can run these tests by:
-#   python -m unittest OfferDocGenerator.py
-# or put them in a separate test file.
