@@ -54,12 +54,9 @@ import os
 import sys
 from docxtpl import DocxTemplate
 
-#####################################
-# 1. Argparse for -y mode
-#####################################
-
 
 def parse_arguments():
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Generate offers from text blocks.")
     parser.add_argument(
         "-y",
@@ -77,12 +74,8 @@ def parse_arguments():
     return parser.parse_args()
 
 
-#####################################
-# 2. Prompt-based fallback
-#####################################
-
-
 def prompt_for_settings(defaults: dict) -> dict:
+    """Prompt user for settings if not provided via command-line."""
     print("\nInteractive Mode (Press Enter to accept defaults if any)")
 
     textblock_folder = input(
@@ -124,12 +117,8 @@ def prompt_for_settings(defaults: dict) -> dict:
     }
 
 
-#####################################
-# 3. Helpers
-#####################################
-
-
 def read_txt_file(path: str) -> str:
+    """Read content of a text file."""
     if not os.path.isfile(path):
         return ""
     with open(path, "r", encoding="utf-8") as f:
@@ -137,6 +126,7 @@ def read_txt_file(path: str) -> str:
 
 
 def collect_placeholders_for_language(folder: str, language: str) -> dict:
+    """Collect placeholders from files ending with {language}.txt."""
     placeholders = {}
     if not os.path.isdir(folder):
         return placeholders
@@ -157,12 +147,8 @@ def collect_placeholders_for_language(folder: str, language: str) -> dict:
     return placeholders
 
 
-#####################################
-# 4. Generation Logic
-#####################################
-
-
 def generate_offers(settings: dict):
+    """Generate .docx files based on settings."""
     textblock_folder = settings["textblock_folder"]
     input_folder = settings["input_folder"]
     output_folder = settings["output_folder"]
@@ -187,7 +173,10 @@ def generate_offers(settings: dict):
         else:
             lang_in_name = "EN"  # Fallback
 
-        if chosen_lang.lower() != "all" and lang_in_name.lower() != chosen_lang.lower():
+        if (
+            chosen_lang.lower() != "all"
+            and lang_in_name.lower() != chosen_lang.lower()
+        ):
             print(f"Skipping {template_filename}; doesn't match {chosen_lang}.")
             continue
 
@@ -228,12 +217,8 @@ def generate_offers(settings: dict):
             print(f"Generated: {out_path}")
 
 
-#####################################
-# 5. Main
-#####################################
-
-
 def main():
+    """Main entry point."""
     args = parse_arguments()
 
     # Default settings
