@@ -14,6 +14,8 @@
   packages = [
     pkgs.git
     pkgs.prettierd
+    pkgs.python312Packages.flake8
+
   ];
 
   # https://devenv.sh/languages/
