@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 import docx
 from unittest import mock
+from docxtpl import DocxTemplate
 import offerdocgenerator
 
 class TestOfferDocGenerator(unittest.TestCase):
