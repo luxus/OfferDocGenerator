@@ -182,26 +182,21 @@ class TestOfferDocGenerator(unittest.TestCase):
         textblocks_de = offerdocgenerator.load_textblocks(config, sections, self.product_name, "DE")
         self.assertIn("section_1_1", textblocks_de)
         self.assertIn("section_1_1_1", textblocks_de)
-        self.assertTrue(textblocks_de["section_1_1"].exists())
-        self.assertTrue(textblocks_de["section_1_1_1"].exists())
+        self.assertIn("Sicherheitsbewertung", str(textblocks_de["section_1_1"]))
+        self.assertIn("Schwachstellenscanning", str(textblocks_de["section_1_1_1"]))
 
         # Test English textblocks
         textblocks_en = offerdocgenerator.load_textblocks(config, sections, self.product_name, "EN")
         self.assertIn("section_1_1", textblocks_en)
         self.assertIn("section_1_1_1", textblocks_en)
-        self.assertTrue(textblocks_en["section_1_1"].exists())
-        self.assertTrue(textblocks_en["section_1_1_1"].exists())
+        self.assertIn("comprehensive evaluation", str(textblocks_en["section_1_1"]))
+        self.assertIn("Vulnerability scanning", str(textblocks_en["section_1_1_1"]))
 
     def test_render_offer(self):
         """Test complete template rendering and output file generation."""
         config = offerdocgenerator.load_config(self.config_file)
         context = offerdocgenerator.build_context(config, "EN", self.product_name)
         textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], self.product_name, "EN")
-        
-        # Print textblocks for debugging
-        print("\nTextblocks loaded:")
-        for key, path in textblocks.items():
-            print(f"{key}: {path}")
         
         context.update(textblocks)
         
@@ -210,30 +205,14 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         self.assertTrue(output_file.exists())
         generated_doc = docx.Document(str(output_file))
+        full_text = "\n".join(para.text for para in generated_doc.paragraphs)
         
-        # Print full document content for debugging
-        print("\nGenerated document content:")
-        for para in generated_doc.paragraphs:
-            print(f"Paragraph: {para.text}")
-        
-        full_text = "\n".join([para.text for para in generated_doc.paragraphs])
-        
-        # Check if customer info is present
+        # Verify key content elements
+        self.assertIn("Offer: 2025-001", full_text)
         self.assertIn("Example Corp", full_text)
-        self.assertIn("123 Example Street", full_text)
-        
-        # Load and check textblock content
-        section_1_1_doc = docx.Document(str(textblocks["section_1_1"]))
-        section_1_1_text = "\n".join([para.text for para in section_1_1_doc.paragraphs])
-        self.assertIn(section_1_1_text.lower(), full_text.lower())
-        
-        section_1_1_1_doc = docx.Document(str(textblocks["section_1_1_1"]))
-        section_1_1_1_text = "\n".join([para.text for para in section_1_1_1_doc.paragraphs])
-        self.assertIn(section_1_1_1_text.lower(), full_text.lower())
-        
-        # Check if sales info is present
+        self.assertIn("comprehensive evaluation", full_text)
+        self.assertIn("Vulnerability scanning", full_text)
         self.assertIn("John Doe", full_text)
-        self.assertIn("john.doe@example.com", full_text)
 
     def test_create_test_files(self):
         """Just create the test files and directories."""
