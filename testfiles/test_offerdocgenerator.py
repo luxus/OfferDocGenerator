@@ -20,10 +20,12 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.output_dir = self.test_dir / "output"
         self.textblocks_dir = self.test_dir / "textblocks"
         
-        # Clean previous test files
+        # Clean previous test files but preserve output
         shutil.rmtree(self.templates_dir, ignore_errors=True)
-        shutil.rmtree(self.output_dir, ignore_errors=True)
         shutil.rmtree(self.textblocks_dir, ignore_errors=True)
+        
+        # Create output dir if needed but don't clean it
+        self.output_dir.mkdir(exist_ok=True)
         self.product_name = "Web Application Security Assessment"
 
         # Create necessary directories
@@ -164,22 +166,29 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.save(str(file_path))
 
     def tearDown(self):
-        # Clean up test files but keep the output directory
+        """Keep generated output files, only clean up test inputs."""
+        # Remove config file
         if self.config_file.exists():
             self.config_file.unlink()
         
-        # Clean up test template and textblock files
-        test_files = [
+        # Clean up test template and textblock files but keep output
+        cleanup_files = [
             self.template_file_en,
             self.template_file_de,
             self.textblocks_dir / "common" / "section_1_1_EN.docx",
             self.textblocks_dir / "common" / "section_1_1_DE.docx",
             self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx",
-            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx"
+            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx",
+            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_EN.docx",
+            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_DE.docx"
         ]
-        for test_file in test_files:
-            if test_file.exists():
-                test_file.unlink()
+        
+        for file_path in cleanup_files:
+            if file_path.exists():
+                file_path.unlink()
+
+        # Print location of preserved output files
+        print(f"\nGenerated files preserved in: {self.output_dir}")
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
