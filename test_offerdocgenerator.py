@@ -229,6 +229,59 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertTrue(required_vars.issubset(detected_vars),
                        f"Missing sales fields in template variables: {required_vars - detected_vars}")
 
+    def test_error_handling(self):
+        """Test error handling for missing files"""
+        with self.assertRaises(SystemExit):
+            offerdocgenerator.load_config(Path("/non/existent/config.yaml"))
+
+    def test_flattened_config_vars(self):
+        """Verify flattened config variables exist in context"""
+        config = offerdocgenerator.load_config(self.config_file)
+        context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
+        
+        # Test flattened variables
+        self.assertIn("offer_number", context)
+        self.assertEqual(context["offer_number"], "2025-001")
+        self.assertIn("customer_name", context)
+        self.assertEqual(context["customer_name"], "Example Corp")
+        self.assertIn("sales_email", context)
+        self.assertEqual(context["sales_email"], "john.doe@example.com")
+
+    def test_special_characters_in_templates(self):
+        """Test templates with special characters"""
+        # Create test template with special chars
+        special_template = self.templates_dir / "special_chars.docx"
+        doc = docx.Document()
+        doc.add_paragraph('Test & Company © 2024')
+        doc.add_paragraph('{{ sales_email }}')
+        doc.save(str(special_template))
+        
+        # Render and verify
+        config = offerdocgenerator.load_config(self.config_file)
+        context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
+        output_path = self.output_dir / "special_chars_test.docx"
+        
+        offerdocgenerator.render_offer(special_template, context, output_path)
+        
+        # Verify output
+        doc = docx.Document(str(output_path))
+        self.assertIn("Test & Company © 2024", doc.paragraphs[0].text)
+        self.assertIn("john.doe@example.com", doc.paragraphs[1].text)
+
+    def test_invalid_config_sections(self):
+        """Test handling of config with missing required sections"""
+        invalid_config = {
+            "offer": {"number": "123"},  # Missing other required fields
+            "textblocks": {}
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(invalid_config, f)
+        
+        with self.assertRaises(ValueError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Missing required fields in offer", str(cm.exception))
+
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""
         config = offerdocgenerator.load_config(self.config_file)

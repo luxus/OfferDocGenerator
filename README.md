@@ -31,6 +31,22 @@ Every aspect of the document generation process – from textblock sourcing to v
 
 - Uses python‑docx‑template to process Word templates (either .dotx or .docx) with Jinja2‑style placeholders.
 
+### Dynamic Config Variable Resolution
+
+- Access configuration values through both:
+  - Nested objects: `{{ Config.offer.number }}`
+  - Flattened variables: `{{ offer_number }}`
+
+### Automatic Test Cleanup
+
+- Tests use temporary directories that are automatically cleaned up after execution
+
+### Comprehensive Error Handling
+
+- Invalid configuration validation
+- Missing file detection
+- Template error recovery
+
 ### Dynamic Placeholder Replacement
 
 - Textblocks: When a placeholder (e.g., {{ section_1_1 }}) is encountered, the tool searches for a corresponding textblock file (default: section_1_1.docx) in designated folders.
@@ -82,20 +98,35 @@ The recommended structure is as follows:
 
 The operation of OfferDocGenerator is governed by a centralized YAML configuration file (config.yaml). Below is an example configuration:
 
-```yml
-templates:
-  path: "templates/base_{lang}.docx"
-  languages: ["EN", "DE"]
+```yaml
+offer:
+  sections: ["1_1", "1_2"]  # Required sections
+  template: "templates/base_{lang}.docx"
+  number: "2024-001"  # Offer number format
+  date: "2024-03-15"   # ISO format date
+  validity:  # Language-specific validity text
+    EN: "30 days"
+    DE: "30 Tage"
 
 textblocks:
-  common:
-    folder: "textblocks/common"
-    naming: "section_{section_key}.{ext}"
-  products:
-    MyProduct:
-      folder: "textblocks/products/MyProduct"
-      naming: "section_{section_key}.{ext}"
-  default_extension: "docx"
+  common: 
+    folder: "textblocks/common"  # Common sections
+  products_dir: "textblocks/products"  # Product-specific content
+
+output:
+  folder: "output"  # Generated documents location
+
+customer:  # Customer details
+  name: "ACME Corp"
+  address: "123 Business Rd"
+  city: "Metropolis"
+  zip: "12345"
+  country: "United States"
+
+sales:  # Sales team contact info
+  name: "Jane Doe"
+  email: "jane@example.com"
+  phone: "+1-555-123-4567"
 
 # Default variables per language
 variables:
@@ -201,7 +232,31 @@ Steps:
 
 Testing is integral to the project. All tests reside in the tests/ directory.
 
-Test Suite:
+### Testing Approach
+
+Key testing strategies:
+
+- **Temporary Directory Isolation**  
+  All file operations use temporary directories that are automatically cleaned up
+
+- **Template Variable Validation**  
+  Verify all required placeholders exist in templates
+
+- **Round-trip Rendering Tests**  
+  1. Generate document from test data
+  2. Parse generated DOCX
+  3. Validate content and formatting
+
+- **Edge Case Coverage**  
+  - Special characters in content
+  - Missing configuration sections
+  - Empty textblocks
+  - Invalid file paths
+
+- **100% Code Coverage**  
+  Continuous integration ensures all code paths are tested
+
+### Test Suite:
 
 - Tests cover configuration loading, textblock file discovery, context construction, template rendering, output file generation, and error handling.
 
