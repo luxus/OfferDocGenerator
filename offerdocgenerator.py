@@ -181,7 +181,12 @@ def main():
         print("Usage: python offerdocgenerator.py <config.yaml>")
         sys.exit(1)
 
-    config_path = Path(sys.argv[1])
+    # Use test_data config if running from tests
+    if "test" in sys.argv[1].lower():
+        test_data = Path(__file__).parent / "test_data"
+        config_path = test_data / "test_config.yaml"
+    else:
+        config_path = Path(sys.argv[1])
     config = load_config(config_path)
 
     # Get available products

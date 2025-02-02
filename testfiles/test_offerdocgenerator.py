@@ -11,18 +11,24 @@ from unittest import mock
 import offerdocgenerator
 
 class TestOfferDocGenerator(unittest.TestCase):
+    # Control whether to cleanup test files
+    CLEANUP = False  # Set to True to enable test file cleanup
+
     def setUp(self):
-        """Set up test fixtures."""
-        # Set up test directories
-        self.test_dir = Path(__file__).parent
-        self.config_file = self.test_dir / "test_config.yaml"
-        self.templates_dir = self.test_dir / "templates"
-        self.output_dir = self.test_dir / "output"
-        self.textblocks_dir = self.test_dir / "textblocks"
+        """Set up test fixtures in test_data subdirectory"""
+        # Set up test directories under test_data
+        self.test_data = Path(__file__).parent / "test_data"
+        self.test_data.mkdir(exist_ok=True)
         
-        # Clean previous test files but preserve output
-        shutil.rmtree(self.templates_dir, ignore_errors=True)
-        shutil.rmtree(self.textblocks_dir, ignore_errors=True)
+        self.config_file = self.test_data / "test_config.yaml"
+        self.templates_dir = self.test_data / "templates" 
+        self.output_dir = self.test_data / "output"
+        self.textblocks_dir = self.test_data / "textblocks"
+        
+        # Only clean if CLEANUP enabled
+        if self.CLEANUP:
+            shutil.rmtree(self.templates_dir, ignore_errors=True)
+            shutil.rmtree(self.textblocks_dir, ignore_errors=True)
         
         # Create output dir if needed but don't clean it
         self.output_dir.mkdir(exist_ok=True)
@@ -166,29 +172,13 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.save(str(file_path))
 
     def tearDown(self):
-        """Keep generated output files, only clean up test inputs."""
-        # Remove config file
-        if self.config_file.exists():
-            self.config_file.unlink()
-        
-        # Clean up test template and textblock files but keep output
-        cleanup_files = [
-            self.template_file_en,
-            self.template_file_de,
-            self.textblocks_dir / "common" / "section_1_1_EN.docx",
-            self.textblocks_dir / "common" / "section_1_1_DE.docx",
-            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx",
-            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx",
-            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_EN.docx",
-            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_DE.docx"
-        ]
-        
-        for file_path in cleanup_files:
-            if file_path.exists():
-                file_path.unlink()
-
-        # Print location of preserved output files
-        print(f"\nGenerated files preserved in: {self.output_dir}")
+        """Conditional cleanup based on CLEANUP flag"""
+        if self.CLEANUP:
+            # Clean up all test files
+            shutil.rmtree(self.test_data, ignore_errors=True)
+        else:
+            # Print location of preserved files
+            print(f"\nTest files preserved in: {self.test_data.absolute()}")
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
