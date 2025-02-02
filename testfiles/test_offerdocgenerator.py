@@ -128,6 +128,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def _create_textblock_file(self, file_path: Path, content: str):
         """Helper method to create a docx file with given content."""
+        # Ensure filename uses lowercase 'section' prefix
+        proper_path = file_path.parent / file_path.name.lower()
         doc = docx.Document()
         # Add each paragraph with proper styling
         for paragraph in content.split('\n\n'):
