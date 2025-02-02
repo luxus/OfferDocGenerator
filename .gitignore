@@ -13,3 +13,4 @@ __pycache__/
 .DS_Store
 testfiles/.DS_Store
 testfiles/output/Offer_Web Application Security Assessment_EN.docx
+test_data

@@ -1,6 +1,5 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import unittest
 import tempfile
 import shutil
@@ -24,7 +23,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.templates_dir = self.test_data / "templates" 
         self.output_dir = self.test_data / "output"
         self.textblocks_dir = self.test_data / "textblocks"
-        
+        self.product_name = "Web Application Security Assessment"
+
         # Only clean if CLEANUP enabled
         if self.CLEANUP:
             shutil.rmtree(self.templates_dir, ignore_errors=True)
@@ -32,7 +32,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         # Create output dir if needed but don't clean it
         self.output_dir.mkdir(exist_ok=True)
-        self.product_name = "Web Application Security Assessment"
 
         # Create necessary directories
         self.templates_dir.mkdir(exist_ok=True)
@@ -182,7 +181,7 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
-        products = offerdocgenerator.get_product_names(Path(self.test_dir) / "textblocks")
+        products = offerdocgenerator.get_product_names(self.textblocks_dir)
         self.assertEqual(len(products), 2)
         self.assertIn(self.product_name, products)
         self.assertIn(self.product_name2, products)
@@ -217,7 +216,7 @@ class TestOfferDocGenerator(unittest.TestCase):
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""
         config = offerdocgenerator.load_config(self.config_file)
-        products = offerdocgenerator.get_product_names(Path(self.test_dir) / "textblocks")
+        products = offerdocgenerator.get_product_names(self.textblocks_dir)
         
         # Verify files per product
         for product in products:
@@ -246,161 +245,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         generated_files = list(self.output_dir.glob("Offer_*.docx"))
         self.assertEqual(len(generated_files), 8,
                         f"Expected 8 files for 2 products, found {len(generated_files)}")
-
-    def test_create_test_files(self):
-        """Just create the test files and directories."""
-        self.test_dir = Path(__file__).parent
-        self.config_file = self.test_dir / "config.yaml"
-        self.templates_dir = self.test_dir / "templates"
-        self.output_dir = Path("/Users/luxus/projects/OfferDocGenerator/output")
-        self.textblocks_dir = self.test_dir / "textblocks"
-        self.product_name = "Web Application Security Assessment"
-
-        # Clean up existing directories first
-        for dir_path in [self.templates_dir, self.textblocks_dir]:
-            if dir_path.exists():
-                shutil.rmtree(dir_path)
-
-        # Create necessary directories
-        print("\nCreating directories...")
-        self.templates_dir.mkdir(exist_ok=True)
-        self.output_dir.mkdir(exist_ok=True)
-        (self.textblocks_dir / "common").mkdir(parents=True, exist_ok=True)
-        (self.textblocks_dir / "products" / self.product_name).mkdir(parents=True, exist_ok=True)
-
-        # Create common textblocks
-        print("\nCreating common textblocks...")
-        common_en = self.textblocks_dir / "common" / "section_1_1_EN.docx"
-        common_de = self.textblocks_dir / "common" / "section_1_1_DE.docx"
-        
-        self._create_textblock_file(
-            common_en,
-            "Our standard security assessment provides a comprehensive evaluation of your web application's security posture."
-        )
-        self._create_textblock_file(
-            common_de,
-            "Unsere Standard-Sicherheitsbewertung bietet eine umfassende Evaluation der Sicherheitslage Ihrer Webanwendung."
-        )
-
-        # Create product-specific textblocks
-        print("\nCreating product-specific textblocks...")
-        product_en = self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx"
-        product_de = self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx"
-        
-        self._create_textblock_file(
-            product_en,
-            """The Web Application Security Assessment includes:
-
-- Vulnerability scanning
-- Manual penetration testing
-- Code review"""
-        )
-        self._create_textblock_file(
-            product_de,
-            """Die Web Application Security Assessment beinhaltet:
-
-- Schwachstellenscanning
-- Manuelle Penetrationstests
-- Code-Review"""
-        )
-
-        # Create base templates for EN and DE
-        print("\nCreating templates...")
-        # English template
-        self.template_file_en = self.templates_dir / "base_EN.docx"
-        doc = docx.Document()
-        doc.add_heading('Offer: {{ Offer.number }}', 0)
-        doc.add_paragraph('Date: {{ Offer.date }}')
-        doc.add_paragraph('Valid for: {{ Offer.validity }}')
-        doc.add_heading('Customer Information', 1)
-        doc.add_paragraph('{{ Customer.name }}')
-        doc.add_paragraph('{{ Customer.address }}')
-        doc.add_paragraph('{{ Customer.city }}, {{ Customer.zip }}')
-        doc.add_paragraph('{{ Customer.country }}')
-        doc.add_heading('Product Description', 1)
-        p = doc.add_paragraph()
-        p.add_run('{{ section_1_1 }}')
-        doc.add_heading('Detailed Scope', 2)
-        p = doc.add_paragraph()
-        p.add_run('{{ section_1_1_1 }}')
-        doc.add_heading('Sales Contact', 1)
-        doc.add_paragraph('{{ Sales.name }}')
-        doc.add_paragraph('{{ Sales.email }}')
-        doc.add_paragraph('{{ Sales.phone }}')
-        doc.save(str(self.template_file_en))
-
-        # German template
-        self.template_file_de = self.templates_dir / "base_DE.docx"
-        doc = docx.Document()
-        doc.add_heading('Angebot: {{ Offer.number }}', 0)
-        doc.add_paragraph('Datum: {{ Offer.date }}')
-        doc.add_paragraph('Gültig für: {{ Offer.validity }}')
-        doc.add_heading('Kundeninformationen', 1)
-        doc.add_paragraph('{{ Customer.name }}')
-        doc.add_paragraph('{{ Customer.address }}')
-        doc.add_paragraph('{{ Customer.city }}, {{ Customer.zip }}')
-        doc.add_paragraph('{{ Customer.country }}')
-        doc.add_heading('Produktbeschreibung', 1)
-        p = doc.add_paragraph()
-        p.add_run('{{ section_1_1 }}')
-        doc.add_heading('Detaillierter Umfang', 2)
-        p = doc.add_paragraph()
-        p.add_run('{{ section_1_1_1 }}')
-        doc.add_heading('Vertriebskontakt', 1)
-        doc.add_paragraph('{{ Sales.name }}')
-        doc.add_paragraph('{{ Sales.email }}')
-        doc.add_paragraph('{{ Sales.phone }}')
-        doc.save(str(self.template_file_de))
-
-        # Create config file
-        print("\nCreating config file...")
-        config = {
-            'offer': {
-                'sections': ['1_1', '1_1_1'],
-                'template': str(self.templates_dir)
-            },
-            'textblocks': {
-                'common': {
-                    'folder': str(self.textblocks_dir / "common")
-                },
-                'products_dir': str(self.textblocks_dir / "products")
-            },
-            'output': {
-                'folder': str(self.output_dir)
-            }
-        }
-        
-        with open(self.config_file, 'w') as f:
-            yaml.dump(config, f)
-
-        # Verify files were created
-        print("\nVerifying created files...")
-        files_to_check = [
-            (common_en, "Common EN textblock"),
-            (common_de, "Common DE textblock"),
-            (product_en, "Product EN textblock"),
-            (product_de, "Product DE textblock"),
-            (self.template_file_en, "EN template"),
-            (self.template_file_de, "DE template"),
-            (self.config_file, "Config file")
-        ]
-
-        for file_path, desc in files_to_check:
-            if file_path.exists():
-                print(f"✓ {desc} created at: {file_path}")
-                print(f"  Size: {file_path.stat().st_size} bytes")
-            else:
-                print(f"✗ {desc} NOT created at: {file_path}")
-
-        # Assert files exist
-        for file_path, desc in files_to_check:
-            self.assertTrue(file_path.exists(), f"{desc} was not created")
-
-        print("\nTest files created:")
-        print(f"Templates directory: {self.templates_dir}")
-        print(f"Common textblocks: {self.textblocks_dir}/common")
-        print(f"Product textblocks: {self.textblocks_dir}/products/{self.product_name}")
-        print(f"Config file: {self.config_file}")
 
 if __name__ == '__main__':
     unittest.main()
