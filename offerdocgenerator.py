@@ -44,6 +44,12 @@ class Config:
             if not all(field in getattr(self, section) for field in fields):
                 missing = [f for f in fields if f not in getattr(self, section)]
                 raise ValueError(f"Missing required fields in {section}: {missing}")
+        
+        # Validate output format if specified
+        valid_formats = ['docx', 'dotx']
+        output_format = self.output.get('format', 'docx').lower()
+        if output_format not in valid_formats:
+            raise ValueError(f"Invalid output format. Must be one of {valid_formats}")
 
 def load_config(config_path: Path) -> Config:
     """Load configuration from YAML file."""
@@ -207,13 +213,20 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         # Render template
         doc.render(context, autoescape=True)
         
-        # Save as DOTX template
-        output_path = output_path.with_suffix('.dotx')
+        # Handle different output formats
+        output_format = output_path.suffix[1:].lower()
+        
+        if output_format == 'dotx':
+            # Change content type for template format
+            document_part = doc.docx.part
+            document_part._content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml'
+        
+        # Ensure parent directories exist
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Explicitly save as Word Template
+        # Save with configured format
         doc.docx.save(str(output_path))
-        logger.info(f"Offer template generated at: {output_path}")
+        logger.info(f"Document generated at: {output_path}")
         
     except Exception as e:
         logger.error(f"Error during template rendering: {e}")
@@ -259,12 +272,14 @@ def main():
                     logger.error(f"Missing template for {lang}: {template_path}")
                     continue
 
-                # Create organized output directory
-                output_dir = Path(config.output["folder"]) / product / lang
+                # Create output directory (no language subdirectory)
+                output_dir = Path(config.output["folder"]) / product
                 output_dir.mkdir(parents=True, exist_ok=True)
                 
-                # Generate output filename with currency
-                output_file = output_dir / f"Offer_{product}_{lang}_{currency}.dotx"
+                # Generate output filename with configurable prefix and format
+                prefix = config.output.get("prefix", "Offer_")
+                fmt = config.output.get("format", "docx")
+                output_file = output_dir / f"{prefix}{product}_{lang}_{currency}.{fmt}"
                 
                 # Render the offer document
                 render_offer(template_path, context, output_file)
