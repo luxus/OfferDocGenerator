@@ -237,8 +237,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
         # Create common textblocks
         print("\nCreating common textblocks...")
-        common_en = self.textblocks_dir / "common" / "Section_1_1_EN.docx"
-        common_de = self.textblocks_dir / "common" / "Section_1_1_DE.docx"
+        common_en = self.textblocks_dir / "common" / "section_1_1_EN.docx"
+        common_de = self.textblocks_dir / "common" / "section_1_1_DE.docx"
         
         self._create_textblock_file(
             common_en,
@@ -251,8 +251,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
         # Create product-specific textblocks
         print("\nCreating product-specific textblocks...")
-        product_en = self.textblocks_dir / "products" / self.product_name / "Section_1_1_1_EN.docx"
-        product_de = self.textblocks_dir / "products" / self.product_name / "Section_1_1_1_DE.docx"
+        product_en = self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx"
+        product_de = self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx"
         
         self._create_textblock_file(
             product_en,
