@@ -1,7 +1,6 @@
 import sys
 import os
 import unittest
-import tempfile
 import shutil
 import random
 from pathlib import Path
@@ -22,12 +21,16 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertTrue((self.textblocks_dir / "products" / self.product_name).exists())
     
     def setUp(self):
-        """Set up test fixtures using temporary directory"""
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.test_data = Path(self.temp_dir.name)
-        if not self.CLEANUP:
-            print(f"\nTest files will be preserved in: {self.test_data}")
+        """Set up test fixtures in project-adjacent directory"""
+        # Get test script location
+        self.script_dir = Path(__file__).parent
+        self.test_data = self.script_dir / "test_output"
         
+        # Clean/create test output directory
+        if self.test_data.exists():
+            shutil.rmtree(self.test_data)
+        self.test_data.mkdir()
+
         # Create randomized output directory name
         self.random_id = random.randint(1000, 9999)
         
@@ -195,9 +198,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.save(str(file_path))
 
     def tearDown(self):
-        """Conditional cleanup of temporary directory"""
+        """Conditional cleanup of test output directory"""
         if self.CLEANUP:
-            self.temp_dir.cleanup()
+            shutil.rmtree(self.test_data)
         else:
             print(f"\nTest files preserved in: {self.test_data}")
             print(f"Output files are in: {self.output_dir}")
