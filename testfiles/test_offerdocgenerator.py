@@ -128,8 +128,6 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def _create_textblock_file(self, file_path: Path, content: str):
         """Helper method to create a docx file with given content."""
-        # Ensure filename uses lowercase 'section' prefix
-        proper_path = file_path.parent / file_path.name.lower()
         doc = docx.Document()
         # Add each paragraph with proper styling
         for paragraph in content.split('\n\n'):
@@ -152,10 +150,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         test_files = [
             self.template_file_en,
             self.template_file_de,
-            self.textblocks_dir / "common" / "Section_1_1EN.docx",
-            self.textblocks_dir / "common" / "Section_1_1DE.docx",
-            self.textblocks_dir / "products" / self.product_name / "Section_1_1_1EN.docx",
-            self.textblocks_dir / "products" / self.product_name / "Section_1_1_1DE.docx"
+            self.textblocks_dir / "common" / "section_1_1_EN.docx",
+            self.textblocks_dir / "common" / "section_1_1_DE.docx",
+            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx",
+            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx"
         ]
         for test_file in test_files:
             if test_file.exists():
