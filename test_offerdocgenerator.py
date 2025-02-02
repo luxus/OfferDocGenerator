@@ -3,6 +3,7 @@ import os
 import unittest
 import tempfile
 import shutil
+import random
 from pathlib import Path
 import yaml
 import docx
@@ -27,9 +28,12 @@ class TestOfferDocGenerator(unittest.TestCase):
         if not self.CLEANUP:
             print(f"\nTest files will be preserved in: {self.test_data}")
         
+        # Create randomized output directory name
+        self.random_id = random.randint(1000, 9999)
+        
         self.config_file = self.test_data / "test_config.yaml"
         self.templates_dir = self.test_data / "templates" 
-        self.output_dir = self.test_data / "output"
+        self.output_dir = self.test_data / f"test_data_{self.random_id}"
         self.textblocks_dir = self.test_data / "textblocks"
         self.product_name = "Web Application Security Assessment"
 
@@ -156,8 +160,8 @@ class TestOfferDocGenerator(unittest.TestCase):
             },
             "output": {
                 "folder": str(self.output_dir),
-                "format": "docx",
-                "prefix": "Offer_"
+                "format": "docx",  # Force tests to use DOCX
+                "prefix": "TestOffer_"
             },
             "customer": {
                 "name": "Example Corp",
