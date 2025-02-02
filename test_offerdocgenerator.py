@@ -205,7 +205,6 @@ class TestOfferDocGenerator(unittest.TestCase):
             shutil.rmtree(self.test_run_dir)
         else:
             print(f"\nTest files preserved in: {self.test_run_dir}")
-            print(f"Unique test run ID: {self.run_id}")
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
