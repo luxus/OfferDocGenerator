@@ -22,17 +22,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.textblocks_dir = self.test_data / "textblocks"
         self.product_name = "Web Application Security Assessment"
 
-        # Only clean if CLEANUP enabled
-        if self.CLEANUP:
-            shutil.rmtree(self.templates_dir, ignore_errors=True)
-            shutil.rmtree(self.textblocks_dir, ignore_errors=True)
-        
-        # Create output dir if needed but don't clean it
-        self.output_dir.mkdir(exist_ok=True)
-
         # Create necessary directories
-        self.templates_dir.mkdir(exist_ok=True)
         self.output_dir.mkdir(exist_ok=True)
+        self.templates_dir.mkdir(exist_ok=True)
         (self.textblocks_dir / "common").mkdir(parents=True, exist_ok=True)
         (self.textblocks_dir / "products" / self.product_name).mkdir(parents=True, exist_ok=True)
 
