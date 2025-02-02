@@ -71,9 +71,12 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
     common_dir = Path(config.textblocks["common"]["folder"])
     product_dir = Path(config.textblocks["products_dir"]) / product_name
 
+    # Use consistent lowercase filenames with proper language formatting
+    lang_suffix = f"_{language.upper()}.docx"
+
     for section in sections:
         # Try product-specific textblock first
-        product_file = product_dir / f"Section_{section}{language}.docx"
+        product_file = product_dir / f"section_{section}{lang_suffix}"
         if product_file.exists():
             logger.info(f"Loading product-specific textblock for section {section} from {product_file}")
             doc = Document(str(product_file))
@@ -87,7 +90,7 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
             continue
 
         # Fall back to common textblock
-        common_file = common_dir / f"Section_{section}{language}.docx"
+        common_file = common_dir / f"section_{section}{lang_suffix}"
         if common_file.exists():
             logger.info(f"Loading common textblock for section {section} from {common_file}")
             doc = Document(str(common_file))
