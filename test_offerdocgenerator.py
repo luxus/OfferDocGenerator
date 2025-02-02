@@ -270,8 +270,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_richtext_format_preservation(self):
         """Verify bold/italic/underline formatting in textblocks"""
-        # Create formatted test file
-        test_file = self.textblocks_dir / "common" / "formatted_EN.docx"
+        # Create formatted test file with correct section prefix
+        test_file = self.textblocks_dir / "common" / "section_formatted_EN.docx"
         doc = docx.Document()
         p = doc.add_paragraph()
         p.add_run('Bold text').bold = True
@@ -285,6 +285,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         # Load and verify textblocks
         textblocks = offerdocgenerator.load_textblocks(config, ["formatted"], self.product_name, "EN")
+        self.assertIn("section_formatted", textblocks)  # Verify section exists
+        
         rt = textblocks["section_formatted"]
         
         # Check formatting preserved in XML
