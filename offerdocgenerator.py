@@ -72,7 +72,7 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
     product_dir = Path(config.textblocks["products_dir"]) / product_name
 
     # Use consistent lowercase filenames with proper language formatting
-    lang_suffix = f"_{language.upper()}.docx"
+    lang_suffix = f"_{language.lower()}.docx"
 
     for section in sections:
         # Try product-specific textblock first
