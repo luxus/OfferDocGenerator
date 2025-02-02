@@ -72,7 +72,7 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
     product_dir = Path(config.textblocks["products_dir"]) / product_name
 
     # Use consistent lowercase filenames with proper language formatting
-    lang_suffix = f"_{language.lower()}.docx"
+    lang_suffix = f"_{language.upper()}.docx"
 
     for section in sections:
         # Try product-specific textblock first
@@ -111,11 +111,12 @@ def build_context(config: Config, language: str, product_name: str, currency: st
     """Build the context for template rendering with currency."""
     # Ensure language code is uppercase for consistency with filenames
     language = language.upper()
+    validity = "30 days" if language.upper() == "EN" else "30 Tage"
     context = {
         "Offer": {
             "number": "2025-001",
             "date": "2025-02-02",
-            "validity": "30 days",
+            "validity": validity,
             "currency": currency
         },
         "Customer": {

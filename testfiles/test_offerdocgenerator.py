@@ -78,6 +78,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.add_heading('Detailed Scope', 2)
         p = doc.add_paragraph()
         p.add_run('{{r section_1_1_1 }}')
+        doc.add_paragraph('Total Price: {{ Offer.currency }} 10,000')
         doc.add_heading('Sales Contact', 1)
         doc.add_paragraph('{{ Sales.name }}')
         doc.add_paragraph('{{ Sales.email }}')
@@ -97,10 +98,11 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.add_paragraph('{{ Customer.country }}')
         doc.add_heading('Produktbeschreibung', 1)
         p = doc.add_paragraph()
-        p.add_run('{{ section_1_1 }}')
+        p.add_run('{{r section_1_1 }}')
         doc.add_heading('Detaillierter Umfang', 2)
         p = doc.add_paragraph()
-        p.add_run('{{ section_1_1_1 }}')
+        p.add_run('{{r section_1_1_1 }}')
+        doc.add_paragraph('Gesamtpreis: {{ Offer.currency }} 10.000')
         doc.add_heading('Vertriebskontakt', 1)
         doc.add_paragraph('{{ Sales.name }}')
         doc.add_paragraph('{{ Sales.email }}')
@@ -161,7 +163,7 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
-        products = offerdocgenerator.get_product_names(Path(self.test_dir) / "textblock")
+        products = offerdocgenerator.get_product_names(Path(self.test_dir) / "textblocks")
         self.assertEqual(len(products), 1)
         self.assertEqual(products[0], self.product_name)
 
