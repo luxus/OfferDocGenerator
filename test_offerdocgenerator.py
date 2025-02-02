@@ -4,6 +4,7 @@ import unittest
 import shutil
 import random
 from pathlib import Path
+from pathlib import Path
 import yaml
 import docx
 from unittest import mock
@@ -21,23 +22,21 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertTrue((self.textblocks_dir / "products" / self.product_name).exists())
     
     def setUp(self):
-        """Set up test fixtures in project-adjacent directory"""
-        # Get test script location
+        """Set up test fixtures with unique output directory"""
+        # Base test directory
         self.script_dir = Path(__file__).parent
-        self.test_data = self.script_dir / "test_output"
+        self.test_root = self.script_dir / "test_output"
+        self.test_root.mkdir(exist_ok=True)
         
-        # Clean/create test output directory
-        if self.test_data.exists():
-            shutil.rmtree(self.test_data)
-        self.test_data.mkdir()
-
-        # Create randomized output directory name
-        self.random_id = random.randint(1000, 9999)
+        # Generate unique random code for this test run
+        self.run_id = f"{random.randint(1000, 9999)}_{os.getpid()}"
+        self.test_run_dir = self.test_root / f"test_data_{self.run_id}"
         
-        self.config_file = self.test_data / "test_config.yaml"
-        self.templates_dir = self.test_data / "templates" 
-        self.output_dir = self.test_data / f"test_data_{self.random_id}"
-        self.textblocks_dir = self.test_data / "textblocks"
+        # Create all required subdirectories
+        self.config_file = self.test_run_dir / "test_config.yaml"
+        self.templates_dir = self.test_run_dir / "templates"
+        self.output_dir = self.test_run_dir / "output"
+        self.textblocks_dir = self.test_run_dir / "textblocks"
         self.product_name = "Web Application Security Assessment"
 
         # Create necessary directories
@@ -200,10 +199,10 @@ class TestOfferDocGenerator(unittest.TestCase):
     def tearDown(self):
         """Conditional cleanup of test output directory"""
         if self.CLEANUP:
-            shutil.rmtree(self.test_data)
+            shutil.rmtree(self.test_run_dir)
         else:
-            print(f"\nTest files preserved in: {self.test_data}")
-            print(f"Output files are in: {self.output_dir}")
+            print(f"\nTest files preserved in: {self.test_run_dir}")
+            print(f"Unique test run ID: {self.run_id}")
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
