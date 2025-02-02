@@ -127,10 +127,27 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
     return current
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
-    """Build the context with dynamic config variable resolution."""
+    """Build the context with flat variable structure."""
     language = language.upper()
     return {
-        "Config": config,  # Add full config reference
+        # Customer details
+        "customer_name": config.customer["name"],
+        "customer_address": config.customer["address"],
+        "customer_city": config.customer["city"],
+        "customer_zip": config.customer["zip"],
+        "customer_country": config.customer["country"],
+        
+        # Sales details
+        "sales_name": config.sales["name"],
+        "sales_email": config.sales["email"],
+        "sales_phone": config.sales["phone"],
+        
+        # Offer details
+        "offer_number": config.offer["number"],
+        "offer_date": config.offer["date"],
+        "offer_validity": config.offer["validity"],
+        
+        # Standard fields
         "LANGUAGE": language,
         "PRODUCT": product_name,
         "CURRENCY": currency
