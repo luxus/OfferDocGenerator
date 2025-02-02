@@ -140,7 +140,13 @@ class TestOfferDocGenerator(unittest.TestCase):
         config = {
             "offer": {
                 "sections": ["1_1", "1_1_1"],
-                "template": str(self.templates_dir)
+                "template": str(self.templates_dir),
+                "number": "2025-001",
+                "date": "2025-02-02",
+                "validity": {
+                    "EN": "30 days",
+                    "DE": "30 Tage"
+                }
             },
             "textblocks": {
                 "common": {
@@ -150,6 +156,18 @@ class TestOfferDocGenerator(unittest.TestCase):
             },
             "output": {
                 "folder": str(self.output_dir)
+            },
+            "customer": {
+                "name": "Example Corp",
+                "address": "123 Example Street",
+                "city": "Example City",
+                "zip": "12345",
+                "country": "Example Country"
+            },
+            "sales": {
+                "name": "John Doe",
+                "email": "john.doe@example.com",
+                "phone": "+1 234 567 890"
             }
         }
         with open(self.config_file, 'w') as f:
@@ -240,6 +258,11 @@ class TestOfferDocGenerator(unittest.TestCase):
                         doc = docx.Document(str(output_file))
                         full_text = "\n".join(para.text for para in doc.paragraphs)
                         self.assertIn(currency, full_text)
+                        self.assertIn(config.offer["number"], full_text)
+                        self.assertIn(config.customer["name"], full_text)
+                        self.assertIn(config.customer["address"], full_text)
+                        self.assertIn(config.sales["email"], full_text)
+                        self.assertIn(config.sales["phone"], full_text)
         
         # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
         generated_files = list(self.output_dir.glob("Offer_*.docx"))

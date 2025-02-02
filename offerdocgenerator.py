@@ -19,13 +19,17 @@ class Config:
     offer: Dict[str, Any]
     textblocks: Dict[str, Any]
     output: Dict[str, Any]
+    customer: Dict[str, str]
+    sales: Dict[str, str]
 
     def __post_init__(self):
         """Validate configuration after initialization."""
         required_fields = {
-            'offer': ['sections', 'template'],
+            'offer': ['sections', 'template', 'number', 'date', 'validity'],
             'textblocks': ['common', 'products_dir'],
-            'output': ['folder']
+            'output': ['folder'],
+            'customer': ['name', 'address', 'city', 'zip', 'country'],
+            'sales': ['name', 'email', 'phone']
         }
 
         for section, fields in required_fields.items():
@@ -108,29 +112,17 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
     return textblocks
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
-    """Build the context for template rendering with currency."""
-    # Ensure language code is uppercase for consistency with filenames
+    """Build the context for template rendering using config values."""
     language = language.upper()
-    validity = "30 days" if language.upper() == "EN" else "30 Tage"
     context = {
         "Offer": {
-            "number": "2025-001",
-            "date": "2025-02-02",
-            "validity": validity,
+            "number": config.offer["number"],
+            "date": config.offer["date"],
+            "validity": config.offer["validity"][language],
             "currency": currency
         },
-        "Customer": {
-            "name": "Example Corp",
-            "address": "123 Example Street",
-            "city": "Example City",
-            "zip": "12345",
-            "country": "Example Country"
-        },
-        "Sales": {
-            "name": "John Doe",
-            "email": "john.doe@example.com",
-            "phone": "+1 234 567 890"
-        },
+        "Customer": config.customer,
+        "Sales": config.sales,
         "LANGUAGE": language,
         "PRODUCT": product_name
     }
