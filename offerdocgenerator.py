@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import logging
+import traceback
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, List, Optional
