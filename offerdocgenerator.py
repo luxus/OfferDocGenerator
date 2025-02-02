@@ -145,50 +145,48 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         sys.exit(1)
 
     try:
-        # Create DocxTemplate instance
-        doc = DocxTemplate(str(template_path))
-        
-        # Get all variables from the template
-        template_vars = doc.get_undeclared_template_vars()
-        
-        # Resolve variables from config
-        config = context["Config"]
-        for var in template_vars:
-            if var not in context and not var.startswith('section_'):
-                try:
-                    context[var] = resolve_config_variable(var, config)
-                except ValueError:
-                    logger.warning(f"Variable {var} not found in config")
+        # Use context manager for proper template handling
+        with DocxTemplate(str(template_path)) as doc:
+            # Get variables must be inside context manager block
+            template_vars = doc.get_undeclared_template_vars()
+            
+            # Resolve variables from config
+            config = context["Config"]
+            for var in template_vars:
+                if var not in context and not var.startswith('section_'):
+                    try:
+                        context[var] = resolve_config_variable(var, config)
+                    except ValueError:
+                        logger.warning(f"Variable {var} not found in config")
 
-        # Add textblocks to context
-        textblocks = {k:v for k,v in context.items() if k.startswith('section_')}
-        context.update(textblocks)
+            # Add textblocks to context
+            textblocks = {k:v for k,v in context.items() if k.startswith('section_')}
+            context.update(textblocks)
 
-        # Convert any remaining Path objects to RichText
-        for key, value in context.items():
-            if isinstance(value, Path) and key.startswith('section_'):
-                source_doc = Document(str(value))
-                rt = RichText()
-                for para in source_doc.paragraphs:
-                    if para.text.strip():
-                        for run in para.runs:
-                            rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
-                        rt.add('\n')
-                context[key] = rt
+            # Convert any remaining Path objects to RichText
+            for key, value in context.items():
+                if isinstance(value, Path) and key.startswith('section_'):
+                    source_doc = Document(str(value))
+                    rt = RichText()
+                    for para in source_doc.paragraphs:
+                        if para.text.strip():
+                            for run in para.runs:
+                                rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
+                            rt.add('\n')
+                    context[key] = rt
 
-        # Render the template with the context
-        doc.render(context, autoescape=True)
-
-        # Ensure the output directory exists
-        output_path = output_path.with_suffix('.docx')
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Save the rendered document
-        doc.save(str(output_path))
-        logger.info(f"Offer document generated at: {output_path}")
+            # Render happens inside context manager
+            doc.render(context, autoescape=True)
+            
+            # Ensure output directory exists
+            output_path = output_path.with_suffix('.docx')
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            doc.save(str(output_path))
+            logger.info(f"Offer document generated at: {output_path}")
+            
     except Exception as e:
         logger.error(f"Error during template rendering: {e}")
-        logger.error(f"Error details: {str(e)}")
+        logger.error(f"Error details: {traceback.format_exc()}")
         raise
 
 def main():
