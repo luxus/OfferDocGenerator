@@ -242,8 +242,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         detected_vars = doc.get_undeclared_template_variables()
         
         # Verify expected variables are detected
-        self.assertIn("config.sales", detected_vars)
-        self.assertIn("config.test", detected_vars)
+        required_vars = {'sales_name', 'sales_email', 'sales_phone'}
+        self.assertTrue(required_vars.issubset(detected_vars),
+                       f"Missing sales fields in template variables: {required_vars - detected_vars}")
 
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""

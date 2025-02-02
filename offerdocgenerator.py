@@ -127,9 +127,12 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
     return current
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
-    """Build the context with flat variable structure."""
+    """Build the context with both Config object and flat variables."""
     language = language.upper()
     return {
+        # Include full Config object for template access
+        "Config": config,
+        
         # Customer details
         "customer_name": config.customer["name"],
         "customer_address": config.customer["address"],
