@@ -225,7 +225,7 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Save with configured format
-        doc.docx.save(str(output_path))
+        doc.save(str(output_path))
         logger.info(f"Document generated at: {output_path}")
         
     except Exception as e:
