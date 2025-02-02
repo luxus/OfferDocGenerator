@@ -280,7 +280,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
-        self.assertIn("Missing required fields in offer", str(cm.exception))
+        self.assertIn("Missing required config sections: ['output', 'customer', 'sales']", str(cm.exception))
 
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""

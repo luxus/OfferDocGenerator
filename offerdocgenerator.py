@@ -25,6 +25,13 @@ class Config:
 
     def __post_init__(self):
         """Validate configuration after initialization."""
+        # First check required sections exist
+        required_sections = ['offer', 'textblocks', 'output', 'customer', 'sales']
+        missing_sections = [section for section in required_sections if not hasattr(self, section)]
+        if missing_sections:
+            raise ValueError(f"Missing required config sections: {missing_sections}")
+
+        # Then check fields within each section
         required_fields = {
             'offer': ['sections', 'template', 'number', 'date', 'validity'],
             'textblocks': ['common', 'products_dir'],
@@ -43,9 +50,21 @@ def load_config(config_path: Path) -> Config:
     try:
         with open(config_path) as f:
             config_data = yaml.safe_load(f)
-            return Config(**config_data)
+            
+        # Validate required sections first
+        required_sections = ['offer', 'textblocks', 'output', 'customer', 'sales']
+        missing_sections = [s for s in required_sections if s not in config_data]
+        if missing_sections:
+            raise ValueError(f"Missing required config sections: {missing_sections}")
+            
+        # Create config instance and validate
+        config = Config(**config_data)
+        return config
+        
     except Exception as e:
         logger.error(f"Error loading config from {config_path}: {e}")
+        if isinstance(e, (ValueError, TypeError)):
+            raise  # Re-raise validation errors for tests to catch
         sys.exit(1)
 
 def get_product_names(textblock_dir: Path) -> List[str]:
