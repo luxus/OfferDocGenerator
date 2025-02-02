@@ -111,22 +111,29 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
 
     return textblocks
 
+def resolve_config_variable(var_path: str, config: Config) -> Any:
+    """Resolve dot-separated variable paths in the config structure."""
+    current = config
+    for part in var_path.split('.'):
+        if isinstance(current, dict):
+            current = current.get(part)
+        elif hasattr(current, part):
+            current = getattr(current, part)
+        else:
+            raise ValueError(f"Config path not found: {var_path}")
+        if current is None:
+            break
+    return current
+
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
-    """Build the context for template rendering using config values."""
+    """Build the context with dynamic config variable resolution."""
     language = language.upper()
-    context = {
-        "Offer": {
-            "number": config.offer["number"],
-            "date": config.offer["date"],
-            "validity": config.offer["validity"][language],
-            "currency": currency
-        },
-        "Customer": config.customer,
-        "Sales": config.sales,
+    return {
+        "Config": config,  # Add full config reference
         "LANGUAGE": language,
-        "PRODUCT": product_name
+        "PRODUCT": product_name,
+        "CURRENCY": currency
     }
-    return context
 
 def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path):
     """
@@ -139,6 +146,22 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
     try:
         # Create DocxTemplate instance
         doc = DocxTemplate(str(template_path))
+        
+        # Get all variables from the template
+        template_vars = doc.get_undeclared_template_vars()
+        
+        # Resolve variables from config
+        config = context["Config"]
+        for var in template_vars:
+            if var not in context and not var.startswith('section_'):
+                try:
+                    context[var] = resolve_config_variable(var, config)
+                except ValueError:
+                    logger.warning(f"Variable {var} not found in config")
+
+        # Add textblocks to context
+        textblocks = {k:v for k,v in context.items() if k.startswith('section_')}
+        context.update(textblocks)
 
         # Convert any remaining Path objects to RichText
         for key, value in context.items():
