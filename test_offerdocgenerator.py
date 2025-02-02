@@ -11,14 +11,10 @@ from docxtpl import DocxTemplate
 import offerdocgenerator
 
 class TestOfferDocGenerator(unittest.TestCase):
-    # Control whether to cleanup test files
-    CLEANUP = False  # Set to True to enable test file cleanup
-
     def setUp(self):
-        """Set up test fixtures in test_data subdirectory"""
-        # Set up test directories under test_data
-        self.test_data = Path(__file__).parent / "test_data"
-        self.test_data.mkdir(exist_ok=True)
+        """Set up test fixtures using temporary directory"""
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.test_data = Path(self.temp_dir.name)
         
         self.config_file = self.test_data / "test_config.yaml"
         self.templates_dir = self.test_data / "templates" 
@@ -190,13 +186,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.save(str(file_path))
 
     def tearDown(self):
-        """Conditional cleanup based on CLEANUP flag"""
-        if self.CLEANUP:
-            # Clean up all test files
-            shutil.rmtree(self.test_data, ignore_errors=True)
-        else:
-            # Print location of preserved files
-            print(f"\nTest files preserved in: {self.test_data.absolute()}")
+        """Automatic cleanup of temporary directory"""
+        self.temp_dir.cleanup()
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""

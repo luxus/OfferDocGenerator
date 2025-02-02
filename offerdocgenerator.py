@@ -127,34 +127,29 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
     return current
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
-    """Build the context with both Config object and flat variables."""
-    language = language.upper()
-    return {
-        # Include full Config object for template access
+    """Build context with dynamic config structure access."""
+    context = {
         "Config": config,
-        
-        # Customer details
-        "customer_name": config.customer["name"],
-        "customer_address": config.customer["address"],
-        "customer_city": config.customer["city"],
-        "customer_zip": config.customer["zip"],
-        "customer_country": config.customer["country"],
-        
-        # Sales details
-        "sales_name": config.sales["name"],
-        "sales_email": config.sales["email"],
-        "sales_phone": config.sales["phone"],
-        
-        # Offer details
-        "offer_number": config.offer["number"],
-        "offer_date": config.offer["date"],
-        "offer_validity": config.offer["validity"],
-        
-        # Standard fields
-        "LANGUAGE": language,
+        "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
         "CURRENCY": currency
     }
+    
+    # Dynamically flatten config structure
+    def flatten_config(section: str, data: dict, prefix: str = ""):
+        for key, value in data.items():
+            if isinstance(value, dict):
+                flatten_config(section, value, f"{prefix}{key}_")
+            else:
+                context_key = f"{prefix}{key}" if prefix else key
+                context[f"{section}_{context_key}"] = value
+
+    # Process all config sections
+    for section in ["offer", "customer", "sales"]:
+        if hasattr(config, section):
+            flatten_config(section, getattr(config, section))
+
+    return context
 
 def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path):
     """
