@@ -293,7 +293,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("Bold text", rt.xml)
         self.assertIn("<w:b/>", rt.xml)  # Bold tag
         self.assertIn("<w:i/>", rt.xml)  # Italic tag
-        self.assertIn("<w:u/>", rt.xml)  # Underline tag
+        self.assertIn('<w:u w:val="single"/>', rt.xml)  # Underline tag
 
     def test_invalid_config_sections(self):
         """Test handling of config with missing required sections"""

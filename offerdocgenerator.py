@@ -108,7 +108,10 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
             for para in doc.paragraphs:
                 if para.text.strip():
                     for run in para.runs:
-                        rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
+                        rt.add(run.text, 
+                              bold=run.bold, 
+                              italic=run.italic,
+                              underline=run.underline or None)  # Handle underline properly
                     rt.add('\n')
             textblocks[f"section_{section}"] = rt
             continue
