@@ -381,6 +381,10 @@ class TestOfferDocGenerator(unittest.TestCase):
             for lang in ["EN", "DE"]:
                 for currency in ["CHF", "EUR"]:
                     with self.subTest(product=product, language=lang, currency=currency):
+                        # Get config values first
+                        output_format = config.output.get("format", "docx")
+                        prefix = config.output.get("prefix", "Offer_")
+
                         # Build context with currency
                         context = offerdocgenerator.build_context(config, lang, product, currency)
                         textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], product, lang)
@@ -388,7 +392,6 @@ class TestOfferDocGenerator(unittest.TestCase):
                         
                         # Select template
                         template = self.template_file_en if lang == "EN" else self.template_file_de
-                        output_format = config.output.get("format", "docx")
                         output_file = self.output_dir / product / f"{prefix}{product}_{lang}_{currency}.{output_format}"
                         
                         # Create product subdirectory
