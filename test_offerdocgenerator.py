@@ -268,6 +268,31 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("Test & Company © 2024", doc.paragraphs[0].text)
         self.assertIn("john.doe@example.com", doc.paragraphs[1].text)
 
+    def test_richtext_format_preservation(self):
+        """Verify bold/italic/underline formatting in textblocks"""
+        # Create formatted test file
+        test_file = self.textblocks_dir / "common" / "formatted_EN.docx"
+        doc = docx.Document()
+        p = doc.add_paragraph()
+        p.add_run('Bold text').bold = True
+        p.add_run(' Italic').italic = True
+        p.add_run(' Underlined').underline = True
+        doc.save(str(test_file))
+
+        # Update config to include formatted section
+        config = offerdocgenerator.load_config(self.config_file)
+        config.offer["sections"].append("formatted")
+        
+        # Load and verify textblocks
+        textblocks = offerdocgenerator.load_textblocks(config, ["formatted"], self.product_name, "EN")
+        rt = textblocks["section_formatted"]
+        
+        # Check formatting preserved in XML
+        self.assertIn("Bold text", rt.xml)
+        self.assertIn("<w:b/>", rt.xml)  # Bold tag
+        self.assertIn("<w:i/>", rt.xml)  # Italic tag
+        self.assertIn("<w:u/>", rt.xml)  # Underline tag
+
     def test_invalid_config_sections(self):
         """Test handling of config with missing required sections"""
         invalid_config = {
@@ -282,10 +307,50 @@ class TestOfferDocGenerator(unittest.TestCase):
             offerdocgenerator.load_config(self.config_file)
         self.assertIn("Missing required config sections: ['output', 'customer', 'sales']", str(cm.exception))
 
+    def test_invalid_config_fields(self):
+        """Test missing required fields within existing sections"""
+        invalid_config = {
+            "offer": {
+                "sections": ["1_1"],
+                "template": "templates/",
+                # Missing number/date/validity
+            },
+            "textblocks": {
+                "common": {"folder": str(self.textblocks_dir / "common")},
+                "products_dir": str(self.textblocks_dir / "products")
+            },
+            "output": {"folder": str(self.output_dir)},
+            "customer": {
+                "name": "Test Corp",
+                "address": "Test St",
+                "city": "Test City",
+                "zip": "12345",
+                "country": "Test Country"
+            },
+            "sales": {
+                "name": "Test Sales",
+                "email": "test@example.com",
+                "phone": "123456"
+            }
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(invalid_config, f)
+        
+        with self.assertRaises(ValueError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Missing required fields in offer", str(cm.exception))
+
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""
         config = offerdocgenerator.load_config(self.config_file)
         products = offerdocgenerator.get_product_names(self.textblocks_dir)
+
+        # Add validity text to templates for nested config testing
+        for template in [self.template_file_en, self.template_file_de]:
+            doc = docx.Document(str(template))
+            doc.add_paragraph('Validity: {{ Config.offer.validity[LANGUAGE] }}')
+            doc.save(str(template))
         
         # Verify files per product
         for product in products:
