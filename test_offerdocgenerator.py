@@ -381,8 +381,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
         # Add debug output
         print("\nGenerated files:")
-        for path in self.test_data.rglob('*'):
-            print(f" - {path.relative_to(self.test_data)}")
+        for path in self.test_run_dir.rglob('*'):
+            print(f" - {path.relative_to(self.test_run_dir)}")
 
         # Add validity text to templates for nested config testing
         for template in [self.template_file_en, self.template_file_de]:
