@@ -388,7 +388,11 @@ class TestOfferDocGenerator(unittest.TestCase):
                         
                         # Select template
                         template = self.template_file_en if lang == "EN" else self.template_file_de
-                        output_file = self.output_dir / f"Offer_{product}_{lang}_{currency}.docx"
+                        output_format = config.output.get("format", "docx")
+                        output_file = self.output_dir / product / f"{prefix}{product}_{lang}_{currency}.{output_format}"
+                        
+                        # Create product subdirectory
+                        output_file.parent.mkdir(parents=True, exist_ok=True)
                         
                         # Render and verify
                         offerdocgenerator.render_offer(template, context, output_file)
@@ -405,9 +409,9 @@ class TestOfferDocGenerator(unittest.TestCase):
                         self.assertIn(config.sales["phone"], full_text)
         
         # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
-        fmt = config.output.get("format", "docx")
+        output_format = config.output.get("format", "docx")
         prefix = config.output.get("prefix", "Offer_")
-        generated_files = list(self.output_dir.glob(f"**/{prefix}*.{fmt}"))  # Recursive search
+        generated_files = list(self.output_dir.glob(f"**/{prefix}*.{output_format}"))  # Recursive search
         self.assertEqual(len(generated_files), 8,
                         f"Expected 8 files for 2 products, found {len(generated_files)}")
 
