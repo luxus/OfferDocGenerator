@@ -13,11 +13,17 @@ import offerdocgenerator
 class TestOfferDocGenerator(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
+        # Set up test directories
         self.test_dir = Path(__file__).parent
-        self.config_file = self.test_dir / "config.yaml"
+        self.config_file = self.test_dir / "test_config.yaml"
         self.templates_dir = self.test_dir / "templates"
-        self.output_dir = Path("/Users/luxus/projects/OfferDocGenerator/output")
-        self.textblocks_dir = self.test_dir / "textblock"
+        self.output_dir = self.test_dir / "output"
+        self.textblocks_dir = self.test_dir / "textblocks"
+        
+        # Clean previous test files
+        shutil.rmtree(self.templates_dir, ignore_errors=True)
+        shutil.rmtree(self.output_dir, ignore_errors=True)
+        shutil.rmtree(self.textblocks_dir, ignore_errors=True)
         self.product_name = "Web Application Security Assessment"
 
         # Create necessary directories

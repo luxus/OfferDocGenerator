@@ -4,10 +4,10 @@ import logging
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, List, Optional
-from docxtpl import DocxTemplate, RichText
-import docx  # for reading textblock DOCX files
-import tempfile
+from docxtpl import DocxTemplate, RichText, InlineImage
+from docx.shared import Pt, Mm
 from docx import Document
+import io
 import yaml
 
 logging.basicConfig(level=logging.INFO)
@@ -65,8 +65,8 @@ def load_textblock_file(file_path: Path) -> str:
         logger.error(f"Error reading textblock file {file_path}: {e}")
         return ""
 
-def load_textblocks(config: Config, sections: List[str], product_name: str, language: str) -> Dict[str, Path]:
-    """Load textblocks from both common and product-specific directories."""
+def load_textblocks(config: Config, sections: List[str], product_name: str, language: str) -> Dict[str, Any]:
+    """Load textblocks as RichText objects preserving formatting."""
     textblocks = {}
     common_dir = Path(config.textblocks["common"]["folder"])
     product_dir = Path(config.textblocks["products_dir"]) / product_name
@@ -76,14 +76,28 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
         product_file = product_dir / f"Section_{section}{language}.docx"
         if product_file.exists():
             logger.info(f"Loading product-specific textblock for section {section} from {product_file}")
-            textblocks[f"section_{section}"] = product_file
+            doc = Document(str(product_file))
+            rt = RichText()
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    for run in para.runs:
+                        rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
+                    rt.add('\n')
+            textblocks[f"section_{section}"] = rt
             continue
 
         # Fall back to common textblock
         common_file = common_dir / f"Section_{section}{language}.docx"
         if common_file.exists():
             logger.info(f"Loading common textblock for section {section} from {common_file}")
-            textblocks[f"section_{section}"] = common_file
+            doc = Document(str(common_file))
+            rt = RichText()
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    for run in para.runs:
+                        rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
+                    rt.add('\n')
+            textblocks[f"section_{section}"] = rt
             continue
 
         logger.warning(f"No textblock found for section {section} in language {language}")
@@ -117,8 +131,7 @@ def build_context(config: Config, language: str, product_name: str) -> Dict[str,
 
 def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path):
     """
-    Loads the DOCX template, renders it with the provided context, and saves the output as a DOCX file.
-    Uses python-docx-template to handle subdocuments and proper docx merging.
+    Renders the DOCX template with RichText content and saves the output.
     """
     if not template_path.exists():
         logger.error(f"Template file not found: {template_path}")
@@ -128,18 +141,19 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         # Create DocxTemplate instance
         doc = DocxTemplate(str(template_path))
 
-        # For each textblock in the context that has content, create a subdocument
-        textblock_subdocs = {}
-        for key, file_path in context.items():
-            if key.startswith('section_') and isinstance(file_path, Path):
-                # Create a subdocument from the file
-                subdoc = doc.new_subdoc(str(file_path))
-                textblock_subdocs[key] = subdoc
+        # Convert any remaining Path objects to RichText
+        for key, value in context.items():
+            if isinstance(value, Path) and key.startswith('section_'):
+                source_doc = Document(str(value))
+                rt = RichText()
+                for para in source_doc.paragraphs:
+                    if para.text.strip():
+                        for run in para.runs:
+                            rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
+                        rt.add('\n')
+                context[key] = rt
 
-        # Update context with subdocuments
-        context.update(textblock_subdocs)
-
-        # Render the template with the updated context
+        # Render the template with the context
         doc.render(context, autoescape=True)
 
         # Ensure the output directory exists
