@@ -20,19 +20,22 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertTrue(self.textblocks_dir.exists())
         self.assertTrue((self.textblocks_dir / "common").exists())
         self.assertTrue((self.textblocks_dir / "products" / self.product_name).exists())
+
+    CLEANUP = False  # Set to False to keep generated files
+    TEST_DIR_NAME = "test_data"  # Fixed directory name
     
     def setUp(self):
-        """Set up test fixtures with unique output directory"""
+        """Set up test fixtures in shared directory"""
         # Base test directory
         self.script_dir = Path(__file__).parent
-        self.test_root = self.script_dir / "test_output"
-        self.test_root.mkdir(exist_ok=True)
+        self.test_root = self.script_dir / "test_output" 
+        self.test_run_dir = self.test_root / self.TEST_DIR_NAME
         
-        # Generate unique random code for this test run
-        self.run_id = f"{random.randint(1000, 9999)}_{os.getpid()}"
-        self.test_run_dir = self.test_root / f"test_data_{self.run_id}"
-        
-        # Create main test directory first
+        # Clean existing test data if cleanup enabled
+        if self.CLEANUP and self.test_run_dir.exists():
+            shutil.rmtree(self.test_run_dir)
+            
+        # Create fresh directory structure
         self.test_run_dir.mkdir(parents=True, exist_ok=True)
         
         # Now create subdirectories
