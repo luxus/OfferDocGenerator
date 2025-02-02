@@ -1,3 +1,11 @@
 [project]
 name = "offer-doc-generator"
 version = "0.1"
+requires-python = ">=3.12"
+dependencies = [
+    "docxtpl>=0.19.1",
+    "playwright>=1.49.1",
+    "pytest>=8.3.4",
+    "python-docx>=1.1.2",
+    "pyyaml>=6.0.2",
+]
