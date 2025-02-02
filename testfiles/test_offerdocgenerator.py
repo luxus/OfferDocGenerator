@@ -220,7 +220,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.config_file = self.test_dir / "config.yaml"
         self.templates_dir = self.test_dir / "templates"
         self.output_dir = Path("/Users/luxus/projects/OfferDocGenerator/output")
-        self.textblocks_dir = self.test_dir / "textblock"
+        self.textblocks_dir = self.test_dir / "textblocks"
         self.product_name = "Web Application Security Assessment"
 
         # Clean up existing directories first
