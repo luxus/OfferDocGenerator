@@ -167,15 +167,6 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         
         # Get template variables
         template_vars = doc.get_undeclared_template_variables()
-        
-        # Resolve variables from config
-        config = context["Config"]
-        for var in template_vars:
-            if var not in context and not var.startswith('section_'):
-                try:
-                    context[var] = resolve_config_variable(var, config)
-                except ValueError:
-                    logger.warning(f"Variable {var} not found in config")
 
         # Add textblocks to context
         textblocks = {k:v for k,v in context.items() if k.startswith('section_')}
