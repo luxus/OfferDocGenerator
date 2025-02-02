@@ -113,7 +113,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.save(str(self.template_file_en))
 
         # German template
-        self.template_file_de = self.templates_dir / "base_de.docx"
+        self.template_file_de = self.templates_dir / "base_DE.docx"
         doc = docx.Document()
         doc.add_heading('Angebot: {{ Config.offer.number }}', 0)
         doc.add_paragraph('Datum: {{ Config.offer.date }}')
