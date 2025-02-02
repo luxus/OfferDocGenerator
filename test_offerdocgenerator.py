@@ -156,7 +156,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             },
             "output": {
                 "folder": str(self.output_dir),
-                "format": "dotx",
+                "format": "docx",
                 "prefix": "Offer_"
             },
             "customer": {
@@ -402,8 +402,8 @@ class TestOfferDocGenerator(unittest.TestCase):
                         self.assertTrue(output_file.exists())
                         
                         # Verify currency in document
-                        doc = docx.Document(str(output_file))
-                        full_text = "\n".join(para.text for para in doc.paragraphs)
+                        doc = DocxTemplate(str(output_file))
+                        full_text = "\n".join(para.text for para in doc.docx.paragraphs)
                         self.assertIn(currency, full_text)
                         self.assertIn(config.offer["number"], full_text)
                         self.assertIn(config.customer["name"], full_text)
