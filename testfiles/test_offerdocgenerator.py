@@ -42,7 +42,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             "Unsere Standard-Sicherheitsbewertung bietet eine umfassende Evaluation der Sicherheitslage Ihrer Webanwendung."
         )
 
-        # Create product-specific textblocks
+        # Create product-specific textblocks for first product
         self._create_textblock_file(
             self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx",
             """The Web Application Security Assessment includes:
@@ -58,6 +58,26 @@ class TestOfferDocGenerator(unittest.TestCase):
 - Schwachstellenscanning
 - Manuelle Penetrationstests
 - Code-Review"""
+        )
+
+        # Create second product and its textblocks
+        self.product_name2 = "Network Security Audit"
+        (self.textblocks_dir / "products" / self.product_name2).mkdir(parents=True, exist_ok=True)
+        self._create_textblock_file(
+            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_EN.docx",
+            """The Network Security Audit includes:
+
+- Firewall configuration review
+- Intrusion detection system testing
+- Security policy evaluation"""
+        )
+        self._create_textblock_file(
+            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_DE.docx",
+            """Die Netzwerksicherheitsprüfung umfasst:
+
+- Überprüfung der Firewall-Konfiguration
+- Test des Intrusion Detection Systems
+- Bewertung der Sicherheitsrichtlinien"""
         )
 
         # Create base templates for EN and DE
@@ -164,8 +184,9 @@ class TestOfferDocGenerator(unittest.TestCase):
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
         products = offerdocgenerator.get_product_names(Path(self.test_dir) / "textblocks")
-        self.assertEqual(len(products), 1)
-        self.assertEqual(products[0], self.product_name)
+        self.assertEqual(len(products), 2)
+        self.assertIn(self.product_name, products)
+        self.assertIn(self.product_name2, products)
 
     def test_load_config(self):
         """Test that the YAML configuration is loaded correctly."""
@@ -197,27 +218,35 @@ class TestOfferDocGenerator(unittest.TestCase):
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""
         config = offerdocgenerator.load_config(self.config_file)
+        products = offerdocgenerator.get_product_names(Path(self.test_dir) / "textblocks")
         
-        for lang in ["EN", "DE"]:
-            for currency in ["CHF", "EUR"]:
-                with self.subTest(language=lang, currency=currency):
-                    # Build context with currency
-                    context = offerdocgenerator.build_context(config, lang, self.product_name, currency)
-                    textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], self.product_name, lang)
-                    context.update(textblocks)
-                    
-                    # Select template
-                    template = self.template_file_en if lang == "EN" else self.template_file_de
-                    output_file = self.output_dir / f"Offer_{self.product_name}_{lang}_{currency}.docx"
-                    
-                    # Render and verify
-                    offerdocgenerator.render_offer(template, context, output_file)
-                    self.assertTrue(output_file.exists())
-                    
-                    # Verify currency in document
-                    doc = docx.Document(str(output_file))
-                    full_text = "\n".join(para.text for para in doc.paragraphs)
-                    self.assertIn(currency, full_text)
+        # Verify files per product
+        for product in products:
+            for lang in ["EN", "DE"]:
+                for currency in ["CHF", "EUR"]:
+                    with self.subTest(product=product, language=lang, currency=currency):
+                        # Build context with currency
+                        context = offerdocgenerator.build_context(config, lang, product, currency)
+                        textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], product, lang)
+                        context.update(textblocks)
+                        
+                        # Select template
+                        template = self.template_file_en if lang == "EN" else self.template_file_de
+                        output_file = self.output_dir / f"Offer_{product}_{lang}_{currency}.docx"
+                        
+                        # Render and verify
+                        offerdocgenerator.render_offer(template, context, output_file)
+                        self.assertTrue(output_file.exists())
+                        
+                        # Verify currency in document
+                        doc = docx.Document(str(output_file))
+                        full_text = "\n".join(para.text for para in doc.paragraphs)
+                        self.assertIn(currency, full_text)
+        
+        # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
+        generated_files = list(self.output_dir.glob("Offer_*.docx"))
+        self.assertEqual(len(generated_files), 8,
+                        f"Expected 8 files for 2 products, found {len(generated_files)}")
 
     def test_create_test_files(self):
         """Just create the test files and directories."""
