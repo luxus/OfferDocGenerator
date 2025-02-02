@@ -149,7 +149,7 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         doc = DocxTemplate(str(template_path))
         
         # Get template variables
-        template_vars = doc.get_undeclared_template_vars()
+        template_vars = doc.get_undeclared_template_variables()
         
         # Resolve variables from config
         config = context["Config"]
