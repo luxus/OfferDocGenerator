@@ -106,6 +106,8 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
 
 def build_context(config: Config, language: str, product_name: str) -> Dict[str, Any]:
     """Build the context for template rendering."""
+    # Ensure language code is uppercase for consistency with filenames
+    language = language.upper()
     context = {
         "Offer": {
             "number": "2025-001",

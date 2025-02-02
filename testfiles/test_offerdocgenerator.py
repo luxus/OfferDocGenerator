@@ -34,17 +34,17 @@ class TestOfferDocGenerator(unittest.TestCase):
 
         # Create common textblocks
         self._create_textblock_file(
-            self.textblocks_dir / "common" / "Section_1_1EN.docx",
+            self.textblocks_dir / "common" / "section_1_1_EN.docx",
             "Our standard security assessment provides a comprehensive evaluation of your web application's security posture."
         )
         self._create_textblock_file(
-            self.textblocks_dir / "common" / "Section_1_1DE.docx",
+            self.textblocks_dir / "common" / "section_1_1_DE.docx",
             "Unsere Standard-Sicherheitsbewertung bietet eine umfassende Evaluation der Sicherheitslage Ihrer Webanwendung."
         )
 
         # Create product-specific textblocks
         self._create_textblock_file(
-            self.textblocks_dir / "products" / self.product_name / "Section_1_1_1EN.docx",
+            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx",
             """The Web Application Security Assessment includes:
 
 - Vulnerability scanning
@@ -52,7 +52,7 @@ class TestOfferDocGenerator(unittest.TestCase):
 - Code review"""
         )
         self._create_textblock_file(
-            self.textblocks_dir / "products" / self.product_name / "Section_1_1_1DE.docx",
+            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx",
             """Die Web Application Security Assessment beinhaltet:
 
 - Schwachstellenscanning
@@ -74,10 +74,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.add_paragraph('{{ Customer.country }}')
         doc.add_heading('Product Description', 1)
         p = doc.add_paragraph()
-        p.add_run('{{ section_1_1 }}')
+        p.add_run('{{r section_1_1 }}')
         doc.add_heading('Detailed Scope', 2)
         p = doc.add_paragraph()
-        p.add_run('{{ section_1_1_1 }}')
+        p.add_run('{{r section_1_1_1 }}')
         doc.add_heading('Sales Contact', 1)
         doc.add_paragraph('{{ Sales.name }}')
         doc.add_paragraph('{{ Sales.email }}')
