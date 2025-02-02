@@ -231,6 +231,29 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("comprehensive evaluation", str(textblocks_en["section_1_1"]))
         self.assertIn("Vulnerability scanning", str(textblocks_en["section_1_1_1"]))
 
+    def test_template_variable_detection(self):
+        """Test that template variables are properly detected"""
+        # Create a test template with known variables
+        test_template = self.templates_dir / "test_template.docx"
+        doc = docx.Document()
+        doc.add_paragraph("{{ test_var }}")
+        doc.add_paragraph("{% if condition %}")
+        doc.add_paragraph("{{r rich_text }}")
+        doc.save(str(test_template))
+
+        # Load template and detect variables
+        doc = DocxTemplate(str(test_template))
+        detected_vars = doc.get_undeclared_template_vars()
+        
+        # Verify expected variables
+        expected_vars = {'test_var', 'condition', 'rich_text'}
+        self.assertEqual(set(detected_vars), expected_vars,
+                         f"Detected variables mismatch. Expected {expected_vars}, got {detected_vars}")
+
+        # Cleanup if enabled
+        if self.CLEANUP:
+            test_template.unlink()
+
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""
         config = offerdocgenerator.load_config(self.config_file)
