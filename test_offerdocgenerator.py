@@ -13,6 +13,13 @@ import offerdocgenerator
 class TestOfferDocGenerator(unittest.TestCase):
     CLEANUP = False  # Set to False to keep generated files
     
+    def test_directory_creation(self):
+        """Verify test directory structure is created"""
+        self.assertTrue(self.templates_dir.exists())
+        self.assertTrue(self.textblocks_dir.exists())
+        self.assertTrue((self.textblocks_dir / "common").exists())
+        self.assertTrue((self.textblocks_dir / "products" / self.product_name).exists())
+    
     def setUp(self):
         """Set up test fixtures using temporary directory"""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -356,6 +363,11 @@ class TestOfferDocGenerator(unittest.TestCase):
         config = offerdocgenerator.load_config(self.config_file)
         products = offerdocgenerator.get_product_names(self.textblocks_dir)
 
+        # Add debug output
+        print("\nGenerated files:")
+        for path in self.test_data.rglob('*'):
+            print(f" - {path.relative_to(self.test_data)}")
+
         # Add validity text to templates for nested config testing
         for template in [self.template_file_en, self.template_file_de]:
             doc = docx.Document(str(template))
@@ -391,7 +403,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                         self.assertIn(config.sales["phone"], full_text)
         
         # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
-        generated_files = list(self.output_dir.glob("Offer_*.docx"))
+        generated_files = list(self.output_dir.glob("Offer_*.dotx"))
         self.assertEqual(len(generated_files), 8,
                         f"Expected 8 files for 2 products, found {len(generated_files)}")
 

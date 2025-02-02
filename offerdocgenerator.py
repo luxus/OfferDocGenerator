@@ -207,11 +207,13 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         # Render template
         doc.render(context, autoescape=True)
         
-        # Ensure output directory exists
-        output_path = output_path.with_suffix('.docx')
+        # Save as DOTX template
+        output_path = output_path.with_suffix('.dotx')
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        doc.save(str(output_path))
-        logger.info(f"Offer document generated at: {output_path}")
+        
+        # Explicitly save as Word Template
+        doc.docx.save(str(output_path))
+        logger.info(f"Offer template generated at: {output_path}")
         
     except Exception as e:
         logger.error(f"Error during template rendering: {e}")
