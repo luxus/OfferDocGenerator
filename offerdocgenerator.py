@@ -259,8 +259,12 @@ def main():
                     logger.error(f"Missing template for {lang}: {template_path}")
                     continue
 
+                # Create organized output directory
+                output_dir = Path(config.output["folder"]) / product / lang
+                output_dir.mkdir(parents=True, exist_ok=True)
+                
                 # Generate output filename with currency
-                output_file = Path(config.output["folder"]) / f"Offer_{product}_{lang}_{currency}.docx"
+                output_file = output_dir / f"Offer_{product}_{lang}_{currency}.dotx"
                 
                 # Render the offer document
                 render_offer(template_path, context, output_file)

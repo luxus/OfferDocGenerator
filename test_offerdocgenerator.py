@@ -403,7 +403,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                         self.assertIn(config.sales["phone"], full_text)
         
         # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
-        generated_files = list(self.output_dir.glob("Offer_*.dotx"))
+        generated_files = list(self.output_dir.glob("**/Offer_*.dotx"))  # Recursive search
         self.assertEqual(len(generated_files), 8,
                         f"Expected 8 files for 2 products, found {len(generated_files)}")
 
