@@ -3,6 +3,7 @@ import os
 import unittest
 import shutil
 import random
+import zipfile
 from pathlib import Path
 from pathlib import Path
 import yaml
@@ -280,6 +281,40 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("sales_email", context)
         self.assertEqual(context["sales_email"], "john.doe@example.com")
 
+    def test_dotx_generation(self):
+        """Verify DOTX template creation with correct content type"""
+        config = offerdocgenerator.load_config(self.config_file)
+        
+        # Override output format for this test
+        config.output["format"] = "dotx"
+        product = self.product_name
+        lang = "EN"
+        currency = "EUR"
+        
+        # Generate DOTX file
+        context = offerdocgenerator.build_context(config, lang, product, currency)
+        textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], product, lang)
+        context.update(textblocks)
+        
+        output_file = self.output_dir / product / f"TEST_DOTX_{product}_{lang}_{currency}.dotx"
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        offerdocgenerator.render_offer(self.template_file_en, context, output_file)
+        
+        # Verify file properties
+        self.assertTrue(output_file.exists())
+        
+        # Check ZIP package content type
+        with zipfile.ZipFile(output_file) as z:
+            content_type = z.read('[Content_Types].xml').decode()
+            self.assertIn('application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml', content_type)
+        
+        # Verify template can be used to create new documents
+        test_doc = docx.Document(output_file)
+        test_doc.add_paragraph("New document from template")
+        test_output = output_file.with_name("test_from_template.docx")
+        test_doc.save(test_output)
+        self.assertTrue(test_output.exists())
+
     def test_special_characters_in_templates(self):
         """Test templates with special characters"""
         # Create test template with special chars
@@ -377,7 +412,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("Missing required fields in offer", str(cm.exception))
 
     def test_render_offer(self):
-        """Test rendering for all language/currency combinations."""
+        """Test rendering for all language/currency combinations in both DOCX and DOTX formats."""
         config = offerdocgenerator.load_config(self.config_file)
         products = offerdocgenerator.get_product_names(self.textblocks_dir)
 
@@ -428,12 +463,16 @@ class TestOfferDocGenerator(unittest.TestCase):
                         self.assertIn(config.sales["email"], full_text)
                         self.assertIn(config.sales["phone"], full_text)
         
-        # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
-        output_format = config.output.get("format", "docx")
-        prefix = config.output.get("prefix", "Offer_")
-        generated_files = list(self.output_dir.glob(f"**/{prefix}*.{output_format}"))  # Recursive search
-        self.assertEqual(len(generated_files), 8,
-                        f"Expected 8 files for 2 products, found {len(generated_files)}")
+        # Test both DOCX and DOTX formats
+        for output_format in ["docx", "dotx"]:
+            # Update config format
+            config.output["format"] = output_format
+            
+            # Verify total file count (2 products * 2 langs * 2 currencies = 8 files)
+            prefix = config.output.get("prefix", "Offer_")
+            generated_files = list(self.output_dir.glob(f"**/{prefix}*.{output_format}"))  # Recursive search
+            self.assertEqual(len(generated_files), 8,
+                           f"Expected 8 files for {output_format}, found {len(generated_files)}")
 
 if __name__ == '__main__':
     unittest.main()
