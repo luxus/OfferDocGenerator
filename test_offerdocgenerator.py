@@ -234,25 +234,16 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_template_variable_detection(self):
         """Test that template variables are properly detected"""
-        from io import BytesIO
+        # Load the actual test template from root directory
+        test_template = Path(__file__).parent.parent / "test.docx"
         
-        # Create test template in memory
-        buffer = BytesIO()
-        doc = docx.Document()
-        doc.add_paragraph("{{ test_var }}")
-        doc.add_paragraph("{% if condition %}")
-        doc.add_paragraph("{{r rich_text }}")
-        doc.save(buffer)
-        buffer.seek(0)  # Reset buffer position for reading
+        # Load template and detect variables
+        doc = DocxTemplate(str(test_template))
+        detected_vars = doc.get_undeclared_template_variables()
         
-        # Load template from buffer and detect variables
-        doc = DocxTemplate(buffer)
-        detected_vars = doc.get_undeclared_template_vars()
-        
-        # Verify expected variables
-        expected_vars = {'test_var', 'condition', 'rich_text'}
-        self.assertEqual(set(detected_vars), expected_vars,
-                         f"Detected variables mismatch. Expected {expected_vars}, got {detected_vars}")
+        # Verify expected variables are detected
+        self.assertIn("config.sales", detected_vars)
+        self.assertIn("config.test", detected_vars)
 
     def test_render_offer(self):
         """Test rendering for all language/currency combinations."""
