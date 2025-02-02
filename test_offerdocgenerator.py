@@ -32,16 +32,19 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.run_id = f"{random.randint(1000, 9999)}_{os.getpid()}"
         self.test_run_dir = self.test_root / f"test_data_{self.run_id}"
         
-        # Create all required subdirectories
+        # Create main test directory first
+        self.test_run_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Now create subdirectories
         self.config_file = self.test_run_dir / "test_config.yaml"
         self.templates_dir = self.test_run_dir / "templates"
         self.output_dir = self.test_run_dir / "output"
         self.textblocks_dir = self.test_run_dir / "textblocks"
         self.product_name = "Web Application Security Assessment"
 
-        # Create necessary directories
-        self.output_dir.mkdir(exist_ok=True)
+        # Create required subdirectories
         self.templates_dir.mkdir(exist_ok=True)
+        self.output_dir.mkdir(exist_ok=True)
         (self.textblocks_dir / "common").mkdir(parents=True, exist_ok=True)
         (self.textblocks_dir / "products" / self.product_name).mkdir(parents=True, exist_ok=True)
 
@@ -240,8 +243,13 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_template_variable_detection(self):
         """Test that template variables are properly detected"""
-        # Load the actual test template from root directory
-        test_template = Path(__file__).parent.parent / "test.docx"
+        # Create a test template in the temporary directory
+        test_template = self.templates_dir / "test.docx"
+        doc = docx.Document()
+        doc.add_paragraph('{{ sales_name }}')
+        doc.add_paragraph('{{ sales_email }}')
+        doc.add_paragraph('{{ sales_phone }}')
+        doc.save(str(test_template))
         
         # Load template and detect variables
         doc = DocxTemplate(str(test_template))
