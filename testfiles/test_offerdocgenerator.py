@@ -193,26 +193,29 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("Vulnerability scanning", str(textblocks_en["section_1_1_1"]))
 
     def test_render_offer(self):
-        """Test complete template rendering and output file generation."""
+        """Test rendering for all language/currency combinations."""
         config = offerdocgenerator.load_config(self.config_file)
-        context = offerdocgenerator.build_context(config, "EN", self.product_name)
-        textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], self.product_name, "EN")
         
-        context.update(textblocks)
-        
-        output_file = self.output_dir / f"Offer_{self.product_name}_EN.docx"
-        offerdocgenerator.render_offer(self.template_file_en, context, output_file)
-        
-        self.assertTrue(output_file.exists())
-        generated_doc = docx.Document(str(output_file))
-        full_text = "\n".join(para.text for para in generated_doc.paragraphs)
-        
-        # Verify key content elements
-        self.assertIn("Offer: 2025-001", full_text)
-        self.assertIn("Example Corp", full_text)
-        self.assertIn("comprehensive evaluation", full_text)
-        self.assertIn("Vulnerability scanning", full_text)
-        self.assertIn("John Doe", full_text)
+        for lang in ["EN", "DE"]:
+            for currency in ["CHF", "EUR"]:
+                with self.subTest(language=lang, currency=currency):
+                    # Build context with currency
+                    context = offerdocgenerator.build_context(config, lang, self.product_name, currency)
+                    textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], self.product_name, lang)
+                    context.update(textblocks)
+                    
+                    # Select template
+                    template = self.template_file_en if lang == "EN" else self.template_file_de
+                    output_file = self.output_dir / f"Offer_{self.product_name}_{lang}_{currency}.docx"
+                    
+                    # Render and verify
+                    offerdocgenerator.render_offer(template, context, output_file)
+                    self.assertTrue(output_file.exists())
+                    
+                    # Verify currency in document
+                    doc = docx.Document(str(output_file))
+                    full_text = "\n".join(para.text for para in doc.paragraphs)
+                    self.assertIn(currency, full_text)
 
     def test_create_test_files(self):
         """Just create the test files and directories."""

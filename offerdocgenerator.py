@@ -107,15 +107,16 @@ def load_textblocks(config: Config, sections: List[str], product_name: str, lang
 
     return textblocks
 
-def build_context(config: Config, language: str, product_name: str) -> Dict[str, Any]:
-    """Build the context for template rendering."""
+def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
+    """Build the context for template rendering with currency."""
     # Ensure language code is uppercase for consistency with filenames
     language = language.upper()
     context = {
         "Offer": {
             "number": "2025-001",
             "date": "2025-02-02",
-            "validity": "30 days"
+            "validity": "30 days",
+            "currency": currency
         },
         "Customer": {
             "name": "Example Corp",
@@ -188,25 +189,30 @@ def main():
         logger.error("No products found in textblock directory")
         sys.exit(1)
 
-    # For each language and product, generate an offer document
-    for language in ["en", "de", "fr", "es", "it", "nl", "pt", "zh", "ja", "ko", "ar", "ru", "he", "hi", "th", "vi", "id", "ms", "tr", "pl", "cs", "sk", "hu", "ro", "bg", "el", "da", "fi", "no", "sv", "uk", "hr", "sr", "sl", "lt", "lv", "et", "mt", "cy", "ga", "gd", "gv", "kw", "br", "eu", "ca", "gl", "oc", "wa", "fur", "sc", "co", "lij", "lmo", "nap", "pms", "rm", "szl", "wo", "an", "ast", "lld", "mwl", "pcd", "vro", "zea", "frp", "gcf", "ht", "kea", "ksh", "lb", "mg", "mfe", "mhr", "mnc", "mwl", "myv", "nds", "nov", "pfl", "pms", "pt", "qu", "rgn", "rm", "rmy", "scn", "sco", "stq", "szl", "tet", "tpi", "vec", "vls", "vmf", "vot", "wa", "wae", "wep", "wuu", "xmf", "yrl", "zea"]:
-        for product in products:
-            # Build context with variables and textblocks
-            context = build_context(config, language, product)
-            textblocks = load_textblocks(config, config.offer["sections"], product, language)
-            context.update(textblocks)
+    # Supported languages and currencies
+    languages = ["EN", "DE"]
+    currencies = ["CHF", "EUR"]
+    
+    # Generate offer documents for each combination
+    for lang in languages:
+        for currency in currencies:
+            for product in products:
+                # Build context with currency
+                context = build_context(config, lang, product, currency)
+                textblocks = load_textblocks(config, config.offer["sections"], product, lang)
+                context.update(textblocks)
 
-            # Get template path for current language
-            template_path = Path(config.offer["template"]) / f"base_{language}.docx"
-            if not template_path.exists():
-                logger.error(f"Template not found for language {language}: {template_path}")
-                continue
+                # Get template path
+                template_path = Path(config.offer["template"]) / f"base_{lang}.docx"
+                if not template_path.exists():
+                    logger.error(f"Missing template for {lang}: {template_path}")
+                    continue
 
-            # Generate output path
-            output_file = Path(config.output["folder"]) / f"Offer_{product}_{language}.docx"
-            
-            # Render the offer document
-            render_offer(template_path, context, output_file)
+                # Generate output filename with currency
+                output_file = Path(config.output["folder"]) / f"Offer_{product}_{lang}_{currency}.docx"
+                
+                # Render the offer document
+                render_offer(template_path, context, output_file)
 
 if __name__ == "__main__":
     main()
