@@ -281,8 +281,15 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
             
             file_size = output_path.stat().st_size / 1024
             
+            # Split into directory and filename components
+            path_obj = Path(display_path)
+            dir_part = str(path_obj.parent)
+            file_name = path_obj.name
+            
+            # Color directory in yellow and process filename
+            colored_dir = colorize(dir_part, 'YELLOW') if dir_part != '.' else ''
+            
             # Split filename into components
-            file_name = output_path.name
             parts = file_name.split('_')
             colored_parts = []
             for part in parts:
@@ -293,10 +300,12 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
                 else:
                     colored_parts.append(colorize(part, 'YELLOW'))
                     
-            colored_name = '_'.join(colored_parts)
+            colored_filename = '_'.join(colored_parts)
             size_str = colorize(f"({file_size:.1f} KB)", 'BLUE')
             
-            print(f"\n{colorize('✅ Document:', 'GREEN')} {display_path} {size_str}")
+            # Combine path parts, handling current directory case
+            full_colored_path = f"{colored_dir}/{colored_filename}" if colored_dir else colored_filename
+            print(f"\n{colorize('✅ Document:', 'GREEN')} {full_colored_path} {size_str}")
         
     except Exception as e:
         logger.error(f"Error during template rendering: {e}")
