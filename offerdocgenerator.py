@@ -269,13 +269,20 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         # Save with configured format
         doc.save(str(output_path))
         
-        # Enhanced output message with color-coded components
+        # Enhanced output message with safe path handling
         if output_path.exists():
-            rel_path = output_path.relative_to(Path.cwd())
-            file_name = rel_path.name
+            try:
+                # Try to get relative path first
+                rel_path = output_path.relative_to(Path.cwd())
+                display_path = str(rel_path)
+            except ValueError:
+                # Fall back to absolute path if not in CWD
+                display_path = str(output_path.resolve())
+            
             file_size = output_path.stat().st_size / 1024
             
             # Split filename into components
+            file_name = output_path.name
             parts = file_name.split('_')
             colored_parts = []
             for part in parts:
@@ -289,7 +296,7 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
             colored_name = '_'.join(colored_parts)
             size_str = colorize(f"({file_size:.1f} KB)", 'BLUE')
             
-            print(f"\n{colorize('✅ Document:', 'GREEN')} {rel_path.parent}/{colored_name} {size_str}")
+            print(f"\n{colorize('✅ Document:', 'GREEN')} {display_path} {size_str}")
         
     except Exception as e:
         logger.error(f"Error during template rendering: {e}")
