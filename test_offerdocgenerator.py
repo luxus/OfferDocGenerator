@@ -376,8 +376,7 @@ class TestOfferDocGenerator(unittest.TestCase):
     def test_invalid_config_sections(self):
         """Test handling of config with missing required sections"""
         invalid_config = {
-            "offer": {"number": "123"},  # Missing other required fields
-            "textblocks": {}
+            "offer": {"number": "123"},  # Missing settings, customer, sales
         }
         
         with open(self.config_file, 'w') as f:
@@ -385,7 +384,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
-        self.assertIn("Missing required config sections: ['output', 'customer', 'sales']", str(cm.exception))
+        self.assertIn("Missing required config sections: ['settings', 'customer', 'sales']", str(cm.exception))
 
     def test_invalid_config_fields(self):
         """Test missing required fields within existing sections"""
@@ -417,7 +416,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
-        self.assertIn("Missing required fields in settings", str(cm.exception))
+        error_msg = str(cm.exception)
+        self.assertIn("Missing required fields in offer: ['date', 'validity']", error_msg)
+        self.assertIn("Missing required fields in settings: ['common', 'output']", error_msg)
 
     def test_custom_settings_with_defaults(self):
         """Verify custom settings override defaults and missing settings use defaults."""
@@ -485,8 +486,8 @@ class TestOfferDocGenerator(unittest.TestCase):
             config = offerdocgenerator.load_config(self.config_file)
             config.settings["format"] = output_format
             
-            products = offerdocgenerator.get_product_names(self.textblocks_dir)
-            prefix = config.output.get("prefix", "Offer_")
+            products = offerdocgenerator.get_product_names(config)
+            prefix = config.settings.get("prefix", "Offer_")
 
             # Add validity text to templates for nested config testing
             for template in [self.template_file_en, self.template_file_de]:
