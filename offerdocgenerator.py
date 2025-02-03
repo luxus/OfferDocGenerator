@@ -172,8 +172,19 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
     for var in template_vars:
         # Try direct config access first
         try:
-            resolved[var] = resolve_config_variable(var, config)
-            print(f"  {colorize(var.ljust(20), 'GREEN')} {colorize('← config value', 'BLUE')}")
+            value = resolve_config_variable(var, config)
+            resolved[var] = value
+            
+            # Format value for display
+            if isinstance(value, str):
+                display_value = f"'{value}'"
+            elif isinstance(value, dict):
+                display_value = "{...}"  # Show truncated representation for dicts
+            else:
+                display_value = str(value)
+            
+            print(f"  {colorize(var.ljust(20), 'GREEN')} {colorize('←', 'BLUE')} "
+                  f"{colorize(f'config.{var} = {display_value}', 'CYAN')}")
             continue
         except ValueError:
             pass
