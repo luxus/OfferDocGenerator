@@ -1,0 +1,23 @@
+customer:
+  address: 123 Example Street
+  city: Example City
+  country: Example Country
+  name: Example Corp
+  zip: "12345"
+offer:
+  date: "2025-02-02"
+  number: 2025-001
+  validity:
+    DE: 30 Tage
+    EN: 30 days
+settings:
+  products: ./products
+  common: ./common
+  output: ./output
+  template_prefix: template
+  format: docx
+  prefix: Offer_
+sales:
+  email: john.doe@example.com
+  name: John Doe
+  phone: +1 234 567 890
