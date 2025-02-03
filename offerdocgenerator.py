@@ -134,13 +134,17 @@ def _load_richtext(file_path: Path) -> RichText:
     rt = RichText()
     try:
         doc = Document(str(file_path))
-        for para in doc.paragraphs:
-            if para.text.strip():
-                for run in para.runs:
-                    rt.add(run.text, 
-                          bold=run.bold, 
-                          italic=run.italic,
-                          underline=run.underline)
+        # Filter out empty paragraphs first
+        non_empty_paras = [p for p in doc.paragraphs if p.text.strip()]
+        
+        for i, para in enumerate(non_empty_paras):
+            for run in para.runs:
+                rt.add(run.text,
+                      bold=run.bold,
+                      italic=run.italic,
+                      underline=run.underline)
+            # Add newline only between paragraphs, not after last one
+            if i < len(non_empty_paras) - 1:
                 rt.add('\n')
     except Exception as e:
         logger.error(f"Error loading {file_path}: {e}")
