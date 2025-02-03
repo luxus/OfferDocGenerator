@@ -152,7 +152,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Create config file
         config = {
             "offer": {
-                "template": str(self.templates_dir),
                 "number": "2025-001",
                 "date": "2025-02-02",
                 "validity": {
@@ -160,15 +159,12 @@ class TestOfferDocGenerator(unittest.TestCase):
                     "DE": "30 Tage"
                 }
             },
-            "textblocks": {
-                "common": {
-                    "folder": str(self.textblocks_dir / "common")
-                },
-                "products_dir": str(self.textblocks_dir / "products")
-            },
-            "output": {
-                "folder": str(self.output_dir),
-                "format": "docx",  # Force tests to use DOCX
+            "settings": {
+                "products": str(self.textblocks_dir / "products"),
+                "common": str(self.textblocks_dir / "common"),
+                "output": str(self.output_dir),
+                "template_prefix": str(self.templates_dir / "base"),
+                "format": "docx",
                 "prefix": "TestOffer_"
             },
             "customer": {
@@ -211,7 +207,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_get_product_names(self):
         """Test that product names are correctly detected from the directory structure."""
-        products = offerdocgenerator.get_product_names(self.textblocks_dir)
+        config = offerdocgenerator.load_config(self.config_file)
+        products = offerdocgenerator.get_product_names(config)
         self.assertEqual(len(products), 2)
         self.assertIn(self.product_name, products)
         self.assertIn(self.product_name2, products)
@@ -220,8 +217,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test that the YAML configuration is loaded correctly."""
         config = offerdocgenerator.load_config(self.config_file)
         self.assertIsInstance(config, offerdocgenerator.Config)
-        self.assertIn("common", config.textblocks)
-        self.assertEqual(config.textblocks["common"]["folder"], str(self.textblocks_dir / "common"))
+        self.assertEqual(config.settings["products"], str(self.textblocks_dir / "products"))
+        self.assertEqual(config.settings["common"], str(self.textblocks_dir / "common"))
 
     def test_load_textblocks(self):
         """Test dynamic loading of textblocks from product directory"""
@@ -440,7 +437,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "products": "./custom_products",
                 "common": "./custom_common",
                 "output": "./custom_output",
-                "template_prefix": "custom_template",
+                "template_prefix": "custom_template"
                 # Omit 'format' and 'prefix' to test defaults
             },
             "customer": {
