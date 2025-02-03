@@ -220,7 +220,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test that the YAML configuration is loaded correctly."""
         config = offerdocgenerator.load_config(self.config_file)
         self.assertIsInstance(config, offerdocgenerator.Config)
-        self.assertEqual(config.offer["sections"], ["1_1", "1_1_1"])
         self.assertIn("common", config.textblocks)
         self.assertEqual(config.textblocks["common"]["folder"], str(self.textblocks_dir / "common"))
 
@@ -364,11 +363,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         p.add_run(' Underlined').underline = True
         doc.save(str(test_file))
 
-        # Update config to include formatted section
-        config = offerdocgenerator.load_config(self.config_file)
-        config.offer["sections"].append("formatted")
-        
         # Load and verify textblocks
+        config = offerdocgenerator.load_config(self.config_file)
         textblocks = offerdocgenerator.load_textblocks(config, self.product_name, "EN")
         self.assertIn("section_formatted", textblocks)  # Verify section exists
         
