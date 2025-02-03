@@ -17,20 +17,23 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Config:
     """Configuration data loaded from YAML."""
-    offer: Dict[str, Any]
-    settings: Dict[str, Any]
-    customer: Dict[str, str]
-    sales: Dict[str, str]
+    offer: Dict[str, Any] = field(default_factory=dict)
+    settings: Dict[str, Any] = field(default_factory=dict)
+    customer: Dict[str, str] = field(default_factory=dict)
+    sales: Dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate configuration after initialization."""
-        # First check required sections exist
+        # Check for missing entire sections
         required_sections = ['offer', 'settings', 'customer', 'sales']
-        missing_sections = [section for section in required_sections if not hasattr(self, section)]
+        missing_sections = [
+            section for section in required_sections 
+            if not getattr(self, section)  # Check if section is empty
+        ]
         if missing_sections:
             raise ValueError(f"Missing required config sections: {missing_sections}")
 
-        # Then check fields within each section
+        # Check fields within each section
         required_fields = {
             'offer': ['number', 'date', 'validity'],
             'settings': ['products', 'common', 'output', 'template_prefix'],

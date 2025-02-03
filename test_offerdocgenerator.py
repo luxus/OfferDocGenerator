@@ -395,7 +395,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             },
             "settings": {
                 "products": "./products",
-                # Missing common and output
+                # Missing common, output, and template_prefix
             },
             "customer": {
                 "name": "Test Corp",
@@ -418,7 +418,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             offerdocgenerator.load_config(self.config_file)
         error_msg = str(cm.exception)
         self.assertIn("Missing required fields in offer: ['date', 'validity']", error_msg)
-        self.assertIn("Missing required fields in settings: ['common', 'output']", error_msg)
+        self.assertIn("Missing required fields in settings: ['common', 'output', 'template_prefix']", error_msg)
 
     def test_custom_settings_with_defaults(self):
         """Verify custom settings override defaults and missing settings use defaults."""
