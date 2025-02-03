@@ -226,19 +226,20 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertEqual(config.textblocks["common"]["folder"], str(self.textblocks_dir / "common"))
 
     def test_load_textblocks(self):
-        """Test loading of textblocks from both product-specific and common directories."""
+        """Test dynamic loading of textblocks from product directory"""
         config = offerdocgenerator.load_config(self.config_file)
-        sections = ["1_1", "1_1_1"]
-
+        
         # Test German textblocks
-        textblocks_de = offerdocgenerator.load_textblocks(config, sections, self.product_name, "DE")
+        textblocks_de = offerdocgenerator.load_textblocks(config, self.product_name, "DE")
+        self.assertGreaterEqual(len(textblocks_de), 2)
         self.assertIn("section_1_1", textblocks_de)
         self.assertIn("section_1_1_1", textblocks_de)
         self.assertIn("Sicherheitsbewertung", str(textblocks_de["section_1_1"]))
         self.assertIn("Schwachstellenscanning", str(textblocks_de["section_1_1_1"]))
-
-        # Test English textblocks
-        textblocks_en = offerdocgenerator.load_textblocks(config, sections, self.product_name, "EN")
+        
+        # Test English textblocks 
+        textblocks_en = offerdocgenerator.load_textblocks(config, self.product_name, "EN")
+        self.assertGreaterEqual(len(textblocks_en), 2)
         self.assertIn("section_1_1", textblocks_en)
         self.assertIn("section_1_1_1", textblocks_en)
         self.assertIn("comprehensive evaluation", str(textblocks_en["section_1_1"]))

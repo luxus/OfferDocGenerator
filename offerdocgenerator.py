@@ -33,7 +33,7 @@ class Config:
 
         # Then check fields within each section
         required_fields = {
-            'offer': ['sections', 'template', 'number', 'date', 'validity'],
+            'offer': ['template', 'number', 'date', 'validity'],
             'textblocks': ['common', 'products_dir'],
             'output': ['folder'],
             'customer': ['name', 'address', 'city', 'zip', 'country'],
@@ -95,49 +95,43 @@ def load_textblock_file(file_path: Path) -> str:
         logger.error(f"Error reading textblock file {file_path}: {e}")
         return ""
 
-def load_textblocks(config: Config, sections: List[str], product_name: str, language: str) -> Dict[str, Any]:
-    """Load textblocks as RichText objects preserving formatting."""
+def _load_richtext(file_path: Path) -> RichText:
+    """Load a DOCX file into a RichText object preserving formatting."""
+    rt = RichText()
+    try:
+        doc = Document(str(file_path))
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for run in para.runs:
+                    rt.add(run.text, 
+                          bold=run.bold, 
+                          italic=run.italic,
+                          underline=run.underline)
+                rt.add('\n')
+    except Exception as e:
+        logger.error(f"Error loading {file_path}: {e}")
+    return rt
+
+def load_textblocks(config: Config, product_name: str, language: str) -> Dict[str, Any]:
+    """Dynamically load all textblocks from product and common directories."""
     textblocks = {}
-    common_dir = Path(config.textblocks["common"]["folder"])
-    product_dir = Path(config.textblocks["products_dir"]) / product_name
-
-    # Use consistent lowercase filenames with proper language formatting
     lang_suffix = f"_{language.upper()}.docx"
-
-    for section in sections:
-        # Try product-specific textblock first
-        product_file = product_dir / f"section_{section}{lang_suffix}"
-        if product_file.exists():
-            logger.info(f"Loading product-specific textblock for section {section} from {product_file}")
-            doc = Document(str(product_file))
-            rt = RichText()
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    for run in para.runs:
-                        rt.add(run.text, 
-                              bold=run.bold, 
-                              italic=run.italic,
-                              underline=run.underline or None)  # Handle underline properly
-                    rt.add('\n')
-            textblocks[f"section_{section}"] = rt
-            continue
-
-        # Fall back to common textblock
-        common_file = common_dir / f"section_{section}{lang_suffix}"
-        if common_file.exists():
-            logger.info(f"Loading common textblock for section {section} from {common_file}")
-            doc = Document(str(common_file))
-            rt = RichText()
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    for run in para.runs:
-                        rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
-                    rt.add('\n')
-            textblocks[f"section_{section}"] = rt
-            continue
-
-        logger.warning(f"No textblock found for section {section} in language {language}")
-
+    
+    # Load from common directory
+    common_dir = Path(config.textblocks["common"]["folder"])
+    for file in common_dir.glob(f"section_*{lang_suffix}"):
+        section = file.stem.replace(f"_{language.upper()}", "")
+        textblocks[section] = _load_richtext(file)
+    
+    # Load from product directory (overrides common)
+    product_dir = Path(config.textblocks["products_dir"]) / product_name
+    for file in product_dir.glob(f"section_*{lang_suffix}"):
+        section = file.stem.replace(f"_{language.upper()}", "")
+        textblocks[section] = _load_richtext(file)
+    
+    if not textblocks:
+        logger.warning(f"No textblocks found for {product_name} in {language}")
+        
     return textblocks
 
 def resolve_config_variable(var_path: str, config: Config) -> Any:
@@ -263,7 +257,7 @@ def main():
             for product in products:
                 # Build context with currency
                 context = build_context(config, lang, product, currency)
-                textblocks = load_textblocks(config, config.offer["sections"], product, lang)
+                textblocks = load_textblocks(config, product, lang)
                 context.update(textblocks)
 
                 # Get template path
