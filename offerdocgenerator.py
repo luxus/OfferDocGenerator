@@ -226,22 +226,12 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
     """Build base context with core variables."""
-    context = {
+    return {
         "Config": config,
         "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
         "CURRENCY": currency
     }
-    
-    # Colorized debug output
-    print(colorize("\n⚙️ Template Context Setup", 'HEADER'))
-    print(colorize(f"  Language:".ljust(15), 'BLUE') + colorize(language.upper(), 'CYAN'))
-    print(colorize(f"  Product:".ljust(15), 'BLUE') + colorize(product_name, 'CYAN'))
-    print(colorize(f"  Currency:".ljust(15), 'BLUE') + colorize(currency, 'CYAN'))
-    print(colorize(f"  Output format:".ljust(15), 'BLUE') + colorize(config.settings.get('format', 'docx'), 'CYAN'))
-    print()
-    
-    return context
 
 def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path):
     """Render template with auto-discovered variables"""
@@ -278,7 +268,28 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         
         # Save with configured format
         doc.save(str(output_path))
-        logger.info(f"Document generated at: {output_path}")
+        
+        # Enhanced output message with color-coded components
+        if output_path.exists():
+            rel_path = output_path.relative_to(Path.cwd())
+            file_name = rel_path.name
+            file_size = output_path.stat().st_size / 1024
+            
+            # Split filename into components
+            parts = file_name.split('_')
+            colored_parts = []
+            for part in parts:
+                if part in ['DE', 'EN']:
+                    colored_parts.append(colorize(part, 'CYAN'))
+                elif part in ['CHF', 'EUR']:
+                    colored_parts.append(colorize(part, 'GREEN'))
+                else:
+                    colored_parts.append(colorize(part, 'YELLOW'))
+                    
+            colored_name = '_'.join(colored_parts)
+            size_str = colorize(f"({file_size:.1f} KB)", 'BLUE')
+            
+            print(f"\n{colorize('✅ Document:', 'GREEN')} {rel_path.parent}/{colored_name} {size_str}")
         
     except Exception as e:
         logger.error(f"Error during template rendering: {e}")
