@@ -100,7 +100,7 @@ The operation of OfferDocGenerator is governed by a centralized YAML configurati
 
 ```yaml
 offer:
-  sections: ["1_1", "1_2"]  # Required sections
+  # Sections are automatically detected from textblock files
   template: "templates/base_{lang}.docx"
   number: "2024-001"  # Offer number format
   date: "2024-03-15"   # ISO format date

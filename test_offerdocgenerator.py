@@ -152,7 +152,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Create config file
         config = {
             "offer": {
-                "sections": ["1_1", "1_1_1"],
                 "template": str(self.templates_dir),
                 "number": "2025-001",
                 "date": "2025-02-02",
@@ -370,7 +369,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         config.offer["sections"].append("formatted")
         
         # Load and verify textblocks
-        textblocks = offerdocgenerator.load_textblocks(config, ["formatted"], self.product_name, "EN")
+        textblocks = offerdocgenerator.load_textblocks(config, self.product_name, "EN")
         self.assertIn("section_formatted", textblocks)  # Verify section exists
         
         rt = textblocks["section_formatted"]
@@ -452,7 +451,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                         with self.subTest(product=product, language=lang, currency=currency, format=output_format):
                             # Build context with currency
                             context = offerdocgenerator.build_context(config, lang, product, currency)
-                            textblocks = offerdocgenerator.load_textblocks(config, config.offer["sections"], product, lang)
+                            textblocks = offerdocgenerator.load_textblocks(config, product, lang)
                             context.update(textblocks)
                             
                             # Select template
