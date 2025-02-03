@@ -4,7 +4,7 @@ import logging
 import traceback
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Set
 from docxtpl import DocxTemplate, RichText, InlineImage
 from docx.shared import Pt, Mm
 from docx import Document
@@ -276,9 +276,7 @@ def main():
             for product in products:
                 # Build context with currency
                 context = build_context(config, lang, product, currency)
-                textblocks = load_textblocks(config, product, lang)
-                context.update(textblocks)
-
+                
                 # Get template path using template prefix
                 template_path = Path(config.settings["templates"]) / f"base_{lang}.docx"
                 if not template_path.exists():
