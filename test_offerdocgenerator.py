@@ -311,10 +311,15 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Verify template can be used to create new documents - FIXED APPROACH
         test_output = output_file.with_name("test_from_template.docx")
         try:
-            # Create new document from template using python-docx-template
-            template = DocxTemplate(output_file)
-            template.save(test_output)
+            # Create new document from template using python-docx directly
+            doc = docx.Document(output_file)
+            doc.add_paragraph("Test content added to template")
+            doc.save(test_output)
             self.assertTrue(test_output.exists())
+            
+            # Verify the new document is valid
+            test_doc = docx.Document(test_output)
+            self.assertIn("Test content added to template", test_doc.paragraphs[0].text)
         finally:
             if test_output.exists():
                 test_output.unlink()
