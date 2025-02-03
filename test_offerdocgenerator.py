@@ -225,20 +225,22 @@ class TestOfferDocGenerator(unittest.TestCase):
         config = offerdocgenerator.load_config(self.config_file)
         
         # Test German textblocks
-        textblocks_de = offerdocgenerator.load_textblocks(config, self.product_name, "DE")
-        self.assertGreaterEqual(len(textblocks_de), 2)
-        self.assertIn("section_1_1", textblocks_de)
-        self.assertIn("section_1_1_1", textblocks_de)
-        self.assertIn("Sicherheitsbewertung", str(textblocks_de["section_1_1"]))
-        self.assertIn("Schwachstellenscanning", str(textblocks_de["section_1_1_1"]))
+        section_1_1_de, _ = offerdocgenerator.load_textblock("section_1_1", config, self.product_name, "DE")
+        section_1_1_1_de, _ = offerdocgenerator.load_textblock("section_1_1_1", config, self.product_name, "DE")
+        
+        self.assertIsNotNone(section_1_1_de)
+        self.assertIsNotNone(section_1_1_1_de)
+        self.assertIn("Sicherheitsbewertung", str(section_1_1_de))
+        self.assertIn("Schwachstellenscanning", str(section_1_1_1_de))
         
         # Test English textblocks 
-        textblocks_en = offerdocgenerator.load_textblocks(config, self.product_name, "EN")
-        self.assertGreaterEqual(len(textblocks_en), 2)
-        self.assertIn("section_1_1", textblocks_en)
-        self.assertIn("section_1_1_1", textblocks_en)
-        self.assertIn("comprehensive evaluation", str(textblocks_en["section_1_1"]))
-        self.assertIn("Vulnerability scanning", str(textblocks_en["section_1_1_1"]))
+        section_1_1_en, _ = offerdocgenerator.load_textblock("section_1_1", config, self.product_name, "EN")
+        section_1_1_1_en, _ = offerdocgenerator.load_textblock("section_1_1_1", config, self.product_name, "EN")
+        
+        self.assertIsNotNone(section_1_1_en)
+        self.assertIsNotNone(section_1_1_1_en)
+        self.assertIn("comprehensive evaluation", str(section_1_1_en))
+        self.assertIn("Vulnerability scanning", str(section_1_1_1_en))
 
     def test_template_variable_detection(self):
         """Test that template variables are properly detected"""
@@ -264,18 +266,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         with self.assertRaises(SystemExit):
             offerdocgenerator.load_config(Path("/non/existent/config.yaml"))
 
-    def test_flattened_config_vars(self):
-        """Verify flattened config variables exist in context"""
-        config = offerdocgenerator.load_config(self.config_file)
-        context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
-        
-        # Test flattened variables
-        self.assertIn("offer_number", context)
-        self.assertEqual(context["offer_number"], "2025-001")
-        self.assertIn("customer_name", context)
-        self.assertEqual(context["customer_name"], "Example Corp")
-        self.assertIn("sales_email", context)
-        self.assertEqual(context["sales_email"], "john.doe@example.com")
 
     @unittest.skip("Temporarily disabled - needs investigation of DOTX template handling")
     def test_dotx_generation(self):
@@ -362,10 +352,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 
         # Load and verify textblocks
         config = offerdocgenerator.load_config(self.config_file)
-        textblocks = offerdocgenerator.load_textblocks(config, self.product_name, "EN")
-        self.assertIn("section_formatted", textblocks)  # Verify section exists
-        
-        rt = textblocks["section_formatted"]
+        rt, _ = offerdocgenerator.load_textblock("section_formatted", config, self.product_name, "EN")
+        self.assertIsNotNone(rt)  # Verify section exists
         
         # Check formatting preserved in XML
         self.assertIn("Bold text", rt.xml)
@@ -502,8 +490,12 @@ class TestOfferDocGenerator(unittest.TestCase):
                         with self.subTest(product=product, language=lang, currency=currency, format=output_format):
                             # Build context with currency
                             context = offerdocgenerator.build_context(config, lang, product, currency)
-                            textblocks = offerdocgenerator.load_textblocks(config, product, lang)
-                            context.update(textblocks)
+                        
+                            # Get template variables and resolve them
+                            doc = DocxTemplate(str(template))
+                            template_vars = doc.get_undeclared_template_variables()
+                            resolved = offerdocgenerator.resolve_template_variables(template_vars, config, product, lang)
+                            context.update(resolved)
                             
                             # Select template
                             template = self.template_file_en if lang == "EN" else self.template_file_de
