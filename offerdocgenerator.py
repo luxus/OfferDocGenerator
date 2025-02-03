@@ -254,7 +254,6 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         
         # Get all variables from the template
         template_vars = doc.get_undeclared_template_variables()
-        print(f"\nDiscovering sources for {len(template_vars)} template variables:")
         
         # Resolve variables from multiple sources
         resolved_context = resolve_template_variables(template_vars, context['Config'], 
