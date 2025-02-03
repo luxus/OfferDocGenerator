@@ -128,35 +128,48 @@ def _load_richtext(file_path: Path) -> RichText:
         logger.error(f"Error loading {file_path}: {e}")
     return rt
 
-def load_textblocks(config: Config, product_name: str, language: str) -> Dict[str, Any]:
-    """Load textblocks with language priority and common fallback"""
-    textblocks = {}
-    sections = ["section_1_1", "section_3_2", "section_3_4", "presales"]
+def load_textblock(section: str, config: Config, product_name: str, language: str) -> Optional[RichText]:
+    """Dynamically load a textblock from product/common directories"""
     lang_suffix = f"_{language.upper()}.docx"
+    paths = [
+        config.products_path / product_name / f"{section}{lang_suffix}",
+        config.products_path / product_name / f"{section}.docx",
+        config.common_path / f"{section}{lang_suffix}",
+        config.common_path / f"{section}.docx"
+    ]
     
-    for section in sections:
-        # Try product-specific files first
-        product_path = config.products_path / product_name
-        lang_file = product_path / f"{section}{lang_suffix}"
-        generic_file = product_path / f"{section}.docx"
+    for path in paths:
+        if path.exists():
+            print(f"    Loading {section} from {path.relative_to(config.common_path.parent)}")
+            return _load_richtext(path)
+    return None
+
+def resolve_template_variables(template_vars: Set[str], config: Config, 
+                            product_name: str, language: str) -> Dict[str, Any]:
+    """Resolve variables from config, textblocks, and special handlers"""
+    resolved = {}
+    language = language.upper()
+    
+    for var in template_vars:
+        # Try direct config access first
+        try:
+            resolved[var] = resolve_config_variable(var, config)
+            print(f"  {var}: config")
+            continue
+        except ValueError:
+            pass
         
-        # Fallback to common if not found in product dir
-        if not lang_file.exists() and not generic_file.exists():
-            common_lang = config.common_path / f"{section}{lang_suffix}"
-            common_generic = config.common_path / f"{section}.docx"
+        # Try textblock sources
+        textblock = load_textblock(var, config, product_name, language)
+        if textblock:
+            resolved[var] = textblock
+            print(f"  {var}: textblock")
+            continue
             
-            if common_lang.exists() or common_generic.exists():
-                print(f"Using common/{section} for {product_name}")
-                lang_file = common_lang
-                generic_file = common_generic
-        
-        # Priority: language-specific > generic
-        if lang_file.exists():
-            textblocks[section] = _load_richtext(lang_file)
-        elif generic_file.exists():
-            textblocks[section] = _load_richtext(generic_file)
+        # Warn about unresolved variables
+        print(f"  WARNING: No source found for variable '{var}'")
     
-    return textblocks
+    return resolved
 
 def resolve_config_variable(var_path: str, config: Config) -> Any:
     """Resolve dot-separated variable paths in the config structure."""
@@ -173,7 +186,7 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
     return current
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
-    """Build context with dynamic config structure access."""
+    """Build base context with core variables."""
     context = {
         "Config": config,
         "LANGUAGE": language.upper(),
@@ -182,60 +195,35 @@ def build_context(config: Config, language: str, product_name: str, currency: st
     }
     
     # Add debug output
-    print("\n=== Template Variable Mappings ===")
-    print(f"Common presales: {config.common_path}/presales_{language.upper()}.docx")
-    print(f"Sales contact: {config.sales['name']} ({config.sales['email']})")
+    print("\n=== Template Context Setup ===")
+    print(f"Language: {language.upper()}")
+    print(f"Product: {product_name}")
     print(f"Currency: {currency}")
     print(f"Output format: {config.settings.get('format', 'docx')}\n")
     
-    # Dynamically flatten config structure
-    def flatten_config(section: str, data: dict, prefix: str = ""):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                flatten_config(section, value, f"{prefix}{key}_")
-            else:
-                context_key = f"{prefix}{key}" if prefix else key
-                context[f"{section}_{context_key}"] = value
-
-    # Process all config sections
-    for section in ["offer", "customer", "sales"]:
-        if hasattr(config, section):
-            flatten_config(section, getattr(config, section))
-
     return context
 
 def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path):
-    """
-    Renders the DOCX template with RichText content and saves the output.
-    """
+    """Render template with auto-discovered variables"""
     if not template_path.exists():
         logger.error(f"Template file not found: {template_path}")
         sys.exit(1)
 
     try:
-        # Initialize template directly
         doc = DocxTemplate(str(template_path))
         
-        # Get template variables
+        # Get all variables from the template
         template_vars = doc.get_undeclared_template_variables()
+        print(f"\nDiscovering sources for {len(template_vars)} template variables:")
+        
+        # Resolve variables from multiple sources
+        resolved_context = resolve_template_variables(template_vars, context['Config'], 
+                                                   context['PRODUCT'], context['LANGUAGE'])
+        
+        # Merge with existing context
+        context.update(resolved_context)
 
-        # Add textblocks to context
-        textblocks = {k:v for k,v in context.items() if k.startswith('section_')}
-        context.update(textblocks)
-
-        # Convert any remaining Path objects to RichText
-        for key, value in context.items():
-            if isinstance(value, Path) and key.startswith('section_'):
-                source_doc = Document(str(value))
-                rt = RichText()
-                for para in source_doc.paragraphs:
-                    if para.text.strip():
-                        for run in para.runs:
-                            rt.add(run.text, bold=run.bold, italic=run.italic, underline=run.underline)
-                        rt.add('\n')
-                context[key] = rt
-
-        # Render template
+        # Render template with complete context
         doc.render(context, autoescape=True)
         
         # Handle different output formats
