@@ -5,75 +5,111 @@ A modern, configuration-driven Python tool that generates offer documents in DOC
 ## Table of Contents
 
 - [Overview](#overview)
+- [Quick Start](#quick-start)
 - [Features](#features)
 - [Directory Structure](#directory-structure)
+- [Configuration Validation](#configuration-validation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Command-Line Interface (CLI)](#command-line-interface-cli)
 - [Installation & Development Environment](#installation--development-environment)
 - [Testing & Quality Assurance](#testing--quality-assurance)
-- [Implemented Future Features](#implemented-future-features)
+- [Features](#features)
 - [Contributing](#contributing)
 - [License](#license)
+- [Troubleshooting](#troubleshooting)
 - [Additional Implementation Information](#additional-implementation-information)
-- [Advanced Implementation and Design Guidance](#advanced-implementation-and-design-guidance)
-- [Test Instructions and Changes Made to the Project](#test-instructions-and-changes-made-to-the-project)
 
 ## Overview
 
 OfferDocGenerator is a Python tool that generates offer documents in DOCX format from Word templates. It is built using Python 3.11+ with advanced language features (type annotations, dataclasses, f-strings, pathlib) and leverages the python‑docx‑template library to render templates using Jinja2-style placeholders.
 
-Every aspect of the document generation process – from textblock sourcing to variable substitution – is defined in a centralized YAML configuration file (config.yaml). The tool is designed for multi-language and multi-product offers and includes built-in support for customer details, sales data, one-time template initialization, rich text support, and a plugin architecture for additional features.
+Every aspect of the document generation process – from textblock sourcing to variable substitution – is defined in a centralized YAML configuration file (config.yaml). The tool is designed for multi-language and multi-product offers and includes built-in support for customer details, sales data, rich text formatting, and automatic textblock detection.
+
+## Quick Start
+
+1. **Install Requirements**:
+   ```bash
+   pip install python-docx-template pyyaml
+   ```
+
+2. **Create Directory Structure**:
+   ```bash
+   mkdir -p templates textblocks/{common,products}
+   ```
+
+3. **Create Minimal Config**:
+   ```yaml
+   # config.yaml
+   offer:
+     template: "templates/base_{lang}.docx"
+     number: "2024-001"
+     date: "2024-03-15"
+     validity:
+       EN: "30 days"
+       DE: "30 Tage"
+   textblocks:
+     common:
+       folder: "textblocks/common"
+     products_dir: "textblocks/products"
+   output:
+     folder: "output"
+     format: "docx"
+   customer:
+     name: "Example Corp"
+     address: "123 Example St"
+     city: "Example City"
+     zip: "12345"
+     country: "Example Country"
+   sales:
+     name: "John Doe"
+     email: "john@example.com"
+     phone: "+1-555-0123"
+   ```
+
+4. **Run Generator**:
+   ```bash
+   python offerdocgenerator.py config.yaml
+   ```
 
 ## Features
 
-### Template Rendering
+## Features
 
-- Uses python‑docx‑template to process Word templates (either .dotx or .docx) with Jinja2‑style placeholders.
+### Document Generation
+- Generates DOCX/DOTX documents from templates
+- Supports rich text formatting (bold, italic, underline)
+- Preserves template styles and formatting
+- Handles both English and German content
 
-### Dynamic Config Variable Resolution
+### Template System
+- Uses python-docx-template with Jinja2 syntax
+- Supports nested variables: `{{ Config.offer.number }}`
+- Flattened variables: `{{ offer_number }}`
+- Rich text placeholders: `{{r section_1_1 }}`
 
-- Access configuration values through both:
-  - Nested objects: `{{ Config.offer.number }}`
-  - Flattened variables: `{{ offer_number }}`
+### Dynamic Content
+- Automatic textblock detection from filenames
+- Language-specific content (EN/DE)
+- Product-specific sections
+- Common/shared textblocks
 
-### Automatic Test Cleanup
+### Configuration
+- YAML-based configuration
+- Strict validation of required fields
+- Flexible output formats (DOCX/DOTX)
+- Multi-currency support (CHF/EUR)
 
-- Tests use temporary directories that are automatically cleaned up after execution
-
-### Comprehensive Error Handling
-
-- Invalid configuration validation
+### Error Handling
+- Detailed error messages
+- Validation of configuration
 - Missing file detection
 - Template error recovery
 
-### Dynamic Placeholder Replacement
-
-- Textblocks: When a placeholder (e.g., {{ section_1_1 }}) is encountered, the tool searches for a corresponding textblock file (default: section_1_1.docx) in designated folders.
-- Simple Variables: Direct substitution based on values defined in the configuration.
-
-### Configuration‑Driven Behavior
-
-- All parameters (template paths, textblock naming conventions, variable definitions, offer structure) are defined in a single YAML configuration file (config.yaml).
-- No auto‑mode; behavior is fully explicit.
-
-### Multi‑Language & Multi‑Product Support
-
-- Supports templates with language codes (e.g., base_EN.docx, base_DE.dotx).
-- Offers can include sections from multiple products as defined in the configuration.
-
-### Default Variables per Language
-
-- Supports default variables per language (e.g., addresses, greetings) which are applied automatically.
-
-### Custom Configuration via CLI
-
-- The tool searches for config.yaml in the working directory but allows overriding with a custom config file via command-line options.
-
-### Advanced Python Practices
-
-- Built with Python 3.11+ features (type annotations, dataclasses, f‑strings, pathlib).
-- Designed for extension (e.g., asynchronous file I/O, rich text support).
+### Development Features
+- Type annotations (Python 3.11+)
+- Comprehensive test suite
+- Temporary test directories
+- Rich text preservation
 
 ## Directory Structure
 
