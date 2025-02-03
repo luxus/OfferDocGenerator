@@ -21,6 +21,22 @@ class Config:
     settings: Dict[str, Any] = field(default_factory=dict)
     customer: Dict[str, str] = field(default_factory=dict)
     sales: Dict[str, str] = field(default_factory=dict)
+    
+    @property
+    def products_path(self) -> Path:
+        return Path(self.settings["products"])
+        
+    @property
+    def common_path(self) -> Path:
+        return Path(self.settings["common"])
+        
+    @property 
+    def templates_path(self) -> Path:
+        return Path(self.settings["templates"])
+        
+    @property
+    def output_path(self) -> Path:
+        return Path(self.settings["output"])
 
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -113,25 +129,33 @@ def _load_richtext(file_path: Path) -> RichText:
     return rt
 
 def load_textblocks(config: Config, product_name: str, language: str) -> Dict[str, Any]:
-    """Dynamically load all textblocks from product and common directories."""
+    """Load textblocks with language priority and common fallback"""
     textblocks = {}
+    sections = ["section_1_1", "section_3_2", "section_3_4", "presales"]
     lang_suffix = f"_{language.upper()}.docx"
     
-    # Load from common directory
-    common_dir = Path(config.settings["common"])
-    for file in common_dir.glob(f"section_*{lang_suffix}"):
-        section = file.stem.replace(f"_{language.upper()}", "")
-        textblocks[section] = _load_richtext(file)
-    
-    # Load from product directory (overrides common)
-    product_dir = Path(config.settings["products"]) / product_name
-    for file in product_dir.glob(f"section_*{lang_suffix}"):
-        section = file.stem.replace(f"_{language.upper()}", "")
-        textblocks[section] = _load_richtext(file)
-    
-    if not textblocks:
-        logger.warning(f"No textblocks found for {product_name} in {language}")
+    for section in sections:
+        # Try product-specific files first
+        product_path = config.products_path / product_name
+        lang_file = product_path / f"{section}{lang_suffix}"
+        generic_file = product_path / f"{section}.docx"
         
+        # Fallback to common if not found in product dir
+        if not lang_file.exists() and not generic_file.exists():
+            common_lang = config.common_path / f"{section}{lang_suffix}"
+            common_generic = config.common_path / f"{section}.docx"
+            
+            if common_lang.exists() or common_generic.exists():
+                print(f"Using common/{section} for {product_name}")
+                lang_file = common_lang
+                generic_file = common_generic
+        
+        # Priority: language-specific > generic
+        if lang_file.exists():
+            textblocks[section] = _load_richtext(lang_file)
+        elif generic_file.exists():
+            textblocks[section] = _load_richtext(generic_file)
+    
     return textblocks
 
 def resolve_config_variable(var_path: str, config: Config) -> Any:
@@ -156,6 +180,13 @@ def build_context(config: Config, language: str, product_name: str, currency: st
         "PRODUCT": product_name,
         "CURRENCY": currency
     }
+    
+    # Add debug output
+    print("\n=== Template Variable Mappings ===")
+    print(f"Common presales: {config.common_path}/presales_{language.upper()}.docx")
+    print(f"Sales contact: {config.sales['name']} ({config.sales['email']})")
+    print(f"Currency: {currency}")
+    print(f"Output format: {config.settings.get('format', 'docx')}\n")
     
     # Dynamically flatten config structure
     def flatten_config(section: str, data: dict, prefix: str = ""):
