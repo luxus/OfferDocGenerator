@@ -3,6 +3,24 @@ import sys
 import logging
 import traceback
 from pathlib import Path
+
+COLOR = {
+    'HEADER': '\033[95m',
+    'BLUE': '\033[94m',
+    'CYAN': '\033[96m',
+    'GREEN': '\033[92m',
+    'YELLOW': '\033[93m',
+    'RED': '\033[91m',
+    'ENDC': '\033[0m',
+    'BOLD': '\033[1m',
+    'UNDERLINE': '\033[4m'
+}
+
+def colorize(text: str, color: str) -> str:
+    """Wrap text in ANSI color codes if output is a terminal"""
+    if sys.stdout.isatty():
+        return f"{COLOR[color.upper()]}{text}{COLOR['ENDC']}"
+    return text
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Set, Tuple
 from docxtpl import DocxTemplate, RichText, InlineImage
@@ -149,13 +167,13 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
     resolved = {}
     language = language.upper()
     
-    print(f"\nDiscovering sources for {len(template_vars)} template variables:")
+    print(colorize(f"\n🔎 Discovering sources for {len(template_vars)} template variables:", 'CYAN'))
     
     for var in template_vars:
         # Try direct config access first
         try:
             resolved[var] = resolve_config_variable(var, config)
-            print(f"  {var.ljust(20)} config value")
+            print(f"  {colorize(var.ljust(20), 'GREEN')} {colorize('← config value', 'BLUE')}")
             continue
         except ValueError:
             pass
@@ -166,11 +184,11 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
             resolved[var] = textblock
             # Show path relative to project root
             rel_path = source_path.relative_to(config.common_path.parent)
-            print(f"  {var.ljust(20)} {rel_path}")
+            print(f"  {colorize(var.ljust(20), 'YELLOW')} {colorize('←', 'BLUE')} {colorize(str(rel_path), 'CYAN')}")
             continue
             
         # Warn about unresolved variables
-        print(f"  {var.ljust(20)} WARNING: No source found")
+        print(f"  {colorize(var.ljust(20), 'RED')} {colorize('← WARNING: No source found', 'RED')}")
     
     return resolved
 
@@ -197,12 +215,13 @@ def build_context(config: Config, language: str, product_name: str, currency: st
         "CURRENCY": currency
     }
     
-    # Add debug output
-    print("\n=== Template Context Setup ===")
-    print(f"Language: {language.upper()}")
-    print(f"Product: {product_name}")
-    print(f"Currency: {currency}")
-    print(f"Output format: {config.settings.get('format', 'docx')}\n")
+    # Colorized debug output
+    print(colorize("\n⚙️ Template Context Setup", 'HEADER'))
+    print(colorize(f"  Language:".ljust(15), 'BLUE') + colorize(language.upper(), 'CYAN'))
+    print(colorize(f"  Product:".ljust(15), 'BLUE') + colorize(product_name, 'CYAN'))
+    print(colorize(f"  Currency:".ljust(15), 'BLUE') + colorize(currency, 'CYAN'))
+    print(colorize(f"  Output format:".ljust(15), 'BLUE') + colorize(config.settings.get('format', 'docx'), 'CYAN'))
+    print()
     
     return context
 
