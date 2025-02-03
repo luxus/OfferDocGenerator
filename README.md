@@ -413,32 +413,91 @@ Continuous Integration:
 
 - It is recommended to integrate with a CI system (e.g., GitHub Actions) to automatically run tests on each commit.
 
-## Implemented Future Features
+## Implemented Features
 
-All planned future features are fully implemented:
+The following core features are fully implemented:
 
 1. Multi-Product Offers:
-
-   - Offers can include sections from multiple products. The configuration allows listing multiple products, and the Offer Builder aggregates sections in the specified order.
+   - Offers can include sections from multiple products
+   - Configuration allows listing multiple products
+   - Offer Builder aggregates sections in specified order
 
 2. Customer & Sales Integration:
-
-   - Customer details and sales representative data are automatically included in the final document when enabled via the includeCustomer and includeSales flags.
+   - Automatic inclusion of customer details and sales data
+   - Enabled via includeCustomer and includeSales flags
 
 3. One-Time Template Initialization:
-
-   - A guided initialization process is provided for creating or updating templates and configuration settings. User selections are stored in the configuration file for future runs.
+   - Guided process for template/config creation
+   - User selections stored for future runs
 
 4. Rich Text Support:
-
-   - Full support for DOCX textblocks with rich formatting, inline images, and custom styles. The tool imports DOCX content directly while preserving all formatting.
+   - DOCX textblocks with rich formatting
+   - Inline images and custom styles
+   - Direct DOCX content import with preserved formatting
 
 5. Plugin Architecture:
-
-   - A plugin system allows additional data sources or output formats to be integrated with minimal changes to the core code.
+   - Plugin system for additional data sources
+   - Extensible output format support
 
 6. Default Variables per Language:
-   - The configuration supports default variable sets for each language (e.g., default addresses, greetings) to automatically apply language-specific content.
+   - Language-specific default variable sets
+   - Automatic content localization
+
+## Planned Future Features
+
+### Advanced Template Features
+- **Dynamic Table Operations**
+  - Column/row spanning with `{% colspan %}`, `{% rowspan %}`
+  - Cell background colors via `{% cellbg <color> %}`
+  - Horizontal/vertical cell merging in loops
+
+### Rich Media Support
+- **Header/Footer Image Replacement**  
+  Swap placeholder images in headers/footers
+- **Embedded File Support**  
+  Replace embedded Excel/PDF files in templates
+- **Dynamic Vector Graphics**  
+  Support for SVG insertion/transformation
+
+### Enhanced Content Features
+- **Interactive Elements**  
+  Clickable hyperlinks in RichText content
+- **Code Listings Preservation**  
+  Special `Listing` class for code/log formatting
+- **Conditional Page Breaks**  
+  `\f` character support for dynamic pagination
+
+### Advanced Rendering
+- **Multi-document Merging**  
+  Combine multiple generated docs into master file
+- **Batch Media Replacement**  
+  Swap multiple images/media in single operation
+- **Template Chaining**  
+  Use output documents as new templates
+
+### Security & Compliance
+- **XML Sanitization**  
+  Automatic escaping of special characters
+- **Content Redaction**  
+  Pattern-based sensitive data removal
+- **Digital Signature Support**  
+  PDF-style document signing capabilities
+
+### Developer Features
+- **Custom Jinja Filters**  
+  Extend template logic with Python functions
+- **Template Debug Mode**  
+  Visual mapping of variables to template positions
+- **Versioned Templates**  
+  Git-integrated template change tracking
+
+### Enterprise Features
+- **Active Directory Integration**  
+  Auto-populate user/org data from LDAP
+- **Document Watermarking**  
+  Dynamic confidentiality stamps
+- **Change Tracking**  
+  Generate revision-compatible documents
 
 ## Contributing
 
