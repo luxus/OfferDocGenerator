@@ -152,33 +152,139 @@ defaults:
   output_folder: "output"
 ```
 
-## Usage
+## Quick Start
 
-OfferDocGenerator follows these steps:
+1. Install the package:
+```bash
+pip install python-docx-template pyyaml
+```
+
+2. Create basic directory structure:
+```bash
+mkdir -p templates textblocks/{common,products}
+```
+
+3. Create config.yaml:
+```yaml
+offer:
+  number: "2024-001"
+  date: "2024-03-15"
+  validity:
+    EN: "30 days"
+    DE: "30 Tage"
+  template: "templates/base_{lang}.docx"
+  sections: ["1_1", "1_1_1"]
+
+textblocks:
+  common:
+    folder: "textblocks/common"
+  products_dir: "textblocks/products"
+
+output:
+  folder: "generated_offers"
+  format: "docx"
+  prefix: "Offer_"
+
+customer:
+  name: "Example Corp"
+  address: "123 Example Street"
+  city: "Example City"
+  zip: "12345"
+  country: "Example Country"
+
+sales:
+  name: "John Doe"
+  email: "john.doe@example.com"
+  phone: "+1 234 567 890"
+```
+
+4. Run the generator:
+```bash
+python offerdocgenerator.py
+```
+
+## Usage Examples
+
+### Basic Usage
+```bash
+# Generate all offers using default config.yaml
+python offerdocgenerator.py
+
+# Generate offers for specific product and language
+python offerdocgenerator.py --product "Web Application Security Assessment" --lang EN
+
+# Force specific output format
+python offerdocgenerator.py --format dotx
+```
+
+### Directory Structure
+```
+.
+├── config.yaml
+├── templates/
+│   ├── base_EN.docx
+│   └── base_DE.docx
+├── textblocks/
+│   ├── common/
+│   │   ├── section_1_1_EN.docx
+│   │   └── section_1_1_DE.docx
+│   └── products/
+│       └── Web Application Security Assessment/
+│           ├── section_1_1_1_EN.docx
+│           └── section_1_1_1_DE.docx
+└── generated_offers/
+    └── Web Application Security Assessment/
+        ├── Offer_Product_EN_EUR.docx
+        └── Offer_Product_DE_CHF.docx
+```
+
+### Generated Document Structure
+A typical generated document contains:
+1. Header with offer number and date
+2. Customer information section
+3. Product description with textblock content
+4. Detailed scope section
+5. Pricing information
+6. Sales contact details
+
+### Testing Instructions
+```bash
+# Run all tests (temporary files will be preserved)
+python -m unittest discover tests -v
+
+# Run specific test case
+python -m unittest tests/test_offerdocgenerator.py -k test_dotx_generation
+```
+
+Note: Some tests are temporarily disabled while we investigate DOTX template handling.
+See the skipped test annotations for details.
+
+## How It Works
+
+The generator follows these steps:
 
 1. Load Configuration:
-
-   - Searches for config.yaml in the current directory, or uses a custom config file provided via CLI.
+   - Reads config.yaml for settings and paths
+   - Validates required sections and fields
 
 2. Aggregate Content:
-
-   - Scans the designated textblocks folders (common and product-specific) for files matching the naming convention (e.g., section_1_1.docx). When a placeholder like {{ section_1_1 }} is found in the template, the corresponding file is loaded.
+   - Scans textblock folders for matching files
+   - Loads content when placeholders (e.g., {{ section_1_1 }}) are found
 
 3. Build Context:
-
-   - Constructs a context dictionary by merging:
-     a. Textblock content from files.
-     b. Simple variables from the configuration (including language-specific defaults).
-     c. Dynamically generated values (e.g., DOC_TITLE is formatted using product name, language, and currency).
+   - Merges textblock content
+   - Adds configuration variables
+   - Processes language-specific content
 
 4. Render Template:
-
-   - Loads the appropriate template (based on the chosen language) using python‑docx‑template.
-   - Replaces all placeholders with values from the context.
+   - Uses python-docx-template for document generation
+   - Preserves rich text formatting
+   - Handles both DOCX and DOTX formats
 
 5. Generate Output:
-   - Saves the final document in the output folder following the naming pattern:
-     Offer*{product_name}*{language}\_{currency}.docx
+   - Creates directory structure if needed
+   - Saves documents with pattern:
+     Offer_{product}_{language}_{currency}.{format}
 
 ## Command-Line Interface (CLI)
 
