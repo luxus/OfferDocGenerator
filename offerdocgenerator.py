@@ -4,7 +4,7 @@ import logging
 import traceback
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional, Set
+from typing import Dict, Any, List, Optional, Set, Tuple
 from docxtpl import DocxTemplate, RichText, InlineImage
 from docx.shared import Pt, Mm
 from docx import Document
@@ -128,7 +128,7 @@ def _load_richtext(file_path: Path) -> RichText:
         logger.error(f"Error loading {file_path}: {e}")
     return rt
 
-def load_textblock(section: str, config: Config, product_name: str, language: str) -> Optional[RichText]:
+def load_textblock(section: str, config: Config, product_name: str, language: str) -> Tuple[Optional[RichText], Optional[Path]]:
     """Dynamically load a textblock from product/common directories"""
     lang_suffix = f"_{language.upper()}.docx"
     paths = [
@@ -140,9 +140,8 @@ def load_textblock(section: str, config: Config, product_name: str, language: st
     
     for path in paths:
         if path.exists():
-            print(f"    Loading {section} from {path.relative_to(config.common_path.parent)}")
-            return _load_richtext(path)
-    return None
+            return _load_richtext(path), path
+    return None, None
 
 def resolve_template_variables(template_vars: Set[str], config: Config, 
                             product_name: str, language: str) -> Dict[str, Any]:
@@ -150,24 +149,28 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
     resolved = {}
     language = language.upper()
     
+    print(f"\nDiscovering sources for {len(template_vars)} template variables:")
+    
     for var in template_vars:
         # Try direct config access first
         try:
             resolved[var] = resolve_config_variable(var, config)
-            print(f"  {var}: config")
+            print(f"  {var.ljust(20)} config value")
             continue
         except ValueError:
             pass
         
         # Try textblock sources
-        textblock = load_textblock(var, config, product_name, language)
+        textblock, source_path = load_textblock(var, config, product_name, language)
         if textblock:
             resolved[var] = textblock
-            print(f"  {var}: textblock")
+            # Show path relative to project root
+            rel_path = source_path.relative_to(config.common_path.parent)
+            print(f"  {var.ljust(20)} {rel_path}")
             continue
             
         # Warn about unresolved variables
-        print(f"  WARNING: No source found for variable '{var}'")
+        print(f"  {var.ljust(20)} WARNING: No source found")
     
     return resolved
 
