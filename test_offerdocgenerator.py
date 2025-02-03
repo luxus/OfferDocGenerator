@@ -424,6 +424,68 @@ class TestOfferDocGenerator(unittest.TestCase):
             offerdocgenerator.load_config(self.config_file)
         self.assertIn("Missing required fields in offer", str(cm.exception))
 
+    def test_custom_settings_with_defaults(self):
+        """Verify custom settings override defaults and missing settings use config.yaml defaults."""
+        # Create custom config with some overrides and omissions
+        custom_config = {
+            "offer": {
+                "number": "2025-002",
+                "date": "2025-03-03",
+                "validity": {
+                    "EN": "45 days",
+                    "DE": "45 Tage"
+                }
+            },
+            "settings": {
+                "products": "./custom_products",
+                "common": "./custom_common",
+                "output": "./custom_output",
+                "template_prefix": "custom_template",
+                # Omit 'format' and 'prefix' to test defaults
+            },
+            "customer": {
+                "name": "Test Corp",
+                "address": "456 Test Ave",
+                "city": "Testville",
+                "zip": "67890",
+                "country": "Testland"
+            },
+            "sales": {
+                "name": "Jane Smith",
+                "email": "jane.smith@example.com",
+                "phone": "+44 987 654 321"
+            }
+        }
+        
+        # Write custom config to temporary file
+        custom_config_path = self.test_run_dir / "custom_config.yaml"
+        with open(custom_config_path, 'w') as f:
+            yaml.dump(custom_config, f)
+        
+        # Load the custom config
+        config = offerdocgenerator.load_config(custom_config_path)
+        
+        # Verify custom settings are applied
+        self.assertEqual(config.settings["products"], "./custom_products")
+        self.assertEqual(config.settings["common"], "./custom_common")
+        self.assertEqual(config.settings["output"], "./custom_output")
+        self.assertEqual(config.settings["template_prefix"], "custom_template")
+        
+        # Verify defaults from config.yaml are used for omitted settings
+        self.assertEqual(config.settings.get("format", "docx"), "docx")  # Default from code
+        self.assertEqual(config.settings.get("prefix", "Offer_"), "Offer_")  # Default from code
+        
+        # Verify other sections loaded correctly
+        self.assertEqual(config.offer["number"], "2025-002")
+        self.assertEqual(config.customer["city"], "Testville")
+        self.assertEqual(config.sales["name"], "Jane Smith")
+        
+        # Verify default template path construction
+        template_path_en = Path("custom_template_EN.docx")
+        template_path_de = Path("custom_template_DE.docx")
+        self.assertEqual(str(template_path_en), "custom_template_EN.docx")
+        self.assertEqual(str(template_path_de), "custom_template_DE.docx")
+
     def test_render_offer(self):
         """Test rendering for all language/currency combinations in both DOCX and DOTX formats."""
         # Load fresh config for each format test
