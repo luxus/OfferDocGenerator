@@ -3,7 +3,7 @@ import sys
 import logging
 import traceback
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
 from docxtpl import DocxTemplate, RichText, InlineImage
 from docx.shared import Pt, Mm
