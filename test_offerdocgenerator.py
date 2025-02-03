@@ -163,7 +163,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "products": str(self.textblocks_dir / "products"),
                 "common": str(self.textblocks_dir / "common"),
                 "output": str(self.output_dir),
-                "templates": str(self.templates_dir / "base"),
+                "templates": str(self.templates_dir),
                 "format": "docx",
                 "prefix": "TestOffer_"
             },
@@ -418,7 +418,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             offerdocgenerator.load_config(self.config_file)
         error_msg = str(cm.exception)
         self.assertRegex(error_msg, r"Missing required fields in offer: \['date', 'validity'\]")
-        self.assertRegex(error_msg, r"Missing required fields in settings: \['common', 'output', 'template_prefix'\]")
+        self.assertRegex(error_msg, r"Missing required fields in settings: \['common', 'output', 'templates'\]")
 
     def test_custom_settings_with_defaults(self):
         """Verify custom settings override defaults and missing settings use defaults."""
@@ -462,7 +462,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertEqual(config.settings["products"], "./custom_products")
         self.assertEqual(config.settings["common"], "./custom_common")
         self.assertEqual(config.settings["output"], "./custom_output")
-        self.assertEqual(config.settings["template_prefix"], "custom_template")
+        self.assertEqual(config.settings["templates"], "custom_template")
         
         # Verify defaults
         self.assertEqual(config.settings.get("format", "docx"), "docx")
@@ -473,11 +473,11 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertEqual(config.customer["city"], "Testville")
         self.assertEqual(config.sales["name"], "Jane Smith")
         
-        # Verify default template path construction
+        # Verify template path construction
         template_path_en = Path("custom_template") / "base_EN.docx"
         template_path_de = Path("custom_template") / "base_DE.docx"
-        self.assertEqual(str(template_path_en), "custom_template_EN.docx")
-        self.assertEqual(str(template_path_de), "custom_template_DE.docx")
+        self.assertEqual(str(template_path_en), str(Path("custom_template") / "base_EN.docx"))
+        self.assertEqual(str(template_path_de), str(Path("custom_template") / "base_DE.docx"))
 
     def test_render_offer(self):
         """Test rendering for all language/currency combinations in both DOCX and DOTX formats."""
