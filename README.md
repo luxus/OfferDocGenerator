@@ -5,25 +5,54 @@ A modern, configuration-driven Python tool that generates offer documents in DOC
 ## Table of Contents
 
 - [Overview](#overview)
-- [Quick Start](#quick-start)
 - [Features](#features)
-- [Directory Structure](#directory-structure)
-- [Configuration Validation](#configuration-validation)
+- [Limitations](#limitations)
+- [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Installation & Development Environment](#installation--development-environment)
-- [Testing & Quality Assurance](#testing--quality-assurance)
-- [Features](#features)
+- [Directory Structure](#directory-structure)
 - [Contributing](#contributing)
 - [License](#license)
-- [Troubleshooting](#troubleshooting)
-- [Additional Implementation Information](#additional-implementation-information)
 
 ## Overview
 
-OfferDocGenerator is a Python tool that generates offer documents in DOCX format from Word templates. It is built using Python 3.11+ with advanced language features (type annotations, dataclasses, f-strings, pathlib) and leverages the python‑docx‑template library to render templates using Jinja2-style placeholders.
+OfferDocGenerator is a Python tool that generates offer documents in DOCX format from Word templates. It uses a YAML configuration file to define document generation settings, customer details, and sales data. The tool supports multiple languages and products, with automatic textblock loading and rich text preservation.
 
-Every aspect of the document generation process – from textblock sourcing to variable substitution – is defined in a centralized YAML configuration file (config.yaml). The tool is designed for multi-language and multi-product offers and includes built-in support for customer details, sales data, rich text formatting, and automatic textblock detection.
+## Features
+
+### Implemented Features
+- Configuration-driven YAML setup with validation
+- Multi-language support (EN/DE) with separate templates
+- Product-specific document sections with fallback to common content
+- Rich text preservation from DOCX textblocks
+- Automatic variable resolution from config hierarchy
+- Strict configuration validation with error checking
+- Customizable output paths and naming conventions
+- Currency formatting support (CHF/EUR)
+- Nested variable resolution (2-level deep paths)
+
+## Limitations
+
+- Hardcoded language support (EN/DE only)
+- Fixed currency options (CHF/EUR)
+- Requires strict directory structure:
+  ```
+  offers/
+    products/<Product Name>/section_*.docx
+    common/section_*.docx
+  ```
+- Nested config variables limited to 2-level depth
+- Rich text requires explicit paragraph breaks in source DOCX
+- No image/table support in textblocks
+- Error handling stops on first validation failure
+- Template variables must match exact config/textblock names
+
+## Configuration Validation
+The config.yaml requires these top-level sections with nested fields:
+- offer: number, date, validity
+- settings: products, common, output, templates
+- customer: name, address, city, zip, country 
+- sales: name, email, phone
 
 ## Quick Start
 
