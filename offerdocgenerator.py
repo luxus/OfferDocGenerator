@@ -55,12 +55,6 @@ def load_config(config_path: Path) -> Config:
         with open(config_path) as f:
             config_data = yaml.safe_load(f)
             
-        # Validate required sections first
-        required_sections = ['offer', 'textblocks', 'output', 'customer', 'sales']
-        missing_sections = [s for s in required_sections if s not in config_data]
-        if missing_sections:
-            raise ValueError(f"Missing required config sections: {missing_sections}")
-            
         # Create config instance and validate
         config = Config(**config_data)
         return config

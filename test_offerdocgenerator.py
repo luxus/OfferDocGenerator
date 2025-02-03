@@ -391,15 +391,13 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test missing required fields within existing sections"""
         invalid_config = {
             "offer": {
-                "sections": ["1_1"],
-                "template": "templates/",
-                # Missing number/date/validity
+                "number": "123",
+                # Missing date and validity
             },
-            "textblocks": {
-                "common": {"folder": str(self.textblocks_dir / "common")},
-                "products_dir": str(self.textblocks_dir / "products")
+            "settings": {
+                "products": "./products",
+                # Missing common and output
             },
-            "output": {"folder": str(self.output_dir)},
             "customer": {
                 "name": "Test Corp",
                 "address": "Test St",
@@ -419,11 +417,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
-        self.assertIn("Missing required fields in offer", str(cm.exception))
+        self.assertIn("Missing required fields in settings", str(cm.exception))
 
     def test_custom_settings_with_defaults(self):
-        """Verify custom settings override defaults and missing settings use config.yaml defaults."""
-        # Create custom config with some overrides and omissions
+        """Verify custom settings override defaults and missing settings use defaults."""
         custom_config = {
             "offer": {
                 "number": "2025-002",
@@ -437,8 +434,8 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "products": "./custom_products",
                 "common": "./custom_common",
                 "output": "./custom_output",
-                "template_prefix": "custom_template"
-                # Omit 'format' and 'prefix' to test defaults
+                "template_prefix": "custom_template",
+                # format and prefix will use defaults
             },
             "customer": {
                 "name": "Test Corp",
@@ -454,23 +451,21 @@ class TestOfferDocGenerator(unittest.TestCase):
             }
         }
         
-        # Write custom config to temporary file
         custom_config_path = self.test_run_dir / "custom_config.yaml"
         with open(custom_config_path, 'w') as f:
             yaml.dump(custom_config, f)
         
-        # Load the custom config
         config = offerdocgenerator.load_config(custom_config_path)
         
-        # Verify custom settings are applied
+        # Verify custom settings
         self.assertEqual(config.settings["products"], "./custom_products")
         self.assertEqual(config.settings["common"], "./custom_common")
         self.assertEqual(config.settings["output"], "./custom_output")
         self.assertEqual(config.settings["template_prefix"], "custom_template")
         
-        # Verify defaults from config.yaml are used for omitted settings
-        self.assertEqual(config.settings.get("format", "docx"), "docx")  # Default from code
-        self.assertEqual(config.settings.get("prefix", "Offer_"), "Offer_")  # Default from code
+        # Verify defaults
+        self.assertEqual(config.settings.get("format", "docx"), "docx")
+        self.assertEqual(config.settings.get("prefix", "Offer_"), "Offer_")
         
         # Verify other sections loaded correctly
         self.assertEqual(config.offer["number"], "2025-002")
@@ -488,7 +483,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Load fresh config for each format test
         for output_format in ["docx", "dotx"]:
             config = offerdocgenerator.load_config(self.config_file)
-            config.output["format"] = output_format
+            config.settings["format"] = output_format
             
             products = offerdocgenerator.get_product_names(self.textblocks_dir)
             prefix = config.output.get("prefix", "Offer_")
