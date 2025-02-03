@@ -308,17 +308,17 @@ class TestOfferDocGenerator(unittest.TestCase):
             content_type = z.read('[Content_Types].xml').decode()
             self.assertIn('application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml', content_type)
         
-        # Verify template can be used to create new documents - FIXED APPROACH
+        # Verify template can be used to create new documents
         test_output = output_file.with_name("test_from_template.docx")
         try:
             # Create new document from template using python-docx directly
-            doc = docx.Document(output_file)
+            doc = docx.Document(str(output_file))
             doc.add_paragraph("Test content added to template")
-            doc.save(test_output)
+            doc.save(str(test_output))
             self.assertTrue(test_output.exists())
             
             # Verify the new document is valid
-            test_doc = docx.Document(test_output)
+            test_doc = docx.Document(str(test_output))
             self.assertIn("Test content added to template", test_doc.paragraphs[0].text)
         finally:
             if test_output.exists():
