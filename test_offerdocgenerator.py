@@ -163,7 +163,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "products": str(self.textblocks_dir / "products"),
                 "common": str(self.textblocks_dir / "common"),
                 "output": str(self.output_dir),
-                "template_prefix": str(self.templates_dir / "base"),
+                "templates": str(self.templates_dir / "base"),
                 "format": "docx",
                 "prefix": "TestOffer_"
             },
@@ -435,7 +435,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "products": "./custom_products",
                 "common": "./custom_common",
                 "output": "./custom_output",
-                "template_prefix": "custom_template",
+                "templates": "custom_template",
                 # format and prefix will use defaults
             },
             "customer": {
@@ -474,8 +474,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertEqual(config.sales["name"], "Jane Smith")
         
         # Verify default template path construction
-        template_path_en = Path("custom_template_EN.docx")
-        template_path_de = Path("custom_template_DE.docx")
+        template_path_en = Path("custom_template") / "base_EN.docx"
+        template_path_de = Path("custom_template") / "base_DE.docx"
         self.assertEqual(str(template_path_en), "custom_template_EN.docx")
         self.assertEqual(str(template_path_de), "custom_template_DE.docx")
 

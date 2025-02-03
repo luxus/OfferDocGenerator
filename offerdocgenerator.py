@@ -36,7 +36,7 @@ class Config:
         # Check fields within each section
         required_fields = {
             'offer': ['number', 'date', 'validity'],
-            'settings': ['products', 'common', 'output', 'template_prefix'],
+            'settings': ['products', 'common', 'output', 'templates'],
             'customer': ['name', 'address', 'city', 'zip', 'country'],
             'sales': ['name', 'email', 'phone']
         }
@@ -261,7 +261,7 @@ def main():
                 context.update(textblocks)
 
                 # Get template path using template prefix
-                template_path = Path(config.settings["template_prefix"]) / f"base_{lang}.docx"
+                template_path = Path(config.settings["templates"]) / f"base_{lang}.docx"
                 if not template_path.exists():
                     logger.error(f"Missing template for {lang}: {template_path}")
                     continue

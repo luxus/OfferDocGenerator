@@ -14,7 +14,7 @@ settings:
   products: ./offers/products
   common: ./offers/common
   output: ./offers/output
-  template_prefix: ./offers/templates
+  templates: ./offers/templates
   format: docx
   prefix: Offer_
 sales:
