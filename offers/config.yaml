@@ -11,10 +11,10 @@ offer:
     DE: 30 Tage
     EN: 30 days
 settings:
-  products: ./products
-  common: ./common
-  output: ./output
-  template_prefix: template
+  products: ./offers/products
+  common: ./offers/common
+  output: ./offers/output
+  template_prefix: ./offers/templates
   format: docx
   prefix: Offer_
 sales:
