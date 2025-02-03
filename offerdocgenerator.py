@@ -41,10 +41,15 @@ class Config:
             'sales': ['name', 'email', 'phone']
         }
 
+        missing_fields = []
         for section, fields in required_fields.items():
-            if not all(field in getattr(self, section) for field in fields):
-                missing = [f for f in fields if f not in getattr(self, section)]
-                raise ValueError(f"Missing required fields in {section}: {missing}")
+            section_data = getattr(self, section, {})
+            current_missing = [f for f in fields if f not in section_data]
+            if current_missing:
+                missing_fields.append(f"Missing required fields in {section}: {sorted(current_missing)}")
+
+        if missing_fields:
+            raise ValueError("\n".join(missing_fields))
         
         # Validate output format if specified
         valid_formats = ['docx', 'dotx']

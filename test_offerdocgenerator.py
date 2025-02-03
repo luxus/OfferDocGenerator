@@ -417,8 +417,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
         error_msg = str(cm.exception)
-        self.assertIn("Missing required fields in offer: ['date', 'validity']", error_msg)
-        self.assertIn("Missing required fields in settings: ['common', 'output', 'template_prefix']", error_msg)
+        self.assertRegex(error_msg, r"Missing required fields in offer: \['date', 'validity'\]")
+        self.assertRegex(error_msg, r"Missing required fields in settings: \['common', 'output', 'template_prefix'\]")
 
     def test_custom_settings_with_defaults(self):
         """Verify custom settings override defaults and missing settings use defaults."""
