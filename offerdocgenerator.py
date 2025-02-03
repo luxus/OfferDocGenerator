@@ -18,24 +18,22 @@ logger = logging.getLogger(__name__)
 class Config:
     """Configuration data loaded from YAML."""
     offer: Dict[str, Any]
-    textblocks: Dict[str, Any]
-    output: Dict[str, Any]
+    settings: Dict[str, Any]
     customer: Dict[str, str]
     sales: Dict[str, str]
 
     def __post_init__(self):
         """Validate configuration after initialization."""
         # First check required sections exist
-        required_sections = ['offer', 'textblocks', 'output', 'customer', 'sales']
+        required_sections = ['offer', 'settings', 'customer', 'sales']
         missing_sections = [section for section in required_sections if not hasattr(self, section)]
         if missing_sections:
             raise ValueError(f"Missing required config sections: {missing_sections}")
 
         # Then check fields within each section
         required_fields = {
-            'offer': ['template', 'number', 'date', 'validity'],
-            'textblocks': ['common', 'products_dir'],
-            'output': ['folder'],
+            'offer': ['number', 'date', 'validity'],
+            'settings': ['products', 'common', 'output', 'template_prefix'],
             'customer': ['name', 'address', 'city', 'zip', 'country'],
             'sales': ['name', 'email', 'phone']
         }
@@ -47,7 +45,7 @@ class Config:
         
         # Validate output format if specified
         valid_formats = ['docx', 'dotx']
-        output_format = self.output.get('format', 'docx').lower()
+        output_format = self.settings.get('format', 'docx').lower()
         if output_format not in valid_formats:
             raise ValueError(f"Invalid output format. Must be one of {valid_formats}")
 
@@ -73,9 +71,9 @@ def load_config(config_path: Path) -> Config:
             raise  # Re-raise validation errors for tests to catch
         sys.exit(1)
 
-def get_product_names(textblock_dir: Path) -> List[str]:
-    """Get list of available products from the textblock directory structure."""
-    products_dir = textblock_dir / "products"
+def get_product_names(config: Config) -> List[str]:
+    """Get list of available products from the products directory."""
+    products_dir = Path(config.settings["products"])
     if not products_dir.exists():
         logger.error(f"Products directory not found: {products_dir}")
         return []
@@ -118,13 +116,13 @@ def load_textblocks(config: Config, product_name: str, language: str) -> Dict[st
     lang_suffix = f"_{language.upper()}.docx"
     
     # Load from common directory
-    common_dir = Path(config.textblocks["common"]["folder"])
+    common_dir = Path(config.settings["common"])
     for file in common_dir.glob(f"section_*{lang_suffix}"):
         section = file.stem.replace(f"_{language.upper()}", "")
         textblocks[section] = _load_richtext(file)
     
     # Load from product directory (overrides common)
-    product_dir = Path(config.textblocks["products_dir"]) / product_name
+    product_dir = Path(config.settings["products"]) / product_name
     for file in product_dir.glob(f"section_*{lang_suffix}"):
         section = file.stem.replace(f"_{language.upper()}", "")
         textblocks[section] = _load_richtext(file)
@@ -242,9 +240,9 @@ def main():
     config = load_config(config_path)
 
     # Get available products
-    products = get_product_names(Path(config.textblocks["products_dir"]))
+    products = get_product_names(config)
     if not products:
-        logger.error("No products found in textblock directory")
+        logger.error("No products found in products directory")
         sys.exit(1)
 
     # Supported languages and currencies
@@ -260,19 +258,19 @@ def main():
                 textblocks = load_textblocks(config, product, lang)
                 context.update(textblocks)
 
-                # Get template path
-                template_path = Path(config.offer["template"]) / f"base_{lang}.docx"
+                # Get template path using template prefix
+                template_path = Path(config.settings["template_prefix"]) / f"base_{lang}.docx"
                 if not template_path.exists():
                     logger.error(f"Missing template for {lang}: {template_path}")
                     continue
 
                 # Create output directory (no language subdirectory)
-                output_dir = Path(config.output["folder"]) / product
+                output_dir = Path(config.settings["output"]) / product
                 output_dir.mkdir(parents=True, exist_ok=True)
                 
                 # Generate output filename with configurable prefix and format
-                prefix = config.output.get("prefix", "Offer_")
-                fmt = config.output.get("format", "docx")
+                prefix = config.settings.get("prefix", "Offer_")
+                fmt = config.settings.get("format", "docx")
                 output_file = output_dir / f"{prefix}{product}_{lang}_{currency}.{fmt}"
                 
                 # Render the offer document
