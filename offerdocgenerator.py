@@ -175,6 +175,9 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
             value = resolve_config_variable(var, config)
             resolved[var] = value
             
+            # Get the actual config path used
+            config_path = var.replace('_', '.')
+            
             # Format value for display
             if isinstance(value, str):
                 display_value = f"'{value}'"
@@ -184,7 +187,7 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
                 display_value = str(value)
             
             print(f"  {colorize(var.ljust(20), 'GREEN')} {colorize('←', 'BLUE')} "
-                  f"{colorize(f'config.{var} = {display_value}', 'CYAN')}")
+                  f"{colorize(f'config.{config_path} = {display_value}', 'CYAN')}")
             continue
         except ValueError:
             pass
@@ -204,9 +207,12 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
     return resolved
 
 def resolve_config_variable(var_path: str, config: Config) -> Any:
-    """Resolve dot-separated variable paths in the config structure."""
+    """Resolve underscore-separated variable paths in the config structure."""
+    # Convert variable names with underscores to nested structure
+    path_parts = var_path.split('_')
     current = config
-    for part in var_path.split('.'):
+    
+    for part in path_parts:
         if isinstance(current, dict):
             current = current.get(part)
         elif hasattr(current, part):
@@ -215,6 +221,7 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
             raise ValueError(f"Config path not found: {var_path}")
         if current is None:
             break
+            
     return current
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
