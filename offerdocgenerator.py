@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 import sys
 import logging
-import traceback
 from pathlib import Path
 
-from offerdoc.core.config import load_config
+from offerdoc.core.config import load_config, AppConfig
 from offerdoc.core.exceptions import handle_document_errors
+from offerdoc.core.file_handler import FileHandler
+from offerdoc.core.renderer import DocumentRenderer
 from offerdoc.utils.formatters import colorize
-from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional, Set, Tuple
-from docxtpl import DocxTemplate
-from docx import Document
-import io
-import yaml
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
