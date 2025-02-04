@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 import sys
 import logging
+import traceback
 from pathlib import Path
+from typing import Dict, List, Set, Any, Optional, Tuple
+from dataclasses import dataclass, field
+from docx import Document
+from docxtpl import DocxTemplate
+import yaml
 
 from offerdoc.core.config import load_config, AppConfig
 from offerdoc.core.exceptions import handle_document_errors
