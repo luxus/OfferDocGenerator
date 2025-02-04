@@ -23,8 +23,7 @@ def colorize(text: str, color: str) -> str:
     return text
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Set, Tuple
-from docxtpl import DocxTemplate, RichText, InlineImage
-from docx.shared import Pt, Mm
+from docxtpl import DocxTemplate
 from docx import Document
 import io
 import yaml
@@ -129,84 +128,59 @@ def load_textblock_file(file_path: Path) -> str:
         logger.error(f"Error reading textblock file {file_path}: {e}")
         return ""
 
-def _load_richtext(file_path: Path) -> RichText:
-    """Load a DOCX file into a RichText object preserving formatting."""
-    rt = RichText()
-    try:
-        doc = Document(str(file_path))
-        # Filter out empty paragraphs first
-        non_empty_paras = [p for p in doc.paragraphs if p.text.strip()]
-        
-        for i, para in enumerate(non_empty_paras):
-            for run in para.runs:
-                rt.add(run.text,
-                      bold=run.bold,
-                      italic=run.italic,
-                      underline=run.underline)
-            # Add newline only between paragraphs, not after last one
-            if i < len(non_empty_paras) - 1:
-                rt.add('\n')
-    except Exception as e:
-        logger.error(f"Error loading {file_path}: {e}")
-    return rt
 
-def load_textblock(section: str, config: Config, product_name: str, language: str) -> Tuple[Optional[RichText], Optional[Path]]:
-    """Dynamically load a textblock from product/common directories"""
+def load_textblock(var_name: str, config: Config, product_name: str, language: str, template: DocxTemplate) -> Tuple[Optional[Any], Optional[Path]]:
+    """Dynamically load DOCX content based on variable name"""
     lang_suffix = f"_{language.upper()}.docx"
-    paths = [
-        config.products_path / product_name / f"{section}{lang_suffix}",
-        config.products_path / product_name / f"{section}.docx",
-        config.common_path / f"{section}{lang_suffix}",
-        config.common_path / f"{section}.docx"
+    possible_paths = [
+        # Try variable name with language suffix
+        config.products_path / product_name / f"{var_name}{lang_suffix}",
+        config.products_path / product_name / f"{var_name}.docx",
+        config.common_path / f"{var_name}{lang_suffix}",
+        config.common_path / f"{var_name}.docx",
+        
+        # Also try without product-specific path
+        config.common_path / f"{var_name.split('_')[0]}{lang_suffix}",
+        config.common_path / f"{var_name.split('_')[0]}.docx"
     ]
     
-    for path in paths:
+    for path in possible_paths:
         if path.exists():
-            return _load_richtext(path), path
+            try:
+                return template.new_subdoc(str(path)), path
+            except Exception as e:
+                logger.error(f"Failed to load subdoc {path}: {e}")
+                return None, None
     return None, None
 
 def resolve_template_variables(template_vars: Set[str], config: Config, 
-                            product_name: str, language: str) -> Dict[str, Any]:
+                            product_name: str, language: str,
+                            template: DocxTemplate) -> Dict[str, Any]:
     """Resolve variables from config, textblocks, and special handlers"""
     resolved = {}
     language = language.upper()
     
-    print(colorize(f"\n🔎 Discovering sources for {len(template_vars)} template variables:", 'CYAN'))
+    print(colorize(f"\n🔍 Resolving {len(template_vars)} template variables:", 'CYAN'))
     
-    for var in template_vars:
-        # Try direct config access first
+    for var in sorted(template_vars):
+        # First try direct config value
         try:
-            value = resolve_config_variable(var, config)
-            resolved[var] = value
-            
-            # Get the actual config path used
-            config_path = var.replace('_', '.')
-            
-            # Format value for display
-            if isinstance(value, str):
-                display_value = f"'{value}'"
-            elif isinstance(value, dict):
-                display_value = "{...}"  # Show truncated representation for dicts
-            else:
-                display_value = str(value)
-            
-            print(f"  {colorize(var.ljust(20), 'GREEN')} {colorize('←', 'BLUE')} "
-                  f"{colorize(f'config.{config_path} = {display_value}', 'CYAN')}")
+            resolved[var] = resolve_config_variable(var, config)
+            print(f"  {colorize(var.ljust(20), 'GREEN')} {colorize('←', 'BLUE')} config.{var.replace('_', '.')}")
             continue
-        except ValueError:
+        except (ValueError, AttributeError):
             pass
-        
-        # Try textblock sources
-        textblock, source_path = load_textblock(var, config, product_name, language)
-        if textblock:
-            resolved[var] = textblock
-            # Show path relative to project root
-            rel_path = source_path.relative_to(config.common_path.parent)
-            print(f"  {colorize(var.ljust(20), 'YELLOW')} {colorize('←', 'BLUE')} {colorize(str(rel_path), 'CYAN')}")
+            
+        # Then try to load as DOCX subdocument
+        subdoc, source_path = load_textblock(var, config, product_name, language, template)
+        if subdoc:
+            resolved[var] = subdoc
+            print(f"  {colorize(var.ljust(20), 'YELLOW')} {colorize('←', 'BLUE')} {colorize(str(source_path.relative_to(config.common_path.parent)), 'CYAN')}")
             continue
             
-        # Warn about unresolved variables
-        print(f"  {colorize(var.ljust(20), 'RED')} {colorize('← WARNING: No source found', 'RED')}")
+        # Fallback to empty string if nothing found
+        resolved[var] = ""
+        print(f"  {colorize(var.ljust(20), 'RED')} {colorize('← WARNING: No config value or DOCX found', 'RED')}")
     
     return resolved
 
@@ -251,7 +225,8 @@ def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path
         
         # Resolve variables from multiple sources
         resolved_context = resolve_template_variables(template_vars, context['Config'], 
-                                                   context['PRODUCT'], context['LANGUAGE'])
+                                                   context['PRODUCT'], context['LANGUAGE'],
+                                                   doc)
         
         # Merge with existing context
         context.update(resolved_context)
