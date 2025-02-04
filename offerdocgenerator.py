@@ -39,6 +39,16 @@ class Config:
     customer: Dict[str, str] = field(default_factory=dict)
     sales: Dict[str, str] = field(default_factory=dict)
     
+    # Configuration with defaults
+    languages: List[str] = field(default_factory=lambda: ["EN", "DE"])
+    currencies: List[str] = field(default_factory=lambda: ["CHF", "EUR"])
+    template_pattern: str = field(default="base_{language}.docx")
+    filename_pattern: str = field(default="Offer_{product}_{language}_{currency}.{format}")
+    textblock_patterns: List[str] = field(default_factory=lambda: [
+        "{var_name}_{language}.docx",
+        "{var_name}.docx"
+    ])
+    
     @property
     def products_path(self) -> Path:
         return Path(self.settings["products"])
@@ -130,27 +140,24 @@ def load_textblock_file(file_path: Path) -> str:
 
 
 def load_textblock(var_name: str, config: Config, product_name: str, language: str, template: DocxTemplate) -> Tuple[Optional[Any], Optional[Path]]:
-    """Dynamically load DOCX content based on variable name"""
-    lang_suffix = f"_{language.upper()}.docx"
-    possible_paths = [
-        # Try variable name with language suffix
-        config.products_path / product_name / f"{var_name}{lang_suffix}",
-        config.products_path / product_name / f"{var_name}.docx",
-        config.common_path / f"{var_name}{lang_suffix}",
-        config.common_path / f"{var_name}.docx",
-        
-        # Also try without product-specific path
-        config.common_path / f"{var_name.split('_')[0]}{lang_suffix}",
-        config.common_path / f"{var_name.split('_')[0]}.docx"
+    """Dynamically load DOCX content using configured patterns"""
+    search_locations = [
+        config.products_path / product_name,
+        config.common_path
     ]
-    
-    for path in possible_paths:
-        if path.exists():
-            try:
-                return template.new_subdoc(str(path)), path
-            except Exception as e:
-                logger.error(f"Failed to load subdoc {path}: {e}")
-                return None, None
+
+    for base_path in search_locations:
+        for pattern in config.textblock_patterns:
+            target_path = base_path / pattern.format(
+                var_name=var_name,
+                language=language.upper()
+            )
+            if target_path.exists():
+                try:
+                    return template.new_subdoc(str(target_path)), target_path
+                except Exception as e:
+                    logger.error(f"Failed to load subdoc {target_path}: {e}")
+                    return None, None
     return None, None
 
 def resolve_template_variables(template_vars: Set[str], config: Config, 
@@ -311,9 +318,9 @@ def main():
         logger.error("No products found in products directory")
         sys.exit(1)
 
-    # Supported languages and currencies
-    languages = ["EN", "DE"]
-    currencies = ["CHF", "EUR"]
+    # Use configured languages and currencies
+    languages = config.languages
+    currencies = config.currencies
     
     # Generate offer documents for each combination
     for lang in languages:
@@ -322,20 +329,27 @@ def main():
                 # Build context with currency
                 context = build_context(config, lang, product, currency)
                 
-                # Get template path using template prefix
-                template_path = Path(config.settings["templates"]) / f"base_{lang}.docx"
+                # Get template path using configured pattern
+                template_filename = config.template_pattern.format(language=lang)
+                template_path = config.templates_path / template_filename
                 if not template_path.exists():
                     logger.error(f"Missing template for {lang}: {template_path}")
                     continue
 
-                # Create output directory (no language subdirectory)
-                output_dir = Path(config.settings["output"]) / product
+                # Create output directory
+                output_dir = config.output_path / product
                 output_dir.mkdir(parents=True, exist_ok=True)
                 
-                # Generate output filename with configurable prefix and format
-                prefix = config.settings.get("prefix", "Offer_")
+                # Generate output filename using configured pattern
                 fmt = config.settings.get("format", "docx")
-                output_file = output_dir / f"{prefix}{product}_{lang}_{currency}.{fmt}"
+                output_filename = config.filename_pattern.format(
+                    product=product,
+                    language=lang,
+                    currency=currency,
+                    date=config.offer["date"],
+                    format=fmt
+                )
+                output_file = output_dir / output_filename
                 
                 # Render the offer document
                 render_offer(template_path, context, output_file)

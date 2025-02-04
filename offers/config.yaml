@@ -16,7 +16,13 @@ settings:
   output: ./offers/output
   templates: ./offers/templates
   format: docx
-  prefix: Offer_
+  filename_pattern: "Offer_{product}_{language}_{currency}_{date}.{format}"
+  template_pattern: "base_{language}.docx"
+languages: ["EN", "DE"]
+currencies: ["CHF", "EUR"]
+textblock_patterns:
+  - "{var_name}_{language}.docx"
+  - "{var_name}.docx"
 sales:
   email: john.doe@example.com
   name: John Doe
