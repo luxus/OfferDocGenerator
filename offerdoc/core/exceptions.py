@@ -1,3 +1,9 @@
+import sys
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
+
 class DocumentGenerationError(Exception):
     """Base exception for document generation errors"""
     pass
