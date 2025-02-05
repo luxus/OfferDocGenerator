@@ -218,8 +218,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test that the YAML configuration is loaded correctly."""
         config = offerdocgenerator.load_config(self.config_file)
         self.assertIsInstance(config, offerdocgenerator.Config)
-        self.assertEqual(config.settings["products"], str(self.textblocks_dir / "products"))
-        self.assertEqual(config.settings["common"], str(self.textblocks_dir / "common"))
+        self.assertEqual(config.settings.products, str(self.textblocks_dir / "products"))
+        self.assertEqual(config.settings.common, str(self.textblocks_dir / "common"))
 
     def test_load_textblocks(self):
         """Test dynamic loading of textblocks from product directory"""
@@ -396,7 +396,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
-        self.assertIn("Missing required config sections: ['settings', 'customer', 'sales']", str(cm.exception))
+        error_msg = str(cm.exception)
+        self.assertIn("field required", error_msg.lower())
+        for section in ['settings', 'customer', 'sales']:
+            self.assertIn(section, error_msg.lower())
 
     def test_invalid_config_fields(self):
         """Test missing required fields within existing sections"""
@@ -471,10 +474,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         config = offerdocgenerator.load_config(custom_config_path)
         
         # Verify custom settings
-        self.assertEqual(config.settings["products"], "./custom_products")
-        self.assertEqual(config.settings["common"], "./custom_common")
-        self.assertEqual(config.settings["output"], "./custom_output")
-        self.assertEqual(config.settings["templates"], "custom_template")
+        self.assertEqual(config.settings.products, "./custom_products")
+        self.assertEqual(config.settings.common, "./custom_common")
+        self.assertEqual(config.settings.output, "./custom_output")
+        self.assertEqual(config.settings.templates, "custom_template")
         
         # Verify defaults
         self.assertEqual(config.settings.get("format", "docx"), "docx")
@@ -496,7 +499,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Load fresh config for each format test
         for output_format in ["docx", "dotx"]:
             config = offerdocgenerator.load_config(self.config_file)
-            config.settings["format"] = output_format
+            new_settings = config.settings.model_copy(update={"format": output_format})
+            config = config.model_copy(update={"settings": new_settings})
             
             products = offerdocgenerator.get_product_names(config)
             prefix = config.settings.get("prefix", "Offer_")
@@ -514,7 +518,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                         with self.subTest(product=product, language=lang, currency=currency, format=output_format):
                             # Build context with currency using AppConfig
                             context = {
-                                "Config": config.dict(),
+                                "Config": config.model_dump(),
                                 "LANGUAGE": lang,
                                 "PRODUCT": product,
                                 "CURRENCY": currency
