@@ -4,6 +4,7 @@ import unittest
 import shutil
 import random
 import zipfile
+import zipfile
 from pathlib import Path
 from pathlib import Path
 import yaml
@@ -237,8 +238,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("Schwachstellenscanning", str(section_1_1_1_de))
         
         # Test English textblocks 
-        section_1_1_en, _ = offerdocgenerator.load_textblock("section_1_1", config, self.product_name, "EN")
-        section_1_1_1_en, _ = offerdocgenerator.load_textblock("section_1_1_1", config, self.product_name, "EN")
+        section_1_1_en, _ = offerdocgenerator.load_textblock("section_1_1", config, self.product_name, "EN", template)
+        section_1_1_1_en, _ = offerdocgenerator.load_textblock("section_1_1_1", config, self.product_name, "EN", template)
         
         self.assertIsNotNone(section_1_1_en)
         self.assertIsNotNone(section_1_1_1_en)
@@ -362,11 +363,21 @@ class TestOfferDocGenerator(unittest.TestCase):
         rt, _ = offerdocgenerator.load_textblock("section_formatted", config, self.product_name, "EN", template)
         self.assertIsNotNone(rt)  # Verify section exists
         
-        # Check formatting preserved in XML
-        self.assertIn("Bold text", rt.xml)
-        self.assertIn("<w:b/>", rt.xml)  # Bold tag
-        self.assertIn("<w:i/>", rt.xml)  # Italic tag
-        self.assertIn('<w:u w:val="single"/>', rt.xml)  # Underline tag
+        # Render document to check formatting
+        output_path = self.output_dir / "richtext_test.docx"
+        
+        # Create template and render
+        template = DocxTemplate(str(self.template_file_en))
+        context = {"formatted_section": rt}
+        template.render(context)
+        template.save(str(output_path))
+        
+        # Check formatting in rendered document
+        with zipfile.ZipFile(output_path) as z:
+            document_xml = z.read("word/document.xml").decode()
+            self.assertIn("<w:b/>", document_xml)  # Bold tag
+            self.assertIn("<w:i/>", document_xml)  # Italic tag
+            self.assertIn('<w:u w:val="single"/>', document_xml)  # Underline tag
 
     def test_invalid_config_sections(self):
         """Test handling of config with missing required sections"""
@@ -495,18 +506,25 @@ class TestOfferDocGenerator(unittest.TestCase):
                 for lang in ["EN", "DE"]:
                     for currency in ["CHF", "EUR"]:
                         with self.subTest(product=product, language=lang, currency=currency, format=output_format):
-                            # Build context with currency
-                            context = offerdocgenerator.build_context(config, lang, product, currency)
-                        
+                            # Build context with currency using AppConfig
+                            context = {
+                                "Config": config,
+                                "LANGUAGE": lang,
+                                "PRODUCT": product,
+                                "CURRENCY": currency
+                            }
+            
+                            # Select and load template
+                            template_path = self.template_file_en if lang == "EN" else self.template_file_de
+                            template = DocxTemplate(str(template_path))
+            
                             # Get template variables and resolve them
-                            doc = DocxTemplate(str(template))
-                            template_vars = doc.get_undeclared_template_variables()
-                            resolved = offerdocgenerator.resolve_template_variables(template_vars, config, product, lang, doc)
+                            template_vars = template.get_undeclared_template_variables()
+                            resolved = offerdocgenerator.resolve_template_variables(template_vars, config, product, lang, template)
                             context.update(resolved)
-                            
-                            # Select template
-                            template = self.template_file_en if lang == "EN" else self.template_file_de
-                            output_file = self.output_dir / product / f"{prefix}{product}_{lang}_{currency}.{output_format}"
+            
+                            # Generate output path using config properties
+                            output_file = config.settings.output_path / product / f"{prefix}{product}_{lang}_{currency}.{output_format}"
                             
                             # Create product subdirectory
                             output_file.parent.mkdir(parents=True, exist_ok=True)
