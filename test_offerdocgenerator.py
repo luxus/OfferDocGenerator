@@ -368,7 +368,13 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         # Create template and render
         template = DocxTemplate(str(self.template_file_en))
-        context = {"formatted_section": rt}
+        context = {
+            "Config": config.dict(),
+            "LANGUAGE": "EN",
+            "PRODUCT": self.product_name,
+            "CURRENCY": "CHF",
+            "formatted_section": rt
+        }
         template.render(context)
         template.save(str(output_path))
         
@@ -508,7 +514,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                         with self.subTest(product=product, language=lang, currency=currency, format=output_format):
                             # Build context with currency using AppConfig
                             context = {
-                                "Config": config,
+                                "Config": config.dict(),
                                 "LANGUAGE": lang,
                                 "PRODUCT": product,
                                 "CURRENCY": currency

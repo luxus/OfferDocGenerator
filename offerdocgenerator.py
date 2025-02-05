@@ -18,39 +18,25 @@ from offerdoc.utils.formatters import colorize
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@dataclass
-class Config:
-    """Configuration data loaded from YAML."""
-    offer: Dict[str, Any] = field(default_factory=dict)
-    settings: Dict[str, Any] = field(default_factory=dict)
-    customer: Dict[str, str] = field(default_factory=dict)
-    sales: Dict[str, str] = field(default_factory=dict)
-    
-    # Configuration with defaults
-    languages: List[str] = field(default_factory=lambda: ["EN", "DE"])
-    currencies: List[str] = field(default_factory=lambda: ["CHF", "EUR"])
-    template_pattern: str = field(default="base_{language}.docx")
-    filename_pattern: str = field(default="Offer_{product}_{language}_{currency}.{format}")
-    textblock_patterns: List[str] = field(default_factory=lambda: [
-        "{var_name}_{language}.docx",
-        "{var_name}.docx"
-    ])
-    
+from offerdoc.core.config import AppConfig
+
+class Config(AppConfig):
+    """Extended configuration with runtime properties"""
     @property
     def products_path(self) -> Path:
-        return Path(self.settings["products"])
+        return Path(self.settings.products)
         
     @property
     def common_path(self) -> Path:
-        return Path(self.settings["common"])
+        return Path(self.settings.common)
         
     @property 
     def templates_path(self) -> Path:
-        return Path(self.settings["templates"])
+        return Path(self.settings.templates)
         
     @property
     def output_path(self) -> Path:
-        return Path(self.settings["output"])
+        return Path(self.settings.output)
 
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -199,7 +185,7 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
     """Build base context with core variables."""
     return {
-        "Config": config,
+        "Config": config.dict(),
         "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
         "CURRENCY": currency
