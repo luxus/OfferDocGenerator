@@ -38,23 +38,6 @@ class Settings(BaseModel):
     template_pattern: str = "base_{language}.docx"
     security: SecuritySettings = Field(default_factory=SecuritySettings)
 
-    @model_validator(mode='before')
-    @classmethod
-    def resolve_relative_paths(cls, data: dict, info: ValidationInfo) -> dict:
-        if not info.context:
-            return data
-        
-        config_path = info.context.get("config_path")
-        if config_path:
-            base_dir = config_path.parent
-            for field in ['products', 'common', 'output', 'templates']:
-                if field in data:
-                    raw_value = data[field]
-                    path = Path(raw_value)
-                    if not path.is_absolute():
-                        data[field] = base_dir / path
-        return data
-
     @field_validator('format')
     @classmethod
     def validate_format(cls, v: str, info: ValidationInfo) -> str:
@@ -87,6 +70,29 @@ class AppConfig(BaseModel):
         "{var_name}_{language}.docx",
         "{var_name}.docx"
     ]
+
+    @model_validator(mode='before')
+    @classmethod
+    def resolve_settings_paths(cls, data: dict, info: ValidationInfo) -> dict:
+        """Resolve relative paths in settings relative to config file location"""
+        if not info.context:
+            return data
+        
+        config_path = info.context.get("config_path")
+        if config_path and 'settings' in data:
+            base_dir = config_path.parent
+            settings_data = data['settings']
+            
+            for field in ['products', 'common', 'output', 'templates']:
+                if field in settings_data:
+                    raw_value = settings_data[field]
+                    path = Path(raw_value)
+                    if not path.is_absolute():
+                        resolved_path = (base_dir / path).resolve()
+                        settings_data[field] = str(resolved_path)
+            
+            data['settings'] = settings_data
+        return data
 
     @property
     def products_path(self) -> Path:
