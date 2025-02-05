@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional, Tuple
 from docxtpl import DocxTemplate
-from docxcompose.composer import ComposedDocument
+from docxcompose.composer import Composer
 from .config import AppConfig
 from .exceptions import TemplateNotFoundError
 import logging
@@ -38,7 +38,7 @@ class FileHandler:
         if target_path:
             try:
                 # Create composed document to preserve styles
-                composed = ComposedDocument(template)
+                composed = Composer(template)
                 composed.append(target_path)
                 return composed, target_path
             except Exception as e:
