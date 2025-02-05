@@ -80,21 +80,19 @@ class AppConfig(BaseModel):
         
         config_path = info.context.get("config_path")
         if config_path and 'settings' in data:
-            base_dir = config_path.parent
+            base_dir = config_path.parent.resolve()  # Ensure base_dir is absolute
             settings_data = data['settings']
             
             for field in ['products', 'common', 'output', 'templates']:
                 if field in settings_data:
-                    raw_value = settings_data[field]
+                    raw_value = str(settings_data[field])  # Ensure string input
                     path = Path(raw_value)
                     
-                    # Handle both relative and absolute paths
-                    if not path.is_absolute():
-                        resolved_path = (base_dir / path).resolve()
-                    else:
-                        resolved_path = path.resolve()
-                        
-                    # Store as Path object directly instead of string
+                    # Always resolve relative to base_dir
+                    resolved_path = (base_dir / path.name if path.is_absolute() 
+                                   else base_dir / path).resolve()
+                    
+                    # Store resolved absolute path
                     settings_data[field] = resolved_path
             
             data['settings'] = settings_data
