@@ -1,11 +1,19 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 from pathlib import Path
 from typing import Dict, Any, List
 import yaml
 import sys
 import logging
+from yaml.resolver import BaseResolver
+import os
 
 logger = logging.getLogger(__name__)
+
+class SecuritySettings(BaseModel):
+    max_template_size_mb: int = Field(default=10, gt=0, lt=100)
+    allowed_file_types: List[str] = ['docx', 'dotx']
+    enable_audit_log: bool = True
+    allow_unsafe_templates: bool = False
 
 class CustomerConfig(BaseModel):
     name: str
@@ -27,6 +35,7 @@ class Settings(BaseModel):
     format: str = "docx"
     filename_pattern: str = "Offer_{product}_{language}_{currency}_{date}.{format}"
     template_pattern: str = "base_{language}.docx"
+    security: SecuritySettings = Field(default_factory=SecuritySettings)
 
     @validator('format')
     def validate_format(cls, v):
@@ -34,6 +43,15 @@ class Settings(BaseModel):
         if v.lower() not in valid_formats:
             raise ValueError(f"Invalid format. Must be one of {valid_formats}")
         return v.lower()
+
+    @validator('products', 'common', 'output', 'templates')
+    def validate_secure_paths(cls, v):
+        path = Path(v).resolve()
+        if not path.exists():
+            raise ValueError(f"Path does not exist: {v}")
+        if path.is_symlink():
+            raise ValueError("Symbolic links not allowed in paths")
+        return str(path)
 
 class SalesConfig(BaseModel):
     name: str
@@ -69,10 +87,27 @@ class AppConfig(BaseModel):
         return Path(self.settings.output)
 
 def load_config(config_path: Path) -> AppConfig:
-    """Load configuration from YAML file."""
+    """Load configuration from YAML file with security checks."""
     try:
+        # Security checks
+        max_size = 1024 * 1024  # 1MB limit
+        if config_path.stat().st_size > max_size:
+            raise ValueError(f"Config file too large (>1MB): {config_path}")
+        
+        if config_path.owner() != Path(__file__).owner():
+            raise ValueError("Config file owner mismatch")
+
+        # Restrict YAML types
+        def restricted_load(stream):
+            loader = yaml.SafeLoader(stream)
+            # Remove potentially dangerous constructors
+            del loader.yaml_constructors['tag:yaml.org,2002:python/object']
+            del loader.yaml_constructors['tag:yaml.org,2002:python/object/apply']
+            return loader.get_single_data()
+
         with open(config_path) as f:
-            config_data = yaml.safe_load(f)
+            config_data = restricted_load(f)
+            
         return AppConfig(**config_data)
     except Exception as e:
         logger.error(f"Error loading config from {config_path}: {e}")
