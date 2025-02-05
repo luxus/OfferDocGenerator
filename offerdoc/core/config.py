@@ -87,9 +87,15 @@ class AppConfig(BaseModel):
                 if field in settings_data:
                     raw_value = settings_data[field]
                     path = Path(raw_value)
+                    
+                    # Handle both relative and absolute paths
                     if not path.is_absolute():
                         resolved_path = (base_dir / path).resolve()
-                        settings_data[field] = str(resolved_path)
+                    else:
+                        resolved_path = path.resolve()
+                        
+                    # Store as Path object directly instead of string
+                    settings_data[field] = resolved_path
             
             data['settings'] = settings_data
         return data
