@@ -110,7 +110,17 @@ def load_textblock(var_name: str, config: Config, product_name: str, language: s
             )
             if target_path.exists():
                 try:
-                    return template.new_subdoc(str(target_path)), target_path
+                    # Create subdoc with preserved formatting
+                    subdoc = template.new_subdoc()
+                    doc = Document(str(target_path))
+                    for paragraph in doc.paragraphs:
+                        p = subdoc.add_paragraph()
+                        for run in paragraph.runs:
+                            r = p.add_run(run.text)
+                            r.bold = run.bold
+                            r.italic = run.italic
+                            r.underline = run.underline
+                    return subdoc, target_path
                 except Exception as e:
                     logger.error(f"Failed to load subdoc {target_path}: {e}")
                     return None, None
@@ -168,6 +178,7 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
     """Build base context with core variables."""
     return {
+        "Config": config.model_dump(),  # Full config for template access
         "offer": config.offer.model_dump(),
         "customer": config.customer.model_dump(),
         "sales": config.sales.model_dump(),

@@ -477,11 +477,11 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         config = offerdocgenerator.load_config(custom_config_path)
         
-        # Verify custom settings
-        self.assertEqual(config.settings.products, custom_config_path.parent / "custom_products")
-        self.assertEqual(config.settings.common, custom_config_path.parent / "custom_common")
-        self.assertEqual(config.settings.output, custom_config_path.parent / "custom_output")
-        self.assertEqual(config.settings.templates, custom_config_path.parent / "custom_template")
+        # Verify custom settings with resolved paths
+        self.assertEqual(config.settings.products, (custom_config_path.parent / "custom_products").resolve())
+        self.assertEqual(config.settings.common, (custom_config_path.parent / "custom_common").resolve())
+        self.assertEqual(config.settings.output, (custom_config_path.parent / "custom_output").resolve())
+        self.assertEqual(config.settings.templates, (custom_config_path.parent / "custom_template").resolve())
         
         # Verify defaults
         self.assertEqual(config.settings.format, "docx")
@@ -507,7 +507,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             config = config.model_copy(update={"settings": new_settings})
             
             products = offerdocgenerator.get_product_names(config)
-            prefix = config.settings.get("prefix", "Offer_")
+            prefix = config.settings.filename_pattern.split("_")[0]
 
             # Add validity text to templates for nested config testing
             for template in [self.template_file_en, self.template_file_de]:
