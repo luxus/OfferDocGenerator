@@ -1,0 +1,1997 @@
+[
+  {
+    "api_documentation": [
+      {
+        "endpoint": "validate_call",
+        "response": {
+          "type": "AnyCallableT | Callable[[AnyCallableT], AnyCallableT]",
+          "description": "The decorated function."
+        },
+        "parameters": [
+          {
+            "name": "func",
+            "type": "AnyCallableT | None",
+            "required": false,
+            "description": "The function to be decorated."
+          },
+          {
+            "name": "config",
+            "type": "ConfigDict | None",
+            "required": false,
+            "description": "The configuration dictionary."
+          },
+          {
+            "name": "validate_return",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to validate the return value."
+          }
+        ],
+        "description": "Decorator for validating function calls."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.__init__",
+        "response": {
+          "type": "None",
+          "description": "Raises ValidationError if the input data cannot be validated to form a valid model."
+        },
+        "parameters": [
+          {
+            "name": "data",
+            "type": "Any",
+            "required": true,
+            "description": "Input data to validate."
+          }
+        ],
+        "description": "Create a new model by parsing and validating input data from keyword arguments."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_config",
+        "response": {
+          "type": "ConfigDict",
+          "description": "The configuration of the model."
+        },
+        "parameters": [],
+        "description": "Configuration for the model, should be a dictionary conforming to ConfigDict."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_computed_fields",
+        "response": {
+          "type": "dict[str, ComputedFieldInfo]",
+          "description": "A mapping of computed field names to ComputedFieldInfo objects."
+        },
+        "parameters": [],
+        "description": "Get metadata about the computed fields defined on the model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_extra",
+        "response": {
+          "type": "dict[str, Any] | None",
+          "description": "A dictionary of extra fields, or None if config.extra is not set to 'allow'."
+        },
+        "parameters": [],
+        "description": "Get extra fields set during validation."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_fields",
+        "response": {
+          "type": "dict[str, FieldInfo]",
+          "description": "A mapping of field names to FieldInfo objects."
+        },
+        "parameters": [],
+        "description": "Get metadata about the fields defined on the model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_fields_set",
+        "response": {
+          "type": "set[str]",
+          "description": "A set of strings representing the fields that have been set."
+        },
+        "parameters": [],
+        "description": "Returns the set of fields that have been explicitly set on this model instance."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.__pydantic_core_schema__",
+        "response": {
+          "type": "CoreSchema",
+          "description": "The core schema of the model."
+        },
+        "parameters": [],
+        "description": "The core schema of the model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_construct",
+        "response": {
+          "type": "Self",
+          "description": "A new instance of the Model class with validated data."
+        },
+        "parameters": [
+          {
+            "name": "_fields_set",
+            "type": "set[str] | None",
+            "required": false,
+            "description": "A set of field names that were originally explicitly set during instantiation."
+          },
+          {
+            "name": "values",
+            "type": "Any",
+            "required": true,
+            "description": "Trusted or pre-validated data dictionary."
+          }
+        ],
+        "description": "Creates a new instance of the Model class with validated data."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_copy",
+        "response": {
+          "type": "Self",
+          "description": "New model instance."
+        },
+        "parameters": [
+          {
+            "name": "update",
+            "type": "Mapping[str, Any] | None",
+            "required": false,
+            "description": "Values to change/add in the new model."
+          },
+          {
+            "name": "deep",
+            "type": "bool",
+            "required": false,
+            "description": "Set to True to make a deep copy of the model."
+          }
+        ],
+        "description": "Returns a copy of the model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_dump",
+        "response": {
+          "type": "dict[str, Any]",
+          "description": "A dictionary representation of the model."
+        },
+        "parameters": [
+          {
+            "name": "mode",
+            "type": "Literal['json', 'python'] | str",
+            "required": false,
+            "description": "The mode in which to_python should run."
+          },
+          {
+            "name": "include",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "A set of fields to include in the output."
+          },
+          {
+            "name": "exclude",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "A set of fields to exclude from the output."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "Additional context to pass to the serializer."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use the field's alias in the dictionary key if defined."
+          },
+          {
+            "name": "exclude_unset",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that have not been explicitly set."
+          },
+          {
+            "name": "exclude_defaults",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that are set to their default value."
+          },
+          {
+            "name": "exclude_none",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that have a value of None."
+          },
+          {
+            "name": "round_trip",
+            "type": "bool",
+            "required": false,
+            "description": "If True, dumped values should be valid as input for non-idempotent types such as Json[T]."
+          },
+          {
+            "name": "warnings",
+            "type": "bool | Literal['none', 'warn', 'error']",
+            "required": false,
+            "description": "How to handle serialization errors."
+          },
+          {
+            "name": "serialize_as_any",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize fields with duck-typing serialization behavior."
+          }
+        ],
+        "description": "Generate a dictionary representation of the model, optionally specifying which fields to include or exclude."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_dump_json",
+        "response": {
+          "type": "str",
+          "description": "A JSON string representation of the model."
+        },
+        "parameters": [
+          {
+            "name": "indent",
+            "type": "int | None",
+            "required": false,
+            "description": "Indentation to use in the JSON output."
+          },
+          {
+            "name": "include",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "Field(s) to include in the JSON output."
+          },
+          {
+            "name": "exclude",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "Field(s) to exclude from the JSON output."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "Additional context to pass to the serializer."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize using field aliases."
+          },
+          {
+            "name": "exclude_unset",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that have not been explicitly set."
+          },
+          {
+            "name": "exclude_defaults",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that are set to their default value."
+          },
+          {
+            "name": "exclude_none",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that have a value of None."
+          },
+          {
+            "name": "round_trip",
+            "type": "bool",
+            "required": false,
+            "description": "If True, dumped values should be valid as input for non-idempotent types such as Json[T]."
+          },
+          {
+            "name": "warnings",
+            "type": "bool | Literal['none', 'warn', 'error']",
+            "required": false,
+            "description": "How to handle serialization errors."
+          },
+          {
+            "name": "serialize_as_any",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize fields with duck-typing serialization behavior."
+          }
+        ],
+        "description": "Generates a JSON representation of the model using Pydantic's to_json method."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_json_schema",
+        "response": {
+          "type": "dict[str, Any]",
+          "description": "The JSON schema for the given model class."
+        },
+        "parameters": [
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use attribute aliases or not."
+          },
+          {
+            "name": "ref_template",
+            "type": "str",
+            "required": false,
+            "description": "The reference template."
+          },
+          {
+            "name": "schema_generator",
+            "type": "type[GenerateJsonSchema]",
+            "required": false,
+            "description": "To override the logic used to generate the JSON schema, as a subclass of GenerateJsonSchema with your desired modifications."
+          },
+          {
+            "name": "mode",
+            "type": "JsonSchemaMode",
+            "required": false,
+            "description": "The mode in which to generate the schema."
+          }
+        ],
+        "description": "Generates a JSON schema for a model class."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_parametrized_name",
+        "response": {
+          "type": "str",
+          "description": "String representing the new class where params are passed to cls as type variables."
+        },
+        "parameters": [
+          {
+            "name": "params",
+            "type": "tuple[type[Any], ...]",
+            "required": true,
+            "description": "Tuple of types of the class."
+          }
+        ],
+        "description": "Compute the class name for parametrizations of generic classes."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_post_init",
+        "response": {
+          "type": "None",
+          "description": "No return value."
+        },
+        "parameters": [
+          {
+            "name": "__context",
+            "type": "Any",
+            "required": false,
+            "description": "Additional context for post-initialization."
+          }
+        ],
+        "description": "Override this method to perform additional initialization after __init__ and model_construct."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_rebuild",
+        "response": {
+          "type": "bool | None",
+          "description": "Returns None if the schema is already 'complete' and rebuilding was not required."
+        },
+        "parameters": [
+          {
+            "name": "force",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to force the rebuilding of the model schema."
+          },
+          {
+            "name": "raise_errors",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to raise errors."
+          },
+          {
+            "name": "_parent_namespace_depth",
+            "type": "int",
+            "required": false,
+            "description": "The depth level of the parent namespace."
+          },
+          {
+            "name": "_types_namespace",
+            "type": "MappingNamespace | None",
+            "required": false,
+            "description": "The types namespace."
+          }
+        ],
+        "description": "Try to rebuild the pydantic-core schema for the model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_validate",
+        "response": {
+          "type": "Self",
+          "description": "The validated model instance."
+        },
+        "parameters": [
+          {
+            "name": "obj",
+            "type": "Any",
+            "required": true,
+            "description": "The object to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to enforce types strictly."
+          },
+          {
+            "name": "from_attributes",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to extract data from object attributes."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "Additional context to pass to the validator."
+          }
+        ],
+        "description": "Validate a pydantic model instance."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_validate_json",
+        "response": {
+          "type": "Self",
+          "description": "The validated Pydantic model."
+        },
+        "parameters": [
+          {
+            "name": "json_data",
+            "type": "str | bytes | bytearray",
+            "required": true,
+            "description": "The JSON data to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to enforce types strictly."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "Extra variables to pass to the validator."
+          }
+        ],
+        "description": "Validate the given JSON data against the Pydantic model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.model_validate_strings",
+        "response": {
+          "type": "Self",
+          "description": "The validated Pydantic model."
+        },
+        "parameters": [
+          {
+            "name": "obj",
+            "type": "Any",
+            "required": true,
+            "description": "The object containing string data to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to enforce types strictly."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "Extra variables to pass to the validator."
+          }
+        ],
+        "description": "Validate the given object with string data against the Pydantic model."
+      },
+      {
+        "endpoint": "pydantic.BaseModel.copy",
+        "response": {
+          "type": "Self",
+          "description": "A copy of the model with included, excluded and updated fields as specified."
+        },
+        "parameters": [
+          {
+            "name": "include",
+            "type": "AbstractSetIntStr | MappingIntStrAny | None",
+            "required": false,
+            "description": "Optional set or mapping specifying which fields to include in the copied model."
+          },
+          {
+            "name": "exclude",
+            "type": "AbstractSetIntStr | MappingIntStrAny | None",
+            "required": false,
+            "description": "Optional set or mapping specifying which fields to exclude in the copied model."
+          },
+          {
+            "name": "update",
+            "type": "Dict[str, Any] | None",
+            "required": false,
+            "description": "Optional dictionary of field-value pairs to override field values in the copied model."
+          },
+          {
+            "name": "deep",
+            "type": "bool",
+            "required": false,
+            "description": "If True, the values of fields that are Pydantic models will be deep-copied."
+          }
+        ],
+        "description": "Returns a copy of the model."
+      },
+      {
+        "endpoint": "pydantic.create_model",
+        "response": {
+          "type": "type[ModelT]",
+          "description": "The new model."
+        },
+        "parameters": [
+          {
+            "name": "model_name",
+            "type": "str",
+            "required": true,
+            "description": "The name of the newly created model."
+          },
+          {
+            "name": "__config__",
+            "type": "ConfigDict | None",
+            "required": false,
+            "description": "The configuration of the new model."
+          },
+          {
+            "name": "__doc__",
+            "type": "str | None",
+            "required": false,
+            "description": "The docstring of the new model."
+          },
+          {
+            "name": "__base__",
+            "type": "type[ModelT] | tuple[type[ModelT], ...] | None",
+            "required": false,
+            "description": "The base class or classes for the new model."
+          },
+          {
+            "name": "__module__",
+            "type": "str | None",
+            "required": false,
+            "description": "The name of the module that the model belongs to; if None, the value is taken from sys._getframe(1)"
+          },
+          {
+            "name": "__validators__",
+            "type": "dict[str, Callable[..., Any]] | None",
+            "required": false,
+            "description": "A dictionary of methods that validate fields."
+          },
+          {
+            "name": "__cls_kwargs__",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "A dictionary of keyword arguments for class creation, such as metaclass."
+          },
+          {
+            "name": "__slots__",
+            "type": "tuple[str, ...] | None",
+            "required": false,
+            "description": "Deprecated. Should not be passed to create_model."
+          },
+          {
+            "name": "**field_definitions",
+            "type": "Any",
+            "required": false,
+            "description": "Attributes of the new model."
+          }
+        ],
+        "description": "Dynamically creates and returns a new Pydantic model, in other words, create_model dynamically creates a subclass of BaseModel."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.__init__",
+        "response": {
+          "type": "null",
+          "description": "No response data."
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "type": "Any",
+            "required": true,
+            "description": "The type associated with the TypeAdapter."
+          },
+          {
+            "name": "config",
+            "type": "ConfigDict | None",
+            "required": false,
+            "description": "Configuration for the TypeAdapter, should be a dictionary conforming to ConfigDict. You cannot provide a configuration when instantiating a TypeAdapter if the type you're using has its own config that cannot be overridden (ex: BaseModel, TypedDict, and dataclass). A type-adapter-config-unused error will be raised in this case."
+          },
+          {
+            "name": "_parent_depth",
+            "type": "int",
+            "required": false,
+            "description": "Depth at which to search for the parent frame. This frame is used when resolving forward annotations during schema building, by looking for the globals and locals of this frame. Defaults to 2, which will result in the frame where the TypeAdapter was instantiated. This parameter is named with an underscore to suggest its private nature and discourage use. It may be deprecated in a minor version, so we only recommend using it if you're comfortable with potential change in behavior/support."
+          },
+          {
+            "name": "module",
+            "type": "str | None",
+            "required": false,
+            "description": "The module that passes to plugin if provided."
+          }
+        ],
+        "description": "Initialize a TypeAdapter instance."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.rebuild",
+        "response": {
+          "type": "bool | None",
+          "description": "Returns None if the schema is already 'complete' and rebuilding was not required. If rebuilding was required, returns True if rebuilding was successful, otherwise False."
+        },
+        "parameters": [
+          {
+            "name": "force",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to force the rebuilding of the type adapter's schema, defaults to False."
+          },
+          {
+            "name": "raise_errors",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to raise errors, defaults to True."
+          },
+          {
+            "name": "_parent_namespace_depth",
+            "type": "int",
+            "required": false,
+            "description": "Depth at which to search for the parent frame. This frame is used when resolving forward annotations during schema rebuilding, by looking for the locals of this frame. Defaults to 2, which will result in the frame where the method was called."
+          },
+          {
+            "name": "_types_namespace",
+            "type": "MappingNamespace | None",
+            "required": false,
+            "description": "An explicit types namespace to use, instead of using the local namespace from the parent frame. Defaults to None."
+          }
+        ],
+        "description": "Try to rebuild the pydantic-core schema for the adapter's type."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.validate_python",
+        "response": {
+          "type": "T",
+          "description": "The validated object."
+        },
+        "parameters": [
+          {
+            "name": "object",
+            "type": "Any",
+            "required": true,
+            "description": "The Python object to validate against the model."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to strictly check types."
+          },
+          {
+            "name": "from_attributes",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to extract data from object attributes."
+          },
+          {
+            "name": "context",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "Additional context to pass to the validator."
+          },
+          {
+            "name": "experimental_allow_partial",
+            "type": "bool | Literal['off', 'on', 'trailing-strings']",
+            "required": false,
+            "description": "**Experimental** whether to enable partial validation, e.g. to process streams. False / 'off': Default behavior, no partial validation. True / 'on': Enable partial validation. 'trailing-strings': Enable partial validation and allow trailing strings in the input."
+          }
+        ],
+        "description": "Validate a Python object against the model."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.validate_json",
+        "response": {
+          "type": "T",
+          "description": "The validated object."
+        },
+        "parameters": [
+          {
+            "name": "data",
+            "type": "str | bytes | bytearray",
+            "required": true,
+            "description": "The JSON data to validate against the model."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to strictly check types."
+          },
+          {
+            "name": "context",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "Additional context to use during validation."
+          },
+          {
+            "name": "experimental_allow_partial",
+            "type": "bool | Literal['off', 'on', 'trailing-strings']",
+            "required": false,
+            "description": "**Experimental** whether to enable partial validation, e.g. to process streams. False / 'off': Default behavior, no partial validation. True / 'on': Enable partial validation. 'trailing-strings': Enable partial validation and allow trailing strings in the input."
+          }
+        ],
+        "description": "Validate a JSON string or bytes against the model."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.validate_strings",
+        "response": {
+          "type": "T",
+          "description": "The validated object."
+        },
+        "parameters": [
+          {
+            "name": "obj",
+            "type": "Any",
+            "required": true,
+            "description": "The object contains string data to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to strictly check types."
+          },
+          {
+            "name": "context",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "Additional context to use during validation."
+          },
+          {
+            "name": "experimental_allow_partial",
+            "type": "bool | Literal['off', 'on', 'trailing-strings']",
+            "required": false,
+            "description": "**Experimental** whether to enable partial validation, e.g. to process streams. False / 'off': Default behavior, no partial validation. True / 'on': Enable partial validation. 'trailing-strings': Enable partial validation and allow trailing strings in the input."
+          }
+        ],
+        "description": "Validate object contains string data against the model."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.get_default_value",
+        "response": {
+          "type": "Some[T] | None",
+          "description": "The default value wrapped in a Some if there is one or None if not."
+        },
+        "parameters": [
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to strictly check types."
+          },
+          {
+            "name": "context",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "Additional context to pass to the validator."
+          }
+        ],
+        "description": "Get the default value for the wrapped type."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.dump_python",
+        "response": {
+          "type": "Any",
+          "description": "The serialized object."
+        },
+        "parameters": [
+          {
+            "name": "instance",
+            "type": "T",
+            "required": true,
+            "description": "The Python object to serialize."
+          },
+          {
+            "name": "mode",
+            "type": "Literal['json', 'python']",
+            "required": false,
+            "description": "The output format."
+          },
+          {
+            "name": "include",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "Fields to include in the output."
+          },
+          {
+            "name": "exclude",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "Fields to exclude from the output."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use alias names for field names."
+          },
+          {
+            "name": "exclude_unset",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude unset fields."
+          },
+          {
+            "name": "exclude_defaults",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields with default values."
+          },
+          {
+            "name": "exclude_none",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields with None values."
+          },
+          {
+            "name": "round_trip",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to output the serialized data in a way that is compatible with deserialization."
+          },
+          {
+            "name": "warnings",
+            "type": "bool | Literal['none', 'warn', 'error']",
+            "required": false,
+            "description": "How to handle serialization errors. False/'none' ignores them, True/'warn' logs errors, 'error' raises a PydanticSerializationError."
+          },
+          {
+            "name": "serialize_as_any",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize fields with duck-typing serialization behavior."
+          },
+          {
+            "name": "context",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "Additional context to pass to the serializer."
+          }
+        ],
+        "description": "Dump an instance of the adapted type to a Python object."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.dump_json",
+        "response": {
+          "type": "bytes",
+          "description": "The JSON representation of the given instance as bytes."
+        },
+        "parameters": [
+          {
+            "name": "instance",
+            "type": "T",
+            "required": true,
+            "description": "The instance to be serialized."
+          },
+          {
+            "name": "indent",
+            "type": "int | None",
+            "required": false,
+            "description": "Number of spaces for JSON indentation."
+          },
+          {
+            "name": "include",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "Fields to include."
+          },
+          {
+            "name": "exclude",
+            "type": "IncEx | None",
+            "required": false,
+            "description": "Fields to exclude."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use alias names for field names."
+          },
+          {
+            "name": "exclude_unset",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude unset fields."
+          },
+          {
+            "name": "exclude_defaults",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields with default values."
+          },
+          {
+            "name": "exclude_none",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields with a value of None."
+          },
+          {
+            "name": "round_trip",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize and deserialize the instance to ensure round-tripping."
+          },
+          {
+            "name": "warnings",
+            "type": "bool | Literal['none', 'warn', 'error']",
+            "required": false,
+            "description": "How to handle serialization errors. False/'none' ignores them, True/'warn' logs errors, 'error' raises a PydanticSerializationError."
+          },
+          {
+            "name": "serialize_as_any",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize fields with duck-typing serialization behavior."
+          },
+          {
+            "name": "context",
+            "type": "dict[str, Any] | None",
+            "required": false,
+            "description": "Additional context to pass to the serializer."
+          }
+        ],
+        "description": "Serialize an instance of the adapted type to JSON."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.json_schema",
+        "response": {
+          "type": "dict[str, Any]",
+          "description": "The JSON schema for the model as a dictionary."
+        },
+        "parameters": [
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use alias names for field names."
+          },
+          {
+            "name": "ref_template",
+            "type": "str",
+            "required": false,
+            "description": "The format string used for generating $ref strings."
+          },
+          {
+            "name": "schema_generator",
+            "type": "type[GenerateJsonSchema]",
+            "required": false,
+            "description": "The generator class used for creating the schema."
+          },
+          {
+            "name": "mode",
+            "type": "JsonSchemaMode",
+            "required": false,
+            "description": "The mode to use for schema generation."
+          }
+        ],
+        "description": "Generate a JSON schema for the adapted type."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.json_schemas",
+        "response": {
+          "type": "tuple[dict[tuple[JsonSchemaKeyT, JsonSchemaMode], JsonSchemaValue], JsonSchemaValue]",
+          "description": "A tuple where the first element is a dictionary whose keys are tuples of JSON schema key type and JSON mode, and whose values are the JSON schema corresponding to that pair of inputs. The second element is a JSON schema containing all definitions referenced in the first returned element, along with the optional title and description keys."
+        },
+        "parameters": [
+          {
+            "name": "inputs",
+            "type": "Iterable[tuple[JsonSchemaKeyT, JsonSchemaMode, TypeAdapter[Any]]]",
+            "required": true,
+            "description": "Inputs to schema generation. The first two items will form the keys of the (first) output mapping; the type adapters will provide the core schemas that get converted into definitions in the output JSON schema."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use alias names."
+          },
+          {
+            "name": "title",
+            "type": "str | None",
+            "required": false,
+            "description": "The title for the schema."
+          },
+          {
+            "name": "description",
+            "type": "str | None",
+            "required": false,
+            "description": "The description for the schema."
+          },
+          {
+            "name": "ref_template",
+            "type": "str",
+            "required": false,
+            "description": "The format string used for generating $ref strings."
+          },
+          {
+            "name": "schema_generator",
+            "type": "type[GenerateJsonSchema]",
+            "required": false,
+            "description": "The generator class used for creating the schema."
+          }
+        ],
+        "description": "Generate a JSON schema including definitions from multiple type adapters."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator",
+        "response": {
+          "type": "Any",
+          "description": "The validated object."
+        },
+        "parameters": [
+          {
+            "name": "schema",
+            "type": "CoreSchema",
+            "required": true,
+            "description": "The CoreSchema to use for validation."
+          },
+          {
+            "name": "config",
+            "type": "CoreConfig | None",
+            "required": false,
+            "description": "Optionally a CoreConfig to configure validation."
+          }
+        ],
+        "description": "SchemaValidator is the Python wrapper for pydantic-core's Rust validation logic, internally it owns one CombinedValidator which may in turn own more CombinedValidator s which make up the full schema validator."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator.validate_python",
+        "response": {
+          "type": "Any",
+          "description": "The validated object."
+        },
+        "parameters": [
+          {
+            "name": "input",
+            "type": "Any",
+            "required": true,
+            "description": "The Python object to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate the object in strict mode. If None, the value of CoreConfig.strict is used."
+          },
+          {
+            "name": "from_attributes",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate objects as inputs to models by extracting attributes. If None, the value of CoreConfig.from_attributes is used."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for validation, this is passed to functional validators as info.context."
+          },
+          {
+            "name": "self_instance",
+            "type": "Any | None",
+            "required": false,
+            "description": "An instance of a model set attributes on from validation, this is used when running validation from the __init__ method of a model."
+          },
+          {
+            "name": "from_attributes",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate objects as inputs to models by extracting attributes. If None, the value of CoreConfig.from_attributes is used."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for validation, this is passed to functional validators as info.context."
+          },
+          {
+            "name": "self_instance",
+            "type": "Any | None",
+            "required": false,
+            "description": "An instance of a model set attributes on from validation, this is used when running validation from the __init__ method of a model."
+          }
+        ],
+        "description": "Similar to validate_python() but returns a boolean."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator.validate_json",
+        "response": {
+          "type": "Any",
+          "description": "The validated Python object."
+        },
+        "parameters": [
+          {
+            "name": "input",
+            "type": "str | bytes | bytearray",
+            "required": true,
+            "description": "The JSON data to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate the object in strict mode. If None, the value of CoreConfig.strict is used."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for validation, this is passed to functional validators as info.context."
+          },
+          {
+            "name": "self_instance",
+            "type": "Any | None",
+            "required": false,
+            "description": "An instance of a model set attributes on from validation."
+          },
+          {
+            "name": "allow_partial",
+            "type": "bool | Literal['off', 'on', 'trailing-strings']",
+            "required": false,
+            "description": "Whether to allow partial validation; if True incomplete JSON will be parsed successfully and errors in the last element of sequences and mappings are ignored. 'trailing-strings' means any final unfinished JSON string is included in the result."
+          }
+        ],
+        "description": "Validate JSON data directly against the schema and return the validated Python object."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator.validate_strings",
+        "response": {
+          "type": "Any",
+          "description": "The validated Python object."
+        },
+        "parameters": [
+          {
+            "name": "input",
+            "type": "_StringInput",
+            "required": true,
+            "description": "The input as a string, or bytes/bytearray if strict=False."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate the object in strict mode. If None, the value of CoreConfig.strict is used."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for validation, this is passed to functional validators as info.context."
+          },
+          {
+            "name": "allow_partial",
+            "type": "bool | Literal['off', 'on', 'trailing-strings']",
+            "required": false,
+            "description": "Whether to allow partial validation; if True errors in the last element of sequences and mappings are ignored. 'trailing-strings' means any final unfinished JSON string is included in the result."
+          }
+        ],
+        "description": "Validate a string against the schema and return the validated Python object."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator.validate_assignment",
+        "response": {
+          "type": "dict[str, Any] | tuple[dict[str, Any], dict[str, Any] | None, set[str]]",
+          "description": "Either the model dict or a tuple of (model_data, model_extra, fields_set)."
+        },
+        "parameters": [
+          {
+            "name": "obj",
+            "type": "Any",
+            "required": true,
+            "description": "The model instance being assigned to."
+          },
+          {
+            "name": "field_name",
+            "type": "str",
+            "required": true,
+            "description": "The name of the field to validate assignment for."
+          },
+          {
+            "name": "field_value",
+            "type": "Any",
+            "required": true,
+            "description": "The value to assign to the field."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate the object in strict mode. If None, the value of CoreConfig.strict is used."
+          },
+          {
+            "name": "from_attributes",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate objects as inputs to models by extracting attributes. If None, the value of CoreConfig.from_attributes is used."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for validation, this is passed to functional validators as info.context."
+          }
+        ],
+        "description": "Validate an assignment to a field on a model."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator.get_default_value",
+        "response": {
+          "type": "Some | None",
+          "description": "None if the schema has no default value, otherwise a Some containing the default."
+        },
+        "parameters": [
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate the default value in strict mode. If None, the value of CoreConfig.strict is used."
+          },
+          {
+            "name": "context",
+            "type": "Any",
+            "required": false,
+            "description": "The context to use for validation, this is passed to functional validators as info.context."
+          }
+        ],
+        "description": "Get the default value for the schema, including running default value validation."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaSerializer",
+        "response": {
+          "type": "Any",
+          "description": "The serialized Python object."
+        },
+        "parameters": [
+          {
+            "name": "schema",
+            "type": "CoreSchema",
+            "required": true,
+            "description": "The CoreSchema to use for serialization."
+          },
+          {
+            "name": "config",
+            "type": "CoreConfig | None",
+            "required": false,
+            "description": "Optionally a CoreConfig to configure serialization."
+          }
+        ],
+        "description": "SchemaSerializer is the Python wrapper for pydantic-core's Rust serialization logic, internally it owns one CombinedSerializer which may in turn own more CombinedSerializer s which make up the full schema serializer."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaSerializer.to_python",
+        "response": {
+          "type": "Any",
+          "description": "The serialized Python object."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Any",
+            "required": true,
+            "description": "The Python object to serialize."
+          },
+          {
+            "name": "mode",
+            "type": "str | None",
+            "required": false,
+            "description": "The serialization mode to use, either 'python' or 'json', defaults to 'python'. In JSON mode, all values are converted to JSON compatible types, e.g. None, int, float, str, list, dict."
+          },
+          {
+            "name": "include",
+            "type": "_IncEx | None",
+            "required": false,
+            "description": "A set of fields to include, if None all fields are included."
+          },
+          {
+            "name": "exclude",
+            "type": "_IncEx | None",
+            "required": false,
+            "description": "A set of fields to exclude, if None no fields are excluded."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use the alias names of fields."
+          },
+          {
+            "name": "exclude_unset",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that are not set, e.g. are not included in __pydantic_fields_set__."
+          },
+          {
+            "name": "exclude_defaults",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that are equal to their default value."
+          },
+          {
+            "name": "exclude_none",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that have a value of None."
+          },
+          {
+            "name": "round_trip",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to enable serialization and validation round-trip support."
+          },
+          {
+            "name": "warnings",
+            "type": "bool | Literal['none', 'warn', 'error']",
+            "required": false,
+            "description": "How to handle invalid fields. False/'none' ignores them, True/'warn' logs errors, 'error' raises a PydanticSerializationError."
+          },
+          {
+            "name": "fallback",
+            "type": "Callable[[Any], Any] | None",
+            "required": false,
+            "description": "A function to call when an unknown value is encountered, if None a PydanticSerializationError error is raised."
+          },
+          {
+            "name": "serialize_as_any",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize fields with duck-typing serialization behavior."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for serialization, this is passed to functional serializers as info.context."
+          }
+        ],
+        "description": "Serialize/marshal a Python object to a Python object including transforming and filtering data."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaSerializer.to_json",
+        "response": {
+          "type": "bytes",
+          "description": "JSON bytes."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Any",
+            "required": true,
+            "description": "The Python object to serialize."
+          },
+          {
+            "name": "indent",
+            "type": "int | None",
+            "required": false,
+            "description": "If None, the JSON will be compact, otherwise it will be pretty-printed with the indent provided."
+          },
+          {
+            "name": "include",
+            "type": "_IncEx | None",
+            "required": false,
+            "description": "A set of fields to include, if None all fields are included."
+          },
+          {
+            "name": "exclude",
+            "type": "_IncEx | None",
+            "required": false,
+            "description": "A set of fields to exclude, if None no fields are excluded."
+          },
+          {
+            "name": "by_alias",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to use the alias names of fields."
+          },
+          {
+            "name": "exclude_unset",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that are not set, e.g. are not included in __pydantic_fields_set__."
+          },
+          {
+            "name": "exclude_defaults",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that are equal to their default value."
+          },
+          {
+            "name": "exclude_none",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to exclude fields that have a value of None."
+          },
+          {
+            "name": "round_trip",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to enable serialization and validation round-trip support."
+          },
+          {
+            "name": "warnings",
+            "type": "bool | Literal['none', 'warn', 'error']",
+            "required": false,
+            "description": "How to handle invalid fields. False/'none' ignores them, True/'warn' logs errors, 'error' raises a PydanticSerializationError."
+          },
+          {
+            "name": "fallback",
+            "type": "Callable[[Any], Any] | None",
+            "required": false,
+            "description": "A function to call when an unknown value is encountered, if None a PydanticSerializationError error is raised."
+          },
+          {
+            "name": "serialize_as_any",
+            "type": "bool",
+            "required": false,
+            "description": "Whether to serialize fields with duck-typing serialization behavior."
+          },
+          {
+            "name": "context",
+            "type": "Any | None",
+            "required": false,
+            "description": "The context to use for serialization, this is passed to functional serializers as info.context."
+          }
+        ],
+        "description": "Serialize a Python object to JSON including transforming and filtering data."
+      },
+      {
+        "endpoint": "BaseSettings",
+        "response": {
+          "type": "object",
+          "description": "Returns an instance of BaseSettings."
+        },
+        "parameters": [
+          {
+            "name": "_case_sensitive",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether environment and CLI variable names should be read with case-sensitivity."
+          },
+          {
+            "name": "_nested_model_default_partial_update",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to allow partial updates on nested model default object fields."
+          },
+          {
+            "name": "_env_prefix",
+            "type": "str | None",
+            "required": false,
+            "description": "Prefix for all environment variables."
+          },
+          {
+            "name": "_env_file",
+            "type": "DotenvType | None",
+            "required": false,
+            "description": "The env file(s) to load settings values from."
+          },
+          {
+            "name": "_env_file_encoding",
+            "type": "str | None",
+            "required": false,
+            "description": "The env file encoding, e.g. 'latin-1'."
+          },
+          {
+            "name": "_env_ignore_empty",
+            "type": "bool | None",
+            "required": false,
+            "description": "Ignore environment variables where the value is an empty string."
+          },
+          {
+            "name": "_env_nested_delimiter",
+            "type": "str | None",
+            "required": false,
+            "description": "The nested env values delimiter."
+          },
+          {
+            "name": "_env_parse_none_str",
+            "type": "str | None",
+            "required": false,
+            "description": "The env string value that should be parsed into None type."
+          },
+          {
+            "name": "_env_parse_enums",
+            "type": "bool | None",
+            "required": false,
+            "description": "Parse enum field names to values."
+          },
+          {
+            "name": "_cli_prog_name",
+            "type": "str | None",
+            "required": false,
+            "description": "The CLI program name to display in help text."
+          },
+          {
+            "name": "_cli_parse_args",
+            "type": "bool | list[str] | tuple[str, ...] | None",
+            "required": false,
+            "description": "The list of CLI arguments to parse."
+          },
+          {
+            "name": "_cli_settings_source",
+            "type": "CliSettingsSource[Any] | None",
+            "required": false,
+            "description": "Override the default CLI settings source with a user defined instance."
+          },
+          {
+            "name": "_cli_parse_none_str",
+            "type": "str | None",
+            "required": false,
+            "description": "The CLI string value that should be parsed into None type."
+          },
+          {
+            "name": "_cli_hide_none_type",
+            "type": "bool | None",
+            "required": false,
+            "description": "Hide None values in CLI help text."
+          },
+          {
+            "name": "_cli_avoid_json",
+            "type": "bool | None",
+            "required": false,
+            "description": "Avoid complex JSON objects in CLI help text."
+          },
+          {
+            "name": "_cli_enforce_required",
+            "type": "bool | None",
+            "required": false,
+            "description": "Enforce required fields at the CLI."
+          },
+          {
+            "name": "_cli_use_class_docs_for_groups",
+            "type": "bool | None",
+            "required": false,
+            "description": "Use class docstrings in CLI group help text instead of field descriptions."
+          },
+          {
+            "name": "_cli_exit_on_error",
+            "type": "bool | None",
+            "required": false,
+            "description": "Determines whether or not the internal parser exits with error info when an error occurs."
+          },
+          {
+            "name": "_cli_prefix",
+            "type": "str | None",
+            "required": false,
+            "description": "The root parser command line arguments prefix."
+          },
+          {
+            "name": "_cli_flag_prefix_char",
+            "type": "str | None",
+            "required": false,
+            "description": "The flag prefix character to use for CLI optional arguments."
+          },
+          {
+            "name": "_cli_implicit_flags",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether bool fields should be implicitly converted into CLI boolean flags."
+          },
+          {
+            "name": "_cli_ignore_unknown_args",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to ignore unknown CLI args and parse only known ones."
+          },
+          {
+            "name": "_secrets_dir",
+            "type": "PathType | None",
+            "required": false,
+            "description": "The secret files directory or a sequence of directories."
+          },
+          {
+            "name": "**values",
+            "type": "Any",
+            "required": false,
+            "description": "Additional values."
+          }
+        ],
+        "description": "Base class for settings, allowing values to be overridden by environment variables."
+      },
+      {
+        "endpoint": "settings_customise_sources",
+        "response": {
+          "type": "tuple[PydanticBaseSettingsSource, ...]",
+          "description": "A tuple containing the sources and their order for loading the settings values."
+        },
+        "parameters": [
+          {
+            "name": "settings_cls",
+            "type": "type[BaseSettings]",
+            "required": true,
+            "description": "The Settings class."
+          },
+          {
+            "name": "init_settings",
+            "type": "PydanticBaseSettingsSource",
+            "required": true,
+            "description": "The InitSettingsSource instance."
+          },
+          {
+            "name": "env_settings",
+            "type": "PydanticBaseSettingsSource",
+            "required": true,
+            "description": "The EnvSettingsSource instance."
+          },
+          {
+            "name": "dotenv_settings",
+            "type": "PydanticBaseSettingsSource",
+            "required": true,
+            "description": "The DotEnvSettingsSource instance."
+          },
+          {
+            "name": "file_secret_settings",
+            "type": "PydanticBaseSettingsSource",
+            "required": true,
+            "description": "The SecretsSettingsSource instance."
+          }
+        ],
+        "description": "Define the sources and their order for loading the settings values."
+      },
+      {
+        "endpoint": "CliApp.run",
+        "response": {
+          "type": "T",
+          "description": "The ran instance of model."
+        },
+        "parameters": [
+          {
+            "name": "model_cls",
+            "type": "type[T]",
+            "required": true,
+            "description": "The model class to run as a CLI application."
+          },
+          {
+            "name": "cli_args",
+            "type": "list[str] | Namespace | SimpleNamespace | dict[str, Any] | None",
+            "required": false,
+            "description": "The list of CLI arguments to parse."
+          },
+          {
+            "name": "cli_settings_source",
+            "type": "CliSettingsSource[Any] | None",
+            "required": false,
+            "description": "Override the default CLI settings source with a user defined instance."
+          },
+          {
+            "name": "cli_exit_on_error",
+            "type": "bool | None",
+            "required": false,
+            "description": "Determines whether this function exits on error."
+          },
+          {
+            "name": "cli_cmd_method_name",
+            "type": "str",
+            "required": false,
+            "description": "The CLI command method name to run."
+          },
+          {
+            "name": "model_init_data",
+            "type": "Any",
+            "required": false,
+            "description": "The model init data."
+          }
+        ],
+        "description": "Runs a Pydantic BaseSettings, BaseModel, or pydantic.dataclasses.dataclass as a CLI application."
+      },
+      {
+        "endpoint": "CliApp.run_subcommand",
+        "response": {
+          "type": "PydanticModel",
+          "description": "The ran subcommand model."
+        },
+        "parameters": [
+          {
+            "name": "model",
+            "type": "PydanticModel",
+            "required": true,
+            "description": "The model to run the subcommand from."
+          },
+          {
+            "name": "cli_exit_on_error",
+            "type": "bool | None",
+            "required": false,
+            "description": "Determines whether this function exits with error if no subcommand is found."
+          },
+          {
+            "name": "cli_cmd_method_name",
+            "type": "str",
+            "required": false,
+            "description": "The CLI command method name to run."
+          }
+        ],
+        "description": "Runs the model subcommand."
+      },
+      {
+        "endpoint": "parse_tuple",
+        "response": {
+          "type": "RGBA",
+          "description": "An `RGBA` tuple parsed from the input tuple."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "tuple[Any, ...]",
+            "required": true,
+            "description": "A tuple or list."
+          }
+        ],
+        "description": "Parse a tuple or list to get RGBA values."
+      },
+      {
+        "endpoint": "parse_str",
+        "response": {
+          "type": "RGBA",
+          "description": "An `RGBA` tuple parsed from the input string."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "str",
+            "required": true,
+            "description": "A string representing a color."
+          }
+        ],
+        "description": "Parse a string representing a color to an RGBA tuple."
+      },
+      {
+        "endpoint": "ints_to_rgba",
+        "response": {
+          "type": "RGBA",
+          "description": "An instance of the `RGBA` class with the corresponding color and alpha values."
+        },
+        "parameters": [
+          {
+            "name": "r",
+            "type": "int | str",
+            "required": true,
+            "description": "An integer or string representing the red color value."
+          },
+          {
+            "name": "g",
+            "type": "int | str",
+            "required": true,
+            "description": "An integer or string representing the green color value."
+          },
+          {
+            "name": "b",
+            "type": "int | str",
+            "required": true,
+            "description": "An integer or string representing the blue color value."
+          },
+          {
+            "name": "alpha",
+            "type": "float | None",
+            "required": false,oat representing the alpha value. Defaults to None."
+          }
+        ],
+        "description": "Converts integer or string values for RGB color and an optional alpha value to an `RGBA` object."
+      },
+      {
+        "endpoint": "parse_color_value",
+        "response": {
+          "type": "float",
+          "description": "A number between 0 and 1."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int | str",
+            "required": true,
+            "description": "An integer or string color value."
+          },
+          {
+            "name": "max_val",
+            "type": "int",
+            "required": false,
+            "description": "Maximum range value. Defaults to 255."
+          }
+        ],
+        "description": "Parse the color value provided and return a number between 0 and 1."
+      },
+      {
+        "endpoint": "parse_float_alpha",
+        "response": {
+          "type": "float | None",
+          "description": "The parsed value as a float, or `None` if the value was None or equal 1."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "None | str | float | int",
+            "required": true,
+            "description": "The input value to parse."
+          }
+        ],
+        "description": "Parse an alpha value checking it's a valid float in the range 0 to 1."
+      },
+      {
+        "endpoint": "parse_hsl",
+        "response": {
+          "type": "RGBA",
+          "description": "An instance of `RGBA`."
+        },
+        "parameters": [
+          {
+            "name": "h",
+            "type": "str",
+            "required": true,
+            "description": "The hue value."
+          },
+          {
+            "name": "h_units",
+            "type": "str",
+            "required": ": "The unit for hue value."
+          },
+          {
+            "name": "sat",
+            "type": "str",
+            "required": true,
+            "description": "The saturation value."
+          },
+          {
+            "name": "light",
+            "type": "str",
+            "required": true,
+            "description": "The lightness value."
+          },
+          {
+            "name": "alpha",
+            "type": "float | None",
+            "required": false,
+            "description": "Alpha value."
+          }
+        ],
+        "description": "Parse raw hue, saturation, lightness, and alpha values and convert to RGBA."
+      },
+      {
+        "endpoint": "float_to_255",
+        "response": {
+          "type": "int",
+          "description": "The integer equivalent of the given float value rounded to the nearest whole number."
+        },
+        "parameters": [
+          {
+            "name": "c",
+            "type": "float",
+            "required": true,
+            "description": "The float value to be converted. Must be between 0 and 1 (inclusive)."
+          }
+        ],
+        "description": "Converts a float value between 0 and 1 (inclusive) to an integer between 0 and 255 (inclusive)."
+      },
+      {
+        "endpoint": "validate_isbn_format",
+        "response": {
+          "type": "null",
+          "description": "Raises PydanticCustomError if the ISBN is not valid."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "str",
+            "required": true,
+            "description": "The str value representing the ISBN in 10 or 13 digits."
+          }
+        ],
+        "description": "Validate a ISBN format from the provided str value."
+      },
+      {
+        "endpoint": "convert_isbn10_to_isbn13",
+        "response": {
+          "type": "str",
+          "description": "The converted ISBN or the original value if no conversion is necessary."
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "type": "str",
+            "required": true,
+            "description": "The ISBN-10 value to be converted."
+          }
+        ],
+        "description": "Convert an ISBN-10 to ISBN-13."
+      },
+      {
+        "endpoint": "isbn10_digit_calc",
+        "response": {
+          "type": "str",
+          "description": "The calculated last digit of the ISBN-10 value."
+        },
+        "parameters": [
+          {
+            "name": "isbn",
+            "type": "str",
+            "required": true,
+            "description": "The str value representing the ISBN in 10 digits."
+          }
+        ],
+        "description": "Calc a ISBN-10 last digit from the provided str value."
+      },
+      {
+        "endpoint": "isbn13_digit_calc",
+        "response": {
+          "type": "str",
+          "description": "The calculated last digit of the ISBN-13 value."
+        },
+        "parameters": [
+          {
+            "name": "isbn",
+            "type": "str",
+            "required": true,
+            "description": "The str value representing the ISBN in 13 digits."
+          }
+        ],
+        "description": "Calc a ISBN-13 last digit from the provided str value."
+      },
+      {
+        "endpoint": "pydantic.main.BaseModel.model_validate_json",
+        "response": {
+          "type": "object",
+          "description": "Returns an instance of the model populated with the validated data."
+        },
+        "parameters": [],
+        "description": "Pydantic's method for validating JSON data against a model."
+      },
+      {
+        "endpoint": "pydantic.type_adapter.TypeAdapter.validate_json",
+        "response": {
+          "type": "object",
+          "description": "Returns an instance of the model populated with the validated data."
+        },
+        "parameters": [],
+        "description": "Validates JSON data using a TypeAdapter."
+      },
+      {
+        "endpoint": "pydantic_core.from_json",
+        "response": {
+          "type": "object",
+          "description": "Returns a Python object parsed from the JSON data."
+        },
+        "parameters": [
+          {
+            "name": "json_data",
+            "type": "str",
+            "required": true,
+            "description": "The JSON data to parse."
+          },
+          true,
+          "description"description": "A fl        {
+            "name": "allow_partial",
+            "type": "bool | Literal['off', 'on', 'trailing-strings']",
+            "required": false,
+            "description": "Whether to allow partial validation; if True errors in the last element of sequences and mappings are ignored. 'trailing-strings' means any final unfinished JSON string is included in the result."
+          }
+        ],
+        "description": "Validate a Python object against the schema and return the validated object."
+      },
+      {
+        "endpoint": "pydantic_core.SchemaValidator.isinstance_python",
+        "response": {
+          "type": "bool",
+          "description": "True if validation succeeds, False if validation fails."
+        },
+        "parameters": [
+          {
+            "name": "input",
+            "type": "Any",
+            "required": true,
+            "description": "The Python object to validate."
+          },
+          {
+            "name": "strict",
+            "type": "bool | None",
+            "required": false,
+            "description": "Whether to validate the object in strict mode. If None, the value of CoreConfig.strict is used."
+          },
