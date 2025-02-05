@@ -1,4 +1,5 @@
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, Field, ValidationInfo
+from pydantic import field_validator, model_validator
 from pathlib import Path
 from typing import Dict, Any, List
 import yaml
@@ -37,21 +38,24 @@ class Settings(BaseModel):
     template_pattern: str = "base_{language}.docx"
     security: SecuritySettings = Field(default_factory=SecuritySettings)
 
-    @validator('format')
-    def validate_format(cls, v):
+    @field_validator('format')
+    @classmethod
+    def validate_format(cls, v: str, info: ValidationInfo) -> str:
         valid_formats = ['docx', 'dotx']
         if v.lower() not in valid_formats:
             raise ValueError(f"Invalid format. Must be one of {valid_formats}")
         return v.lower()
 
-    @validator('products', 'common', 'output', 'templates')
-    def validate_secure_paths(cls, v):
-        path = Path(v).resolve()
-        if not path.exists():
-            raise ValueError(f"Path does not exist: {v}")
-        if path.is_symlink():
-            raise ValueError("Symbolic links not allowed in paths")
-        return str(path)
+    @model_validator(mode='after')
+    def validate_secure_paths(self) -> 'Settings':
+        for field in ['products', 'common', 'output', 'templates']:
+            path = Path(getattr(self, field)).resolve()
+            if not path.exists():
+                raise ValueError(f"Path does not exist: {path}")
+            if path.is_symlink():
+                raise ValueError("Symbolic links not allowed in paths")
+            setattr(self, field, str(path))
+        return self
 
 class SalesConfig(BaseModel):
     name: str
