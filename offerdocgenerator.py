@@ -62,9 +62,11 @@ def load_config(config_path: Path) -> Config:
         with open(config_path) as f:
             config_data = yaml.safe_load(f)
             
-        # Create config instance and validate
-        config = Config(**config_data)
-        return config
+        # Create config instance with context
+        return Config.model_validate(
+            config_data,
+            context={"config_path": config_path}  # Add context for path resolution
+        )
         
     except Exception as e:
         logger.error(f"Error loading config from {config_path}: {e}")
