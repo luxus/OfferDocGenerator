@@ -218,8 +218,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test that the YAML configuration is loaded correctly."""
         config = offerdocgenerator.load_config(self.config_file)
         self.assertIsInstance(config, offerdocgenerator.Config)
-        self.assertEqual(config.settings.products, str(self.textblocks_dir / "products"))
-        self.assertEqual(config.settings.common, str(self.textblocks_dir / "common"))
+        self.assertEqual(config.settings.products, self.textblocks_dir / "products")
+        self.assertEqual(config.settings.common, self.textblocks_dir / "common")
 
     def test_load_textblocks(self):
         """Test dynamic loading of textblocks from product directory"""
@@ -478,10 +478,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         config = offerdocgenerator.load_config(custom_config_path)
         
         # Verify custom settings with resolved paths
-        self.assertEqual(config.settings.products, (custom_config_path.parent / "custom_products").resolve())
-        self.assertEqual(config.settings.common, (custom_config_path.parent / "custom_common").resolve())
-        self.assertEqual(config.settings.output, (custom_config_path.parent / "custom_output").resolve())
-        self.assertEqual(config.settings.templates, (custom_config_path.parent / "custom_template").resolve())
+        self.assertEqual(config.settings.products, Path(custom_config_path.parent / "custom_products").resolve())
+        self.assertEqual(config.settings.common, Path(custom_config_path.parent / "custom_common").resolve())
+        self.assertEqual(config.settings.output, Path(custom_config_path.parent / "custom_output").resolve())
+        self.assertEqual(config.settings.templates, Path(custom_config_path.parent / "custom_template").resolve())
         
         # Verify defaults
         self.assertEqual(config.settings.format, "docx")

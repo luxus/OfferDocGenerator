@@ -188,14 +188,9 @@ def build_context(config: Config, language: str, product_name: str, currency: st
         "CURRENCY": currency
     }
 
-def render_offer(template_path: Path, context: Dict[str, Any], output_path: Path):
+def render_offer(template: DocxTemplate, context: Dict[str, Any], output_path: Path):
     """Render template with auto-discovered variables"""
-    if not template_path.exists():
-        logger.error(f"Template file not found: {template_path}")
-        sys.exit(1)
-
     try:
-        doc = DocxTemplate(str(template_path))
         
         # Get all variables from the template
         template_vars = doc.get_undeclared_template_variables()
