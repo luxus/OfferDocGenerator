@@ -24,37 +24,19 @@ from pydantic import ConfigDict, model_validator
 
 class Config(AppConfig):
     """Extended configuration with runtime properties"""
-    model_config = ConfigDict(validate_default=True)
-
-    @property
-    def products_path(self) -> Path:
-        return Path(self.settings.products)
-        
-    @property
-    def common_path(self) -> Path:
-        return Path(self.settings.common)
-        
-    @property 
-    def templates_path(self) -> Path:
-        return Path(self.settings.templates)
-        
-    @property
-    def output_path(self) -> Path:
-        return Path(self.settings.output)
+    model_config = ConfigDict(validate_default=True, extra='forbid')
 
     @model_validator(mode='after')
     def validate_config(self) -> 'Config':
         """Validate configuration after initialization."""
-        # Check for missing entire sections
         required_sections = ['offer', 'settings', 'customer', 'sales']
         missing_sections = [
             section for section in required_sections 
-            if not getattr(self, section)  # Check if section is empty
+            if not getattr(self, section)
         ]
         if missing_sections:
             raise ValueError(f"Missing required config sections: {missing_sections}")
 
-        # Check fields within each section
         required_fields = {
             'offer': ['number', 'date', 'validity'],
             'settings': ['products', 'common', 'output', 'templates'],
@@ -65,18 +47,12 @@ class Config(AppConfig):
         missing_fields = []
         for section, fields in required_fields.items():
             section_data = getattr(self, section)
-            current_missing = [f for f in fields if not hasattr(section_data, f)]
+            current_missing = [f for f in fields if not getattr(section_data, f, None)]
             if current_missing:
                 missing_fields.append(f"Missing required fields in {section}: {sorted(current_missing)}")
 
         if missing_fields:
             raise ValueError("\n".join(missing_fields))
-        
-        # Validate output format if specified
-        valid_formats = ['docx', 'dotx']
-        output_format = self.settings.format.lower()
-        if output_format not in valid_formats:
-            raise ValueError(f"Invalid output format. Must be one of {valid_formats}")
             
         return self
 
@@ -98,7 +74,7 @@ def load_config(config_path: Path) -> Config:
 
 def get_product_names(config: Config) -> List[str]:
     """Get list of available products from the products directory."""
-    products_dir = Path(config.settings["products"])
+    products_dir = config.products_path
     if not products_dir.exists():
         logger.error(f"Products directory not found: {products_dir}")
         return []
@@ -192,7 +168,10 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
     """Build base context with core variables."""
     return {
-        "Config": config.dict(),
+        "offer": config.offer.model_dump(),
+        "customer": config.customer.model_dump(),
+        "sales": config.sales.model_dump(),
+        "settings": config.settings.model_dump(),
         "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
         "CURRENCY": currency
