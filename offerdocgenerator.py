@@ -20,8 +20,12 @@ logger = logging.getLogger(__name__)
 
 from offerdoc.core.config import AppConfig
 
+from pydantic import ConfigDict, model_validator
+
 class Config(AppConfig):
     """Extended configuration with runtime properties"""
+    model_config = ConfigDict(validate_default=True)
+
     @property
     def products_path(self) -> Path:
         return Path(self.settings.products)
@@ -38,7 +42,8 @@ class Config(AppConfig):
     def output_path(self) -> Path:
         return Path(self.settings.output)
 
-    def __post_init__(self):
+    @model_validator(mode='after')
+    def validate_config(self) -> 'Config':
         """Validate configuration after initialization."""
         # Check for missing entire sections
         required_sections = ['offer', 'settings', 'customer', 'sales']
@@ -59,8 +64,8 @@ class Config(AppConfig):
 
         missing_fields = []
         for section, fields in required_fields.items():
-            section_data = getattr(self, section, {})
-            current_missing = [f for f in fields if f not in section_data]
+            section_data = getattr(self, section)
+            current_missing = [f for f in fields if not hasattr(section_data, f)]
             if current_missing:
                 missing_fields.append(f"Missing required fields in {section}: {sorted(current_missing)}")
 
@@ -69,9 +74,11 @@ class Config(AppConfig):
         
         # Validate output format if specified
         valid_formats = ['docx', 'dotx']
-        output_format = self.settings.get('format', 'docx').lower()
+        output_format = self.settings.format.lower()
         if output_format not in valid_formats:
             raise ValueError(f"Invalid output format. Must be one of {valid_formats}")
+            
+        return self
 
 def load_config(config_path: Path) -> Config:
     """Load configuration from YAML file."""

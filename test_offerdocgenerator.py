@@ -480,8 +480,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertEqual(config.settings.templates, "custom_template")
         
         # Verify defaults
-        self.assertEqual(config.settings.get("format", "docx"), "docx")
-        self.assertEqual(config.settings.get("prefix", "Offer_"), "Offer_")
+        self.assertEqual(config.settings.format, "docx")
+        self.assertEqual(getattr(config.settings, "prefix", "Offer_"), "Offer_")
         
         # Verify other sections loaded correctly
         self.assertEqual(config.offer["number"], "2025-002")
