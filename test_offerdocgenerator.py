@@ -495,19 +495,23 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Verify template path construction
         template_path_en = Path("custom_template") / "base_EN.docx"
         template_path_de = Path("custom_template") / "base_DE.docx"
-        self.assertEqual(str(template_path_en), str(Path("custom_template") / "base_EN.docx"))
-        self.assertEqual(str(template_path_de), str(Path("custom_template") / "base_DE.docx"))
+        expected_path_en = (self.test_run_dir / "custom_template" / "base_EN.docx").resolve()
+        expected_path_de = (self.test_run_dir / "custom_template" / "base_DE.docx").resolve()
+        self.assertEqual(config.settings.templates_path, expected_path_en.parent)
+        self.assertEqual(config.settings.templates_path, expected_path_de.parent)
 
     def test_render_offer(self):
         """Test rendering for all language/currency combinations in both DOCX and DOTX formats."""
         # Load fresh config for each format test
         for output_format in ["docx", "dotx"]:
             config = offerdocgenerator.load_config(self.config_file)
-            new_settings = config.settings.model_copy(update={"format": output_format})
-            config = config.model_copy(update={"settings": new_settings})
+            from copy import deepcopy
+            new_settings = deepcopy(config.settings)
+            new_settings.format = output_format
+            config.settings = new_settings
             
             products = offerdocgenerator.get_product_names(config)
-            prefix = config.settings.filename_pattern.split("_")[0]
+            prefix = "TestOffer_"  # Match the prefix set in setUp()
 
             # Add validity text to templates for nested config testing
             for template in [self.template_file_en, self.template_file_de]:
