@@ -488,9 +488,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertEqual(getattr(config.settings, "prefix", "Offer_"), "Offer_")
         
         # Verify other sections loaded correctly
-        self.assertEqual(config.offer["number"], "2025-002")
-        self.assertEqual(config.customer["city"], "Testville")
-        self.assertEqual(config.sales["name"], "Jane Smith")
+        self.assertEqual(config.offer.number, "2025-002")
+        self.assertEqual(config.customer.city, "Testville")
+        self.assertEqual(config.sales.name, "Jane Smith")
         
         # Verify template path construction
         template_path_en = Path("custom_template") / "base_EN.docx"
@@ -556,11 +556,11 @@ class TestOfferDocGenerator(unittest.TestCase):
                                 doc = docx.Document(str(output_file))
                                 full_text = "\n".join(para.text for para in doc.paragraphs)
                                 self.assertIn(currency, full_text)
-                                self.assertIn(config.offer["number"], full_text)
-                                self.assertIn(config.customer["name"], full_text)
-                                self.assertIn(config.customer["address"], full_text)
-                                self.assertIn(config.sales["email"], full_text)
-                                self.assertIn(config.sales["phone"], full_text)
+                                self.assertIn(config.offer.number, full_text)
+                                self.assertIn(config.customer.name, full_text)
+                                self.assertIn(config.customer.address, full_text)
+                                self.assertIn(config.sales.email, full_text)
+                                self.assertIn(config.sales.phone, full_text)
 
             # Verify file count for this format
             generated_files = list(self.output_dir.glob(f"**/{prefix}*.{output_format}"))
