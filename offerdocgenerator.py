@@ -195,32 +195,32 @@ def render_offer(template: DocxTemplate, context: Dict[str, Any], output_path: P
     try:
         
         # Get all variables from the template
-        template_vars = doc.get_undeclared_template_variables()
+        template_vars = template.get_undeclared_template_variables()
         
         # Resolve variables from multiple sources
         resolved_context = resolve_template_variables(template_vars, context['Config'], 
                                                    context['PRODUCT'], context['LANGUAGE'],
-                                                   doc)
+                                                   template)
         
         # Merge with existing context
         context.update(resolved_context)
 
         # Render template with complete context
-        doc.render(context, autoescape=True)
+        template.render(context, autoescape=True)
         
         # Handle different output formats
         output_format = output_path.suffix[1:].lower()
         
         if output_format == 'dotx':
             # Change content type for template format
-            document_part = doc.docx.part
+            document_part = template.docx.part
             document_part._content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml'
         
         # Ensure parent directories exist
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Save with configured format
-        doc.save(str(output_path))
+        template.save(str(output_path))
         
         # Enhanced output message with safe path handling
         if output_path.exists():
