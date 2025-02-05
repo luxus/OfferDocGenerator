@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ValidationInfo
+from pydantic import BaseModel, Field, ValidationInfo, computed_field
 from pydantic import field_validator, model_validator
 from pathlib import Path
 from typing import Dict, Any, List
