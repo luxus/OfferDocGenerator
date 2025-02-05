@@ -29,14 +29,31 @@ class OfferConfig(BaseModel):
     validity: Dict[str, str]
 
 class Settings(BaseModel):
-    products: str
-    common: str
-    output: str
-    templates: str
+    products: Path = Field(..., description="Path to product-specific templates")
+    common: Path = Field(..., description="Path to common assets directory")
+    output: Path = Field(..., description="Output directory for generated documents")
+    templates: Path = Field(..., description="Template directory path")
     format: str = "docx"
     filename_pattern: str = "Offer_{product}_{language}_{currency}_{date}.{format}"
     template_pattern: str = "base_{language}.docx"
     security: SecuritySettings = Field(default_factory=SecuritySettings)
+
+    @model_validator(mode='before')
+    @classmethod
+    def resolve_relative_paths(cls, data: dict, info: ValidationInfo) -> dict:
+        if not info.context:
+            return data
+        
+        config_path = info.context.get("config_path")
+        if config_path:
+            base_dir = config_path.parent
+            for field in ['products', 'common', 'output', 'templates']:
+                if field in data:
+                    raw_value = data[field]
+                    path = Path(raw_value)
+                    if not path.is_absolute():
+                        data[field] = base_dir / path
+        return data
 
     @field_validator('format')
     @classmethod
@@ -48,13 +65,10 @@ class Settings(BaseModel):
 
     @model_validator(mode='after')
     def validate_secure_paths(self) -> 'Settings':
-        for field in ['products', 'common', 'output', 'templates']:
-            path = Path(getattr(self, field)).resolve()
-            if not path.exists():
-                raise ValueError(f"Path does not exist: {path}")
-            if path.is_symlink():
-                raise ValueError("Symbolic links not allowed in paths")
-            setattr(self, field, str(path))
+        # Remove the existence check, keep symlink check
+        for field in [self.products, self.common, self.output, self.templates]:
+            if field.is_symlink():
+                raise ValueError(f"Symbolic links not allowed in path: {field}")
         return self
 
 class SalesConfig(BaseModel):
@@ -112,7 +126,10 @@ def load_config(config_path: Path) -> AppConfig:
         with open(config_path) as f:
             config_data = restricted_load(f)
             
-        return AppConfig(**config_data)
+        return AppConfig.model_validate(
+            config_data, 
+            context={"config_path": config_path}
+        )
     except Exception as e:
         logger.error(f"Error loading config from {config_path}: {e}")
         if isinstance(e, (ValueError, TypeError)):
