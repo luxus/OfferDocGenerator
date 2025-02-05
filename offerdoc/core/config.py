@@ -38,6 +38,12 @@ class Settings(BaseModel):
     template_pattern: str = "base_{language}.docx"
     security: SecuritySettings = Field(default_factory=SecuritySettings)
 
+    @computed_field
+    @property
+    def output_path(self) -> Path:
+        """Get resolved output path"""
+        return Path(self.output).resolve()
+
     @field_validator('format')
     @classmethod
     def validate_format(cls, v: str, info: ValidationInfo) -> str:
@@ -80,20 +86,21 @@ class AppConfig(BaseModel):
         
         config_path = info.context.get("config_path")
         if config_path and 'settings' in data:
-            base_dir = config_path.parent.resolve()  # Ensure base_dir is absolute
+            base_dir = config_path.parent.resolve()
             settings_data = data['settings']
             
             for field in ['products', 'common', 'output', 'templates']:
                 if field in settings_data:
-                    raw_value = str(settings_data[field])  # Ensure string input
+                    raw_value = str(settings_data[field])
                     path = Path(raw_value)
                     
-                    # Always resolve relative to base_dir
-                    resolved_path = (base_dir / path.name if path.is_absolute() 
-                                   else base_dir / path).resolve()
+                    # Handle absolute paths specified in config
+                    if path.is_absolute():
+                        resolved_path = path.resolve()
+                    else:
+                        resolved_path = (base_dir / path).resolve()
                     
-                    # Store resolved absolute path
-                    settings_data[field] = resolved_path
+                    settings_data[field] = str(resolved_path)
             
             data['settings'] = settings_data
         return data

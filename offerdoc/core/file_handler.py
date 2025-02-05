@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional, Tuple
 from docxtpl import DocxTemplate
+from docxcompose.composer import ComposedDocument
 from .config import AppConfig
 from .exceptions import TemplateNotFoundError
 import logging
@@ -32,13 +33,17 @@ class FileHandler:
 
     def load_textblock(self, var_name: str, product: str, language: str, 
                       template: DocxTemplate) -> Tuple[Optional[DocxTemplate], Optional[Path]]:
-        """Load textblock content as DocxTemplate subdoc"""
+        """Load textblock content with style preservation"""
         target_path = self.find_textblock(var_name, product, language)
         if target_path:
             try:
-                return template.new_subdoc(str(target_path)), target_path
+                # Create composed document to preserve styles
+                composed = ComposedDocument(template)
+                composed.append(target_path)
+                return composed, target_path
             except Exception as e:
                 logger.error(f"Failed to load subdoc {target_path}: {e}")
+                raise
         return None, None
 
     def ensure_output_dir(self, product: str) -> Path:
