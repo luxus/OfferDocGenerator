@@ -432,8 +432,12 @@ class TestOfferDocGenerator(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             offerdocgenerator.load_config(self.config_file)
         error_msg = str(cm.exception)
-        self.assertRegex(error_msg, r"Missing required fields in offer: \['date', 'validity'\]")
-        self.assertRegex(error_msg, r"Missing required fields in settings: \['common', 'output', 'templates'\]")
+        # Check for Pydantic validation errors
+        self.assertIn("offer.date\n  Field required", error_msg)
+        self.assertIn("offer.validity\n  Field required", error_msg)
+        self.assertIn("settings.common\n  Field required", error_msg)
+        self.assertIn("settings.output\n  Field required", error_msg)
+        self.assertIn("settings.templates\n  Field required", error_msg)
 
     def test_custom_settings_with_defaults(self):
         """Verify custom settings override defaults and missing settings use defaults."""
@@ -474,10 +478,10 @@ class TestOfferDocGenerator(unittest.TestCase):
         config = offerdocgenerator.load_config(custom_config_path)
         
         # Verify custom settings
-        self.assertEqual(config.settings.products, "./custom_products")
-        self.assertEqual(config.settings.common, "./custom_common")
-        self.assertEqual(config.settings.output, "./custom_output")
-        self.assertEqual(config.settings.templates, "custom_template")
+        self.assertEqual(config.settings.products, custom_config_path.parent / "custom_products")
+        self.assertEqual(config.settings.common, custom_config_path.parent / "custom_common")
+        self.assertEqual(config.settings.output, custom_config_path.parent / "custom_output")
+        self.assertEqual(config.settings.templates, custom_config_path.parent / "custom_template")
         
         # Verify defaults
         self.assertEqual(config.settings.format, "docx")
