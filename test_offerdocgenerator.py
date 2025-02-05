@@ -224,9 +224,12 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test dynamic loading of textblocks from product directory"""
         config = offerdocgenerator.load_config(self.config_file)
         
+        # Create a template instance
+        template = DocxTemplate(str(self.template_file_en))
+        
         # Test German textblocks
-        section_1_1_de, _ = offerdocgenerator.load_textblock("section_1_1", config, self.product_name, "DE")
-        section_1_1_1_de, _ = offerdocgenerator.load_textblock("section_1_1_1", config, self.product_name, "DE")
+        section_1_1_de, _ = offerdocgenerator.load_textblock("section_1_1", config, self.product_name, "DE", template)
+        section_1_1_1_de, _ = offerdocgenerator.load_textblock("section_1_1_1", config, self.product_name, "DE", template)
         
         self.assertIsNotNone(section_1_1_de)
         self.assertIsNotNone(section_1_1_1_de)
@@ -352,7 +355,11 @@ class TestOfferDocGenerator(unittest.TestCase):
 
         # Load and verify textblocks
         config = offerdocgenerator.load_config(self.config_file)
-        rt, _ = offerdocgenerator.load_textblock("section_formatted", config, self.product_name, "EN")
+        
+        # Create template instance
+        template = DocxTemplate(str(self.template_file_en))
+        
+        rt, _ = offerdocgenerator.load_textblock("section_formatted", config, self.product_name, "EN", template)
         self.assertIsNotNone(rt)  # Verify section exists
         
         # Check formatting preserved in XML
@@ -494,7 +501,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                             # Get template variables and resolve them
                             doc = DocxTemplate(str(template))
                             template_vars = doc.get_undeclared_template_variables()
-                            resolved = offerdocgenerator.resolve_template_variables(template_vars, config, product, lang)
+                            resolved = offerdocgenerator.resolve_template_variables(template_vars, config, product, lang, doc)
                             context.update(resolved)
                             
                             # Select template
