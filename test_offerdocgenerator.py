@@ -497,8 +497,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         template_path_de = Path("custom_template") / "base_DE.docx"
         expected_path_en = (self.test_run_dir / "custom_template" / "base_EN.docx").resolve()
         expected_path_de = (self.test_run_dir / "custom_template" / "base_DE.docx").resolve()
-        self.assertEqual(config.settings.templates_path, expected_path_en.parent)
-        self.assertEqual(config.settings.templates_path, expected_path_de.parent)
+        self.assertEqual(config.settings.templates, expected_path_en.parent)
+        self.assertEqual(config.settings.templates, expected_path_de.parent)
 
     def test_render_offer(self):
         """Test rendering for all language/currency combinations in both DOCX and DOTX formats."""
