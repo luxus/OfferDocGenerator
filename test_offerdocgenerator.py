@@ -336,7 +336,8 @@ class TestOfferDocGenerator(unittest.TestCase):
         context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
         output_path = self.output_dir / "special_chars_test.docx"
         
-        offerdocgenerator.render_offer(special_template, context, output_path)
+        template = DocxTemplate(str(special_template))
+        offerdocgenerator.render_offer(template, context, output_path)
         
         # Verify output
         doc = docx.Document(str(output_path))
@@ -366,15 +367,16 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Render document to check formatting
         output_path = self.output_dir / "richtext_test.docx"
         
-        # Create template and render
+        # Create template with proper section variable
+        doc = docx.Document(str(self.template_file_en))
+        p = doc.add_paragraph()
+        p.add_run('{{r section_formatted }}')
+        doc.save(str(self.template_file_en))
+        
+        # Create template and render with proper context
         template = DocxTemplate(str(self.template_file_en))
-        context = {
-            "Config": config.dict(),
-            "LANGUAGE": "EN",
-            "PRODUCT": self.product_name,
-            "CURRENCY": "CHF",
-            "formatted_section": rt
-        }
+        context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
+        context["section_formatted"] = rt
         template.render(context)
         template.save(str(output_path))
         
@@ -524,13 +526,8 @@ class TestOfferDocGenerator(unittest.TestCase):
                 for lang in ["EN", "DE"]:
                     for currency in ["CHF", "EUR"]:
                         with self.subTest(product=product, language=lang, currency=currency, format=output_format):
-                            # Build context with currency using AppConfig
-                            context = {
-                                "Config": config.model_dump(),
-                                "LANGUAGE": lang,
-                                "PRODUCT": product,
-                                "CURRENCY": currency
-                            }
+                            # Build context with currency using build_context
+                            context = offerdocgenerator.build_context(config, lang, product, currency)
             
                             # Select and load template
                             template_path = self.template_file_en if lang == "EN" else self.template_file_de
