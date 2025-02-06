@@ -33,6 +33,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.test_root = self.script_dir / "test_output" 
         self.test_run_dir = self.test_root / self.TEST_DIR_NAME
         
+        # Add test for Jinja2 loops and RichText
+        self.loop_template = self.test_run_dir / "templates" / "loop_test.docx"
+        
         # Clean existing test data if cleanup enabled
         if self.CLEANUP and self.test_run_dir.exists():
             shutil.rmtree(self.test_run_dir)
@@ -269,6 +272,52 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Test error handling for missing files"""
         with self.assertRaises(SystemExit):
             offerdocgenerator.load_config(Path("/non/existent/config.yaml"))
+
+    def test_jinja_loops_and_richtext(self):
+        """Test Jinja2 loops with config data and RichText formatting"""
+        # Create test template with loop
+        doc = docx.Document()
+        doc.add_paragraph('Contacts:')
+        doc.add_paragraph('{% for contact in sales.contacts %}')
+        doc.add_paragraph('{{ contact.name }} - {{ contact.email }}')
+        doc.add_paragraph('{% endfor %}')
+        doc.add_paragraph('Customer: {{r customer.name }}')
+        doc.save(str(self.loop_template))
+        
+        # Update config with contacts
+        config = {
+            'sales': {
+                'contacts': [
+                    {'name': 'Alice', 'email': 'alice@example.com'},
+                    {'name': 'Bob', 'email': 'bob@example.com'}
+                ]
+            },
+            'customer': {
+                'name': 'Example Corp'
+            }
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(config, f)
+            
+        # Render document
+        template = DocxTemplate(str(self.loop_template))
+        context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
+        output_path = self.output_dir / "loop_test.docx"
+        offerdocgenerator.render_offer(template, config, context, output_path)
+        
+        # Verify output
+        doc = docx.Document(str(output_path))
+        full_text = "\n".join(p.text for p in doc.paragraphs)
+        
+        # Test loop results
+        self.assertIn("Alice - alice@example.com", full_text)
+        self.assertIn("Bob - bob@example.com", full_text)
+        
+        # Test RichText formatting
+        with zipfile.ZipFile(output_path) as z:
+            content = z.read("word/document.xml").decode()
+            self.assertIn("Example Corp", content)
 
 
     @unittest.skip("Temporarily disabled - needs investigation of DOTX template handling")

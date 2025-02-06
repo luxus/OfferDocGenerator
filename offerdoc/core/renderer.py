@@ -48,15 +48,21 @@ class DocumentRenderer:
 
     def _resolve_config_variable(self, var_path: str) -> Any:
         """Resolve dot-notation variable paths in config"""
-        path_parts = var_path.split('_')
-        current = self.config
-        
-        for part in path_parts:
-            if hasattr(current, part):
-                current = getattr(current, part)
-            else:
-                raise ValueError(f"Config path not found: {var_path}")
+        # Only allow access to specific config sections
+        allowed_sections = ('customer', 'offer', 'sales')
+        section = var_path.split('.')[0]
+        if not section in allowed_sections:
+            raise ValueError(f"Unauthorized config access: {var_path}")
             
+        current = self.config.dict()
+        for part in var_path.split('.'):
+            if not isinstance(current, dict) or part not in current:
+                raise ValueError(f"Config path not found: {var_path}")
+            current = current[part]
+        
+        # Wrap strings in RichText for specific sections
+        if isinstance(current, str) and var_path.startswith(allowed_sections):
+            return RichText(current)
         return current
 
     def render_document(self, template_path: Path, context: Dict[str, Any]) -> DocxTemplate:

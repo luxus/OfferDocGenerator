@@ -32,25 +32,23 @@ class FileHandler:
         return None
 
     def load_textblock(self, var_name: str, product: str, language: str, 
-                      template: DocxTemplate) -> Tuple[Optional[Union[RichText, DocxTemplate]], Optional[Path]]:
-        """Load textblock content for inline insertion"""
+                      template: DocxTemplate) -> Tuple[Optional[str], Optional[Path]]:
+        """Load textblock content as plain text"""
+        MAX_TEXTBLOCK_LENGTH = 10000  # 10k characters limit
         target_path = self.find_textblock(var_name, product, language)
         if target_path:
             try:
                 subdoc = DocxTemplate(str(target_path))
-                rt = RichText()
+                text = '\n'.join(p.text for p in subdoc.paragraphs if p.text.strip())
                 
-                # Preserve original paragraph structure but merge into single line
-                for i, p in enumerate(subdoc.paragraphs):
-                    if p.text.strip():  # Skip empty paragraphs
-                        # Use the template's style for continuity
-                        rt.add(p.text + " ", style='List Paragraph')  # Add space between paragraphs
-                        
-                # Remove trailing space and add continuation character
-                if rt.text.endswith(" "):
-                    rt.text = rt.text[:-1]
+                if len(text) > MAX_TEXTBLOCK_LENGTH:
+                    raise ValueError(f"Textblock {target_path} exceeds size limit")
                 
-                return rt, target_path
+                # Prevent nested templates
+                if '{{' in text or '{%' in text:
+                    raise ValueError("Nested template patterns detected")
+                    
+                return text, target_path
             except Exception as e:
                 logger.error(f"Failed to load subdoc {target_path}: {e}")
                 raise
