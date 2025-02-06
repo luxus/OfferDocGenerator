@@ -40,15 +40,15 @@ class FileHandler:
                 subdoc = DocxTemplate(str(target_path))
                 rt = RichText()
                 
-                # Combine all paragraphs into a single rich text line
-                combined_text = " ".join([p.text for p in subdoc.paragraphs if p.text.strip()])
-                
-                # Preserve the first paragraph's style
-                first_style = subdoc.paragraphs[0].style.name if subdoc.paragraphs else None
-                rt.add(combined_text, style=first_style)
-                
-                # Add a single paragraph break that matches the list level
-                rt.add("\n", style='List Paragraph')  # Match your template's list style name
+                # Preserve original paragraph structure but merge into single line
+                for i, p in enumerate(subdoc.paragraphs):
+                    if p.text.strip():  # Skip empty paragraphs
+                        # Use the template's style for continuity
+                        rt.add(p.text + " ", style='List Paragraph')  # Add space between paragraphs
+                        
+                # Remove trailing space and add continuation character
+                if rt.text.endswith(" "):
+                    rt.text = rt.text[:-1]
                 
                 return rt, target_path
             except Exception as e:
