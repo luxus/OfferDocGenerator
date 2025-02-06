@@ -308,7 +308,7 @@ def main():
                 output_dir.mkdir(parents=True, exist_ok=True)
                 
                 # Generate output filename using configured pattern
-                fmt = config.settings.get("format", "docx")
+                fmt = config.settings.format
                 output_filename = config.settings.filename_pattern.format(
                     product=product,
                     language=lang,
