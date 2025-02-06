@@ -284,17 +284,47 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.add_paragraph('Customer: {{r customer.name }}')
         doc.save(str(self.loop_template))
         
-        # Update config with contacts
+        # Update config with ALL required fields
         config_data = {
+            'customer': {
+                'name': 'Example Corp',
+                'address': '123 Example Street',
+                'city': 'Example City',
+                'zip': '12345',
+                'country': 'Example Country'
+            },
+            'offer': {
+                'number': '2023-TEST',
+                'date': '2023-01-01',
+                'validity': {
+                    'EN': '30 days',
+                    'DE': '30 Tage'
+                }
+            },
+            'settings': {
+                'products': 'products',
+                'common': 'common',
+                'output': 'output',
+                'templates': 'templates',
+                'format': 'docx',
+                'filename_pattern': 'Offer_{product}.docx',
+                'template_pattern': 'base_{language}.docx'
+            },
             'sales': {
+                'name': 'Test Sales',
+                'email': 'sales@example.com',
+                'phone': '+1234567890',
                 'contacts': [
                     {'name': 'Alice', 'email': 'alice@example.com'},
                     {'name': 'Bob', 'email': 'bob@example.com'}
                 ]
             },
-            'customer': {
-                'name': 'Example Corp'
-            }
+            'languages': ["EN", "DE"],
+            'currencies': ["USD", "EUR"],
+            'textblock_patterns': [
+                "{var_name}_{language}.docx",
+                "{var_name}.docx"
+            ]
         }
     
         with open(self.config_file, 'w') as f:
