@@ -37,11 +37,19 @@ class FileHandler:
         target_path = self.find_textblock(var_name, product, language)
         if target_path:
             try:
-                # Load subdocument and convert to RichText for inline insertion
                 subdoc = DocxTemplate(str(target_path))
                 rt = RichText()
-                for p in subdoc.paragraphs:
-                    rt.add(p.text, style=p.style.name if p.style else None)
+                
+                # Combine all paragraphs into a single rich text line
+                combined_text = " ".join([p.text for p in subdoc.paragraphs if p.text.strip()])
+                
+                # Preserve the first paragraph's style
+                first_style = subdoc.paragraphs[0].style.name if subdoc.paragraphs else None
+                rt.add(combined_text, style=first_style)
+                
+                # Add a single paragraph break that matches the list level
+                rt.add("\n", style='List Paragraph')  # Match your template's list style name
+                
                 return rt, target_path
             except Exception as e:
                 logger.error(f"Failed to load subdoc {target_path}: {e}")
