@@ -337,7 +337,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         output_path = self.output_dir / "special_chars_test.docx"
         
         template = DocxTemplate(str(special_template))
-        offerdocgenerator.render_offer(template, context, output_path)
+        offerdocgenerator.render_offer(template, config, context, output_path)
         
         # Verify output
         doc = docx.Document(str(output_path))
