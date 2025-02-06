@@ -285,7 +285,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         doc.save(str(self.loop_template))
         
         # Update config with contacts
-        config = {
+        config_data = {
             'sales': {
                 'contacts': [
                     {'name': 'Alice', 'email': 'alice@example.com'},
@@ -296,11 +296,14 @@ class TestOfferDocGenerator(unittest.TestCase):
                 'name': 'Example Corp'
             }
         }
-        
+    
         with open(self.config_file, 'w') as f:
-            yaml.dump(config, f)
-            
-        # Render document
+            yaml.dump(config_data, f)
+        
+        # Load config properly using load_config
+        config = offerdocgenerator.load_config(self.config_file)  # Get Config instance
+    
+        # Render document with the loaded config
         template = DocxTemplate(str(self.loop_template))
         context = offerdocgenerator.build_context(config, "EN", self.product_name, "CHF")
         output_path = self.output_dir / "loop_test.docx"
