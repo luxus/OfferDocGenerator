@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Dict, Any, Set
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, RichText
 from .file_handler import FileHandler
 from .config import AppConfig
 from .exceptions import TemplateNotFoundError, DocumentGenerationError
