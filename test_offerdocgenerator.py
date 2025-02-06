@@ -105,14 +105,14 @@ class TestOfferDocGenerator(unittest.TestCase):
         # English template
         self.template_file_en = self.templates_dir / "base_EN.docx"
         doc = docx.Document()
-        doc.add_heading('Offer: {{ Config.offer.number }}', 0)
-        doc.add_paragraph('Date: {{ Config.offer.date }}')
-        doc.add_paragraph('Valid for: {{ Config.offer.validity[LANGUAGE] }}')
+        doc.add_heading('Offer: {{ offer.number }}', 0)
+        doc.add_paragraph('Date: {{ offer.date }}')
+        doc.add_paragraph('Valid for: {{ offer.validity[LANGUAGE] }}')
         doc.add_heading('Customer Information', 1)
-        doc.add_paragraph('{{ Config.customer.name }}')
-        doc.add_paragraph('{{ Config.customer.address }}')
-        doc.add_paragraph('{{ Config.customer.city }}, {{ Config.customer.zip }}')
-        doc.add_paragraph('{{ Config.customer.country }}')
+        doc.add_paragraph('{{ customer.name }}')
+        doc.add_paragraph('{{ customer.address }}')
+        doc.add_paragraph('{{ customer.city }}, {{ customer.zip }}')
+        doc.add_paragraph('{{ customer.country }}')
         doc.add_heading('Product Description', 1)
         p = doc.add_paragraph()
         p.add_run('{{r section_1_1 }}')
@@ -121,22 +121,22 @@ class TestOfferDocGenerator(unittest.TestCase):
         p.add_run('{{r section_1_1_1 }}')
         doc.add_paragraph('Total Price: {{ CURRENCY }} 10,000')
         doc.add_heading('Sales Contact', 1)
-        doc.add_paragraph('{{ Config.sales.name }}')
-        doc.add_paragraph('{{ Config.sales.email }}')
-        doc.add_paragraph('{{ Config.sales.phone }}')
+        doc.add_paragraph('{{ sales.name }}')
+        doc.add_paragraph('{{ sales.email }}')
+        doc.add_paragraph('{{ sales.phone }}')
         doc.save(str(self.template_file_en))
 
         # German template
         self.template_file_de = self.templates_dir / "base_DE.docx"
         doc = docx.Document()
-        doc.add_heading('Angebot: {{ Config.offer.number }}', 0)
-        doc.add_paragraph('Datum: {{ Config.offer.date }}')
-        doc.add_paragraph('Gültig für: {{ Config.offer.validity[LANGUAGE] }}')
+        doc.add_heading('Angebot: {{ offer.number }}', 0)
+        doc.add_paragraph('Datum: {{ offer.date }}')
+        doc.add_paragraph('Gültig für: {{ offer.validity[LANGUAGE] }}')
         doc.add_heading('Kundeninformationen', 1)
-        doc.add_paragraph('{{ Config.customer.name }}')
-        doc.add_paragraph('{{ Config.customer.address }}')
-        doc.add_paragraph('{{ Config.customer.city }}, {{ Config.customer.zip }}')
-        doc.add_paragraph('{{ Config.customer.country }}')
+        doc.add_paragraph('{{ customer.name }}')
+        doc.add_paragraph('{{ customer.address }}')
+        doc.add_paragraph('{{ customer.city }}, {{ customer.zip }}')
+        doc.add_paragraph('{{ customer.country }}')
         doc.add_heading('Produktbeschreibung', 1)
         p = doc.add_paragraph()
         p.add_run('{{r section_1_1 }}')
@@ -145,9 +145,9 @@ class TestOfferDocGenerator(unittest.TestCase):
         p.add_run('{{r section_1_1_1 }}')
         doc.add_paragraph('Gesamtpreis: {{ CURRENCY }} 10.000')
         doc.add_heading('Vertriebskontakt', 1)
-        doc.add_paragraph('{{ Config.sales.name }}')
-        doc.add_paragraph('{{ Config.sales.email }}')
-        doc.add_paragraph('{{ Config.sales.phone }}')
+        doc.add_paragraph('{{ sales.name }}')
+        doc.add_paragraph('{{ sales.email }}')
+        doc.add_paragraph('{{ sales.phone }}')
         doc.save(str(self.template_file_de))
 
         # Create config file
@@ -518,7 +518,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             # Add validity text to templates for nested config testing
             for template in [self.template_file_en, self.template_file_de]:
                 doc = docx.Document(str(template))
-                doc.add_paragraph('Validity: {{ Config.offer.validity[LANGUAGE] }}')
+                doc.add_paragraph('Validity: {{ offer.validity[LANGUAGE] }}')
                 doc.save(str(template))
 
             # Verify files per product
