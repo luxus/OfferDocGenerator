@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Set, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from docx import Document
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, RichText
 import yaml
 
 from offerdoc.core.config import load_config, AppConfig
@@ -184,7 +184,8 @@ def build_context(config: Config, language: str, product_name: str, currency: st
         "settings": config.settings,
         "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
-        "CURRENCY": currency
+        "CURRENCY": currency,
+        "r": lambda text: RichText(text) if text else ""  # Add RichText helper
     }
 
 def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any], output_path: Path):
