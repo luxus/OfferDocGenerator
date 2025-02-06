@@ -34,10 +34,10 @@ class DocumentRenderer:
             except (ValueError, AttributeError):
                 pass
                 
-            # Try textblock resolution
-            subdoc, _ = self.file_handler.load_textblock(var, product, language, template)
-            if subdoc:
-                resolved[var] = subdoc
+            # Try textblock resolution with RichText support
+            content, _ = self.file_handler.load_textblock(var, product, language, template)
+            if content:
+                resolved[var] = content
                 continue
                 
             # Fallback to empty string

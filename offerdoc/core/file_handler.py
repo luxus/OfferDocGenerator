@@ -1,6 +1,6 @@
 from pathlib import Path
-from typing import Optional, Tuple
-from docxtpl import DocxTemplate
+from typing import Optional, Tuple, Union
+from docxtpl import DocxTemplate, RichText
 from docxcompose.composer import Composer
 from .config import AppConfig
 from .exceptions import TemplateNotFoundError
@@ -32,15 +32,17 @@ class FileHandler:
         return None
 
     def load_textblock(self, var_name: str, product: str, language: str, 
-                      template: DocxTemplate) -> Tuple[Optional[DocxTemplate], Optional[Path]]:
-        """Load textblock content with style preservation"""
+                      template: DocxTemplate) -> Tuple[Optional[Union[RichText, DocxTemplate]], Optional[Path]]:
+        """Load textblock content for inline insertion"""
         target_path = self.find_textblock(var_name, product, language)
         if target_path:
             try:
-                # Create composed document to preserve styles
-                composed = Composer(template)
-                composed.append(target_path)
-                return composed, target_path
+                # Load subdocument and convert to RichText for inline insertion
+                subdoc = DocxTemplate(str(target_path))
+                rt = RichText()
+                for p in subdoc.paragraphs:
+                    rt.add(p.text, style=p.style.name if p.style else None)
+                return rt, target_path
             except Exception as e:
                 logger.error(f"Failed to load subdoc {target_path}: {e}")
                 raise
