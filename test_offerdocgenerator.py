@@ -535,7 +535,9 @@ class TestOfferDocGenerator(unittest.TestCase):
             
                             # Get template variables and resolve them
                             template_vars = template.get_undeclared_template_variables()
-                            resolved = offerdocgenerator.resolve_template_variables(template_vars, config, product, lang, template)
+                            # Filter variables not already in context
+                            vars_to_resolve = {var for var in template_vars if var not in context}
+                            resolved = offerdocgenerator.resolve_template_variables(vars_to_resolve, config, product, lang, template)
                             context.update(resolved)
             
                             # Generate output path using config properties
