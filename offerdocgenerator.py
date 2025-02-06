@@ -177,11 +177,10 @@ def resolve_config_variable(var_path: str, config: Config) -> Any:
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
     """Build base context with core variables."""
     return {
-        "config": config,  # Pass actual Config instance
-        "offer": config.offer,
-        "customer": config.customer,
-        "sales": config.sales,
-        "settings": config.settings,
+        "offer": config.offer.model_dump(),
+        "customer": config.customer.model_dump(),
+        "sales": config.sales.model_dump(),
+        "settings": config.settings.model_dump(),
         "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
         "CURRENCY": currency,
