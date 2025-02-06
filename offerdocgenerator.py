@@ -297,7 +297,7 @@ def main():
                 context = build_context(config, lang, product, currency)
                 
                 # Get template path using configured pattern
-                template_filename = config.template_pattern.format(language=lang)
+                template_filename = config.settings.template_pattern.format(language=lang)
                 template_path = config.templates_path / template_filename
                 if not template_path.exists():
                     logger.error(f"Missing template for {lang}: {template_path}")
@@ -309,11 +309,11 @@ def main():
                 
                 # Generate output filename using configured pattern
                 fmt = config.settings.get("format", "docx")
-                output_filename = config.filename_pattern.format(
+                output_filename = config.settings.filename_pattern.format(
                     product=product,
                     language=lang,
                     currency=currency,
-                    date=config.offer["date"],
+                    date=config.offer.date,
                     format=fmt
                 )
                 output_file = output_dir / output_filename
