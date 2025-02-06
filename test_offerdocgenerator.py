@@ -545,7 +545,7 @@ class TestOfferDocGenerator(unittest.TestCase):
                             output_file.parent.mkdir(parents=True, exist_ok=True)
                             
                             # Render and verify
-                            offerdocgenerator.render_offer(template, context, output_file)
+                            offerdocgenerator.render_offer(template, config, context, output_file)
                             self.assertTrue(output_file.exists())
                             
                             # Only validate DOCX content - skip for DOTX

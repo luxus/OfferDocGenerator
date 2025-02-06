@@ -190,7 +190,7 @@ def build_context(config: Config, language: str, product_name: str, currency: st
         "CURRENCY": currency
     }
 
-def render_offer(template: DocxTemplate, context: Dict[str, Any], output_path: Path):
+def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any], output_path: Path):
     """Render template with auto-discovered variables"""
     try:
         
@@ -198,7 +198,7 @@ def render_offer(template: DocxTemplate, context: Dict[str, Any], output_path: P
         template_vars = template.get_undeclared_template_variables()
         
         # Resolve variables from multiple sources
-        resolved_context = resolve_template_variables(template_vars, context['Config'], 
+        resolved_context = resolve_template_variables(template_vars, config,
                                                    context['PRODUCT'], context['LANGUAGE'],
                                                    template)
         
@@ -319,7 +319,8 @@ def main():
                 output_file = output_dir / output_filename
                 
                 # Render the offer document
-                render_offer(template_path, context, output_file)
+                template = DocxTemplate(str(template_path))
+                render_offer(template, config, context, output_file)
 
 if __name__ == "__main__":
     main()
