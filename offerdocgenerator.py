@@ -194,8 +194,11 @@ def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any]
         # Get all variables from the template
         template_vars = template.get_undeclared_template_variables()
         
+        # Only resolve variables not already in context
+        vars_to_resolve = {var for var in template_vars if var not in context}
+        
         # Resolve variables from multiple sources
-        resolved_context = resolve_template_variables(template_vars, config,
+        resolved_context = resolve_template_variables(vars_to_resolve, config,
                                                    context['PRODUCT'], context['LANGUAGE'],
                                                    template)
         
