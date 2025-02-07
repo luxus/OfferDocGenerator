@@ -1,0 +1,18 @@
+{# Bundle offer template #}
+{% extends "base_DE.docx" %}
+
+{% block content %}
+{{ super() }}
+
+## Bundle-Paket: {{ bundle.name }}
+
+Dieses Bundle enthält folgende Produkte:
+{% for product in products %}
+- {{ product }}
+{% endfor %}
+
+Bundle-Rabatt: {{ discount }}%
+
+Detaillierte Informationen zu jedem Produkt finden Sie in den beigefügten Produktspezifikationen.
+
+{% endblock %}

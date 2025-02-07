@@ -435,6 +435,68 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("Test & Company © 2024", doc.paragraphs[0].text)
         self.assertIn("john.doe@example.com", doc.paragraphs[1].text)
 
+    def test_bundle_template_processing(self):
+        """Test end-to-end bundle document generation with actual template"""
+        # Load config with bundle settings
+        config = offerdocgenerator.load_config(self.config_file)
+        
+        # Generate bundle offers
+        offerdocgenerator.generate_bundle_offer(config, "web_security_pack")
+        
+        # Verify output file
+        output_path = (
+            config.output_path / "bundles" / "web_security_pack" / 
+            f"Offer_Web Security Package_EN_CHF_{config.offer.date}.docx"
+        )
+        self.assertTrue(output_path.exists())
+        
+        # Verify template content
+        doc = docx.Document(str(output_path))
+        full_text = "\n".join(p.text for p in doc.paragraphs)
+        
+        # Check required bundle elements
+        self.assertIn("Bundle Package: Web Security Package", full_text)
+        self.assertIn("Bundle Discount: 15%", full_text)
+        self.assertIn("Web Security Assessment", full_text)
+        self.assertIn("API Security Review", full_text)
+
+    def test_bundle_template_variables(self):
+        """Verify required variables exist in bundle template"""
+        template_path = self.templates_dir / "bundle_base_EN.docx"
+        doc = DocxTemplate(str(template_path))
+        variables = doc.get_undeclared_template_variables()
+        
+        required_vars = {
+            'bundle.name',
+            'products',
+            'discount'
+        }
+        missing = required_vars - set(variables)
+        self.assertEqual(missing, set(), "Missing required variables in bundle template")
+
+    def test_bundle_template_security(self):
+        """Test bundle template security constraints"""
+        template_path = self.templates_dir / "bundle_base_EN.docx"
+        
+        # Size check
+        max_size = 10 * 1024 * 1024  # 10MB limit
+        self.assertLess(template_path.stat().st_size, max_size, "Template too large")
+        
+        # Ownership check
+        self.assertEqual(template_path.owner(), Path(__file__).owner(), "Owner mismatch")
+        
+        # Content validation
+        doc = docx.Document(str(template_path))
+        content = "\n".join(p.text for p in doc.paragraphs)
+        forbidden_patterns = [
+            r'\{\{.*\.(save|delete|write).*\}\}',
+            r'\{\{.*__.*\}\}',
+            r'\{\{.*config\.security.*\}\}'
+        ]
+        
+        for pattern in forbidden_patterns:
+            self.assertNotRegex(content, pattern, "Forbidden pattern found")
+
     def test_richtext_format_preservation(self):
         """Verify bold/italic/underline formatting in textblocks"""
         # Create formatted test file with correct section prefix
