@@ -160,18 +160,15 @@ def resolve_template_variables(template_vars: Set[str], config: Config,
     return resolved
 
 def resolve_config_variable(var_path: str, config: Config) -> Any:
-    """Resolve underscore-separated variable paths in the config structure."""
-    path_parts = var_path.split('_')
-    current = config  # Start from root config
+    """Resolve nested dictionary paths using dot notation"""
+    parts = var_path.split('.')  # Change to dot notation
+    current = config.model_dump()  # Start with full config dict
     
-    for part in path_parts:
-        if hasattr(current, part):
-            current = getattr(current, part)
+    for part in parts:
+        if isinstance(current, dict) and part in current:
+            current = current[part]
         else:
             raise ValueError(f"Config path not found: {var_path}")
-        if current is None:
-            break
-            
     return current
 
 def build_context(config: Config, language: str, product_name: str, currency: str) -> Dict[str, Any]:
@@ -181,6 +178,7 @@ def build_context(config: Config, language: str, product_name: str, currency: st
         "customer": config.customer.model_dump(),
         "sales": config.sales.model_dump(),
         "settings": config.settings.model_dump(),
+        "contacts": config.sales.contacts,  # Add explicit access to contacts
         "LANGUAGE": language.upper(),
         "PRODUCT": product_name,
         "CURRENCY": currency,
