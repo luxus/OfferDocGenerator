@@ -192,7 +192,7 @@ def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any]
     try:
         
         # Get all variables from the template using proper detection
-        template_vars = set(template.get_undeclared_template_variables(context=context))
+        template_vars = set(template.get_undeclared_template_variables())
         
         # Remove built-in Jinja variables
         template_vars -= {'True', 'False', 'None'}
