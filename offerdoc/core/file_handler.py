@@ -34,13 +34,20 @@ class FileHandler:
             
     def find_textblock(self, var_name: str, product: str, language: str, bundle: Optional[str] = None) -> Optional[Path]:
         """Search for textblocks using configured patterns"""
-        search_locations = [
+        search_locations = []
+        
+        # Bundle-specific locations first
+        if bundle and bundle in self.config.bundles:
+            search_locations.extend([
+                self.config.common_path / "bundles" / bundle,
+                self.config.common_path / "bundles"
+            ])
+            
+        # Then product and common locations
+        search_locations.extend([
             self.config.products_path / product,
             self.config.common_path
-        ]
-        
-        if bundle:
-            search_locations.insert(0, self.config.common_path / "bundles" / bundle)
+        ])
 
         for base_path in search_locations:
             for pattern in self.config.textblock_patterns:

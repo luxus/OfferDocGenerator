@@ -265,10 +265,50 @@ def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any]
         logger.error(f"Error details: {traceback.format_exc()}")
         raise
 
+def generate_bundle_offer(config: Config, bundle_name: str):
+    """Generate offer documents for a product bundle"""
+    bundle = config.bundles[bundle_name]
+    
+    for lang in config.languages:
+        for currency in config.currencies:
+            # Build bundle context
+            context = build_context(config, lang, bundle_name, currency)
+            context.update({
+                "bundle": bundle,
+                "products": bundle.products,
+                "discount": bundle.discount["percentage"]
+            })
+            
+            # Get bundle template or fallback to standard
+            template_name = bundle.template or config.settings.template_pattern
+            template_path = config.templates_path / template_name.format(language=lang)
+            
+            if not template_path.exists():
+                logger.error(f"Missing bundle template for {lang}: {template_path}")
+                continue
+                
+            # Create output directory
+            output_dir = config.output_path / "bundles" / bundle_name
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate output filename
+            output_filename = config.settings.filename_pattern.format(
+                product=bundle.name,
+                language=lang,
+                currency=currency,
+                date=config.offer.date,
+                format=config.settings.format
+            )
+            output_file = output_dir / output_filename
+            
+            # Render the bundle offer
+            template = DocxTemplate(str(template_path))
+            render_offer(template, config, context, output_file)
+
 def main():
     """Main entry point for the offer document generator."""
     if len(sys.argv) < 2:
-        print("Usage: python offerdocgenerator.py <config.yaml>")
+        print("Usage: python offerdocgenerator.py <config.yaml> [--bundles]")
         sys.exit(1)
 
     # Use test_data config if running from tests
@@ -321,6 +361,13 @@ def main():
                 # Render the offer document
                 template = DocxTemplate(str(template_path))
                 render_offer(template, config, context, output_file)
+    
+    # Generate bundle offers if requested
+    if "--bundles" in sys.argv:
+        print(colorize("\n📦 Generating bundle offers:", 'CYAN'))
+        for bundle_name in config.bundles:
+            print(colorize(f"\n🔖 Bundle: {bundle_name}", 'GREEN'))
+            generate_bundle_offer(config, bundle_name)
 
 if __name__ == "__main__":
     main()

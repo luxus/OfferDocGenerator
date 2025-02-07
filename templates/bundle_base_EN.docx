@@ -1,0 +1,18 @@
+{# Bundle offer template #}
+{% extends "base_EN.docx" %}
+
+{% block content %}
+{{ super() }}
+
+## Bundle Package: {{ bundle.name }}
+
+This bundle includes the following products:
+{% for product in products %}
+- {{ product }}
+{% endfor %}
+
+Bundle Discount: {{ discount }}%
+
+For detailed information about each product, please see the attached product specifications.
+
+{% endblock %}
