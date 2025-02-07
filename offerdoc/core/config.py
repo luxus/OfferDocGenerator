@@ -64,6 +64,7 @@ class SalesConfig(BaseModel):
     name: str
     email: str
     phone: str
+    contacts: List[Dict[str, str]] = Field(default_factory=list)
 
 class AppConfig(BaseModel):
     customer: CustomerConfig

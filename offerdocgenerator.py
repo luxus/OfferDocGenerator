@@ -41,7 +41,7 @@ class Config(AppConfig):
             'offer': ['number', 'date', 'validity'],
             'settings': ['products', 'common', 'output', 'templates'],
             'customer': ['name', 'address', 'city', 'zip', 'country'],
-            'sales': ['name', 'email', 'phone']
+            'sales': ['name', 'email', 'phone', 'contacts']
         }
 
         missing_fields = []
