@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional, Tuple, Union
 from docxtpl import DocxTemplate, RichText
+from .exceptions import SecurityError
 from docxcompose.composer import Composer
 from .config import AppConfig
 from .exceptions import TemplateNotFoundError
@@ -14,6 +15,23 @@ class FileHandler:
     def __init__(self, config: AppConfig):
         self.config = config
         
+    def _validate_file_security(self, path: Path) -> None:
+        """Enforce security settings from config"""
+        settings = self.config.settings.security
+        
+        # Size check
+        file_size = path.stat().st_size
+        if file_size > settings.max_template_size_mb * 1024 * 1024:
+            raise SecurityError(f"File {path.name} exceeds size limit")
+        
+        # Type check
+        if path.suffix[1:] not in settings.allowed_file_types:
+            raise SecurityError(f"Disallowed file type: {path.suffix}")
+        
+        # Ownership check
+        if path.owner() != Path(__file__).owner():
+            raise SecurityError("File owner mismatch")
+            
     def find_textblock(self, var_name: str, product: str, language: str) -> Optional[Path]:
         """Search for textblocks using configured patterns"""
         search_locations = [
@@ -38,6 +56,7 @@ class FileHandler:
         target_path = self.find_textblock(var_name, product, language)
         if target_path:
             try:
+                self._validate_file_security(target_path)
                 subdoc = DocxTemplate(str(target_path))
                 text = '\n'.join(p.text for p in subdoc.paragraphs if p.text.strip())
                 
