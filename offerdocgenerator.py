@@ -191,8 +191,11 @@ def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any]
     """Render template with auto-discovered variables"""
     try:
         
-        # Get all variables from the template
-        template_vars = template.get_undeclared_template_variables()
+        # Get all variables from the template using proper detection
+        template_vars = set(template.get_undeclared_template_variables(context=context))
+        
+        # Remove built-in Jinja variables
+        template_vars -= {'True', 'False', 'None'}
         
         # Only resolve variables not already in context
         vars_to_resolve = {var for var in template_vars if var not in context}
