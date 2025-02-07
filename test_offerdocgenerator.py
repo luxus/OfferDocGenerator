@@ -275,13 +275,22 @@ class TestOfferDocGenerator(unittest.TestCase):
 
     def test_jinja_loops_and_richtext(self):
         """Test Jinja2 loops with config data and RichText formatting"""
-        # Create test template with loop
+        # Create PROPERLY STRUCTURED template with loop in single paragraph
         doc = docx.Document()
-        doc.add_paragraph('Contacts:')
-        doc.add_paragraph('{% for contact in sales.contacts %}')
-        doc.add_paragraph('{{ contact.name }} - {{ contact.email }}')
-        doc.add_paragraph('{% endfor %}')
-        doc.add_paragraph('Customer: {{r customer.name }}')
+        
+        # Create a single paragraph for the entire loop structure
+        p = doc.add_paragraph()
+        runner = p.add_run()
+        runner.add_text("Contacts:\n")
+        
+        # Add loop control in the same run with line breaks
+        runner.add_text("{% for contact in sales.contacts %}\n")
+        runner.add_text("{{ contact.name }} - {{ contact.email }}\n")
+        runner.add_text("{% endfor %}")
+        
+        # Add RichText field in separate paragraph
+        doc.add_paragraph().add_run("Customer: {{r customer.name }}")
+        
         doc.save(str(self.loop_template))
         
         # Update config with ALL required fields
