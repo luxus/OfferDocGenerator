@@ -10,11 +10,17 @@ import os
 
 logger = logging.getLogger(__name__)
 
+class BundleSecurity(BaseModel):
+    max_products: int = Field(default=5, ge=1, le=10)
+    max_discount: float = Field(default=30.0, ge=0, le=100)
+    allow_cross_references: bool = False
+
 class SecuritySettings(BaseModel):
     max_template_size_mb: int = Field(default=10, gt=0, lt=100)
     allowed_file_types: List[str] = ['docx', 'dotx']
     enable_audit_log: bool = True
     allow_unsafe_templates: bool = False
+    bundles: BundleSecurity = Field(default_factory=BundleSecurity)
 
 class CustomerConfig(BaseModel):
     name: str
@@ -66,6 +72,13 @@ class SalesConfig(BaseModel):
     phone: str
     contacts: List[Dict[str, str]] = Field(default_factory=list)
 
+class BundleConfig(BaseModel):
+    name: str
+    products: List[str]
+    discount: Dict[str, float] = {"percentage": 0.0}
+    template: Optional[str] = None
+    variables: Dict[str, Any] = Field(default_factory=dict)
+
 class AppConfig(BaseModel):
     customer: CustomerConfig
     offer: OfferConfig
@@ -73,6 +86,7 @@ class AppConfig(BaseModel):
     sales: SalesConfig
     languages: List[str] = ["EN", "DE"]
     currencies: List[str] = ["CHF", "EUR"]
+    bundles: Dict[str, BundleConfig] = Field(default_factory=dict)
     textblock_patterns: List[str] = [
         "{var_name}_{language}.docx",
         "{var_name}.docx"

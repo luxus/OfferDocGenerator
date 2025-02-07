@@ -32,12 +32,15 @@ class FileHandler:
         if path.owner() != Path(__file__).owner():
             raise SecurityError("File owner mismatch")
             
-    def find_textblock(self, var_name: str, product: str, language: str) -> Optional[Path]:
+    def find_textblock(self, var_name: str, product: str, language: str, bundle: Optional[str] = None) -> Optional[Path]:
         """Search for textblocks using configured patterns"""
         search_locations = [
             self.config.products_path / product,
             self.config.common_path
         ]
+        
+        if bundle:
+            search_locations.insert(0, self.config.common_path / "bundles" / bundle)
 
         for base_path in search_locations:
             for pattern in self.config.textblock_patterns:

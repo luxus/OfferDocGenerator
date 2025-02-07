@@ -20,6 +20,15 @@ settings:
   template_pattern: "base_{language}.docx"
 languages: ["EN", "DE"]
 currencies: ["CHF", "EUR"]
+bundles:
+  web_security_pack:
+    name: "Web Security Package"
+    products: ["Web Security Assessment", "API Security Review"]
+    discount:
+      percentage: 15.0
+    template: "bundle_base_{language}.docx"
+    variables:
+      combined_scope: true
 textblock_patterns:
   - "{var_name}_{language}.docx"
   - "{var_name}.docx"
