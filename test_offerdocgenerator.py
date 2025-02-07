@@ -419,7 +419,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         special_template = self.templates_dir / "special_chars.docx"
         doc = docx.Document()
         doc.add_paragraph('Test & Company © 2024')
-        doc.add_paragraph('{{ sales_email }}')
+        doc.add_paragraph('{{ sales.email }}')
         doc.save(str(special_template))
         
         # Render and verify
