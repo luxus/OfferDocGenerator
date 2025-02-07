@@ -11,10 +11,10 @@ offer:
     DE: 30 Tage
     EN: 30 days
 settings:
-  products: ./offers/products
-  common: ./offers/common
-  output: ./offers/output
-  templates: ./offers/templates
+  products: products
+  common: common
+  output: output
+  templates: templates
   format: docx
   filename_pattern: "Offer_{product}_{language}_{currency}_{date}.{format}"
   template_pattern: "base_{language}.docx"
