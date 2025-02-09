@@ -26,6 +26,17 @@ class TestOfferDocGenerator(unittest.TestCase):
     CLEANUP = False  # Set to False to keep generated files
     TEST_DIR_NAME = "test_data"  # Fixed directory name
     
+    def _validate_docx(self, path: Path) -> bool:
+        """Validate DOCX file structure"""
+        try:
+            with zipfile.ZipFile(path) as z:
+                if 'word/document.xml' not in z.namelist():
+                    return False
+                doc = docx.Document(path)
+                return len(doc.paragraphs) > 0
+        except (zipfile.BadZipFile, Exception):
+            return False
+            
     def setUp(self):
         """Set up test fixtures in shared directory"""
         # Base test directory
@@ -104,13 +115,20 @@ class TestOfferDocGenerator(unittest.TestCase):
 - Bewertung der Datenvalidierung"""
         )
 
-        # Create bundle template
+        # Create bundle template with proper structure
         bundle_template = self.templates_dir / "bundle_base_EN.docx"
         doc = docx.Document()
-        doc.add_heading('Bundle Package: {{ bundle.name }}', 0)
-        doc.add_paragraph('This bundle includes the following products:')
+        
+        # Add core document structure
+        section = doc.sections[0]
+        section.page_height = docx.shared.Pt(842)
+        section.page_width = docx.shared.Pt(595)
+        
+        # Add content with proper structure
+        doc.add_paragraph('Bundle Package: {{ bundle.name }}')
+        p = doc.add_paragraph('This bundle includes the following products:')
         doc.add_paragraph('{% for product in products %}- {{ product }}{% endfor %}')
-        doc.add_paragraph('Bundle Discount: {{ discount }}%')
+        doc.add_paragraph('Bundle Discount: {{ "%.0f"|format(discount) }}%')
         doc.add_paragraph('For detailed information about each product, please see the attached product specifications.')
         doc.save(str(bundle_template))
 
@@ -476,9 +494,31 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Check required bundle elements
         self.assertIn("Bundle Package: Web Security Package", full_text)
         self.assertIn("Bundle Discount: 15.0%", full_text)
-        self.assertIn("Web Security Assessment", full_text)
+        self.assertIn("Web Application Security Assessment", full_text)
         self.assertIn("API Security Review", full_text)
 
+    def test_generated_file_validity(self):
+        """Verify all generated files are valid Word documents"""
+        config = offerdocgenerator.load_config(self.config_file)
+        
+        # Generate test documents
+        for lang in ["EN", "DE"]:
+            for currency in ["CHF", "EUR"]:
+                context = offerdocgenerator.build_context(config, lang, self.product_name, currency)
+                template = DocxTemplate(str(self.template_file_en if lang == "EN" else self.template_file_de))
+                output_path = self.output_dir / f"test_doc_{lang}_{currency}.docx"
+                offerdocgenerator.render_offer(template, config, context, output_path)
+                
+                # Verify file validity
+                self.assertTrue(self._validate_docx(output_path), 
+                              f"Invalid DOCX file: {output_path.name}")
+                
+                # Check content
+                doc = docx.Document(output_path)
+                full_text = "\n".join(p.text for p in doc.paragraphs)
+                self.assertIn(currency, full_text)
+                self.assertIn(config.offer.number, full_text)
+                
     def test_bundle_template_variables(self):
         """Verify required variables exist in bundle template"""
         template_path = self.templates_dir / "bundle_base_EN.docx"

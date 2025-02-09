@@ -1,0 +1,46 @@
+customer:
+  name: "Example Corp"
+  address: "123 Example Street"
+  city: "Example City"
+  zip: "12345"
+  country: "Example Country"
+
+offer:
+  number: "2025-001"
+  date: "2025-02-09"
+  validity:
+    EN: "30 days"
+    DE: "30 Tage"
+
+settings:
+  products: "./products"
+  common: "./common"
+  output: "./output"
+  templates: "./templates"
+  format: "docx"
+  filename_pattern: "Offer_{product}_{language}_{currency}_{date}.{format}"
+  template_pattern: "base_{language}.docx"
+
+sales:
+  name: "John Doe"
+  email: "john.doe@example.com"
+  phone: "+1 234 567 890"
+  contacts: []
+
+languages: ["EN", "DE"]
+currencies: ["CHF", "EUR"]
+
+bundles:
+  web_security_pack:
+    name: "Web Security Package"
+    products:
+      - "Web Application Security Assessment"
+      - "API Security Review"
+    discount:
+      percentage: 15.0
+    template: "bundle_base_{language}.docx"
+    variables: {}
+
+textblock_patterns:
+  - "{var_name}_{language}.docx"
+  - "{var_name}.docx"
