@@ -115,25 +115,8 @@ class TestOfferDocGenerator(unittest.TestCase):
 - Bewertung der Datenvalidierung"""
         )
 
-        # Create bundle template with proper structure
-        bundle_template = self.templates_dir / "bundle_base_EN.docx"
-        doc = docx.Document()
-        
-        # Add core document structure
-        section = doc.sections[0]
-        section.page_height = docx.shared.Pt(842)
-        section.page_width = docx.shared.Pt(595)
-        
-        # Add content with proper structure and explicit variables
-        doc.add_paragraph('{{ bundle.name }}')  # Explicit variable reference
-        doc.add_paragraph('Bundle Package: {{ bundle.name }}')
-        p = doc.add_paragraph('This bundle includes the following products:')
-        doc.add_paragraph('{{ products }}')  # Explicit variable reference
-        doc.add_paragraph('{% for product in products %}- {{ product }}{% endfor %}')
-        doc.add_paragraph('{{ discount }}')  # Explicit variable reference
-        doc.add_paragraph('Bundle Discount: {{ discount }}%')
-        doc.add_paragraph('For detailed information about each product, please see the attached product specifications.')
-        doc.save(str(bundle_template))
+        # Create proper bundle templates with required variables
+        self._create_bundle_templates()
 
         # Create base templates for EN and DE
         # English template
@@ -534,7 +517,8 @@ class TestOfferDocGenerator(unittest.TestCase):
             'discount'
         }
         missing = required_vars - set(variables)
-        self.assertEqual(missing, set(), "Missing required variables in bundle template")
+        self.assertEqual(missing, set(), 
+                        f"Missing variables: {missing}. Found: {variables}")
 
     def test_bundle_template_security(self):
         """Test bundle template security constraints"""
@@ -783,3 +767,13 @@ class TestOfferDocGenerator(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    def _create_bundle_templates(self):
+        """Generate test bundle templates programmatically"""
+        for lang in ['EN', 'DE']:
+            doc = docx.Document()
+            doc.add_paragraph('{{ bundle.name }}')
+            doc.add_paragraph('Bundle Package: {{ bundle.name }}')
+            doc.add_paragraph('Discount: {{ discount }}')
+            doc.add_paragraph('Products: {% for product in products %}{{ product }}{% endfor %}')
+            template_path = self.templates_dir / f"bundle_base_{lang}.docx"
+            doc.save(template_path)

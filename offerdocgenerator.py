@@ -187,6 +187,10 @@ def build_context(config: Config, language: str, product_name: str, currency: st
 def render_offer(template: DocxTemplate, config: Config, context: Dict[str, Any], output_path: Path):
     """Render template with auto-discovered variables"""
     try:
+        logger.debug("Rendering context contains: %s", context.keys())
+        logger.debug("Bundle data: %s", context.get('bundle'))
+        logger.debug("Discount value: %s", context.get('discount'))
+        
         
         # Get all variables from the template using proper detection
         template_vars = set(template.get_undeclared_template_variables())
@@ -269,14 +273,20 @@ def generate_bundle_offer(config: Config, bundle_name: str):
     """Generate offer documents for a product bundle"""
     bundle = config.bundles[bundle_name]
     
+    # Convert product references to just names
+    product_names = [p.name if hasattr(p, 'name') else p for p in bundle.products]
+    
     for lang in config.languages:
         for currency in config.currencies:
-            # Build bundle context
+            # Build bundle context with proper types
             context = build_context(config, lang, bundle_name, currency)
             context.update({
-                "bundle": bundle,
-                "products": bundle.products,
-                "discount": bundle.discount["percentage"]
+                "bundle": {
+                    "name": bundle.name,
+                    "discount": int(bundle.discount["percentage"])  # Convert to integer
+                },
+                "products": product_names,
+                "discount": f"{int(bundle.discount['percentage'])}%"  # Format as percentage string
             })
             
             # Get bundle template or fallback to standard
