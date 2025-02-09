@@ -765,8 +765,6 @@ class TestOfferDocGenerator(unittest.TestCase):
             self.assertEqual(len(generated_files), 8,
                            f"Expected 8 files for {output_format}, found {len(generated_files)}")
 
-if __name__ == '__main__':
-    unittest.main()
     def _create_bundle_templates(self):
         """Generate test bundle templates programmatically"""
         for lang in ['EN', 'DE']:
@@ -777,3 +775,6 @@ if __name__ == '__main__':
             doc.add_paragraph('Products: {% for product in products %}{{ product }}{% endfor %}')
             template_path = self.templates_dir / f"bundle_base_{lang}.docx"
             doc.save(template_path)
+
+if __name__ == '__main__':
+    unittest.main()
