@@ -512,7 +512,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         variables = doc.get_undeclared_template_variables()
         
         required_vars = {
-            'bundle.name',
+            'bundle',
             'products',
             'discount'
         }
@@ -771,7 +771,7 @@ class TestOfferDocGenerator(unittest.TestCase):
             doc = docx.Document()
             doc.add_paragraph('{{ bundle.name }}')
             doc.add_paragraph('Bundle Package: {{ bundle.name }}')
-            doc.add_paragraph('Discount: {{ discount }}')
+            doc.add_paragraph('Bundle Discount: {{ discount }}%')
             doc.add_paragraph('Products: {% for product in products %}{{ product }}{% endfor %}')
             template_path = self.templates_dir / f"bundle_base_{lang}.docx"
             doc.save(template_path)
