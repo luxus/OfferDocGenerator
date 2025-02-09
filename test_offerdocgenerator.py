@@ -475,7 +475,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         # Check required bundle elements
         self.assertIn("Bundle Package: Web Security Package", full_text)
-        self.assertIn("Bundle Discount: 15%", full_text)
+        self.assertIn("Bundle Discount: 15.0%", full_text)
         self.assertIn("Web Security Assessment", full_text)
         self.assertIn("API Security Review", full_text)
 

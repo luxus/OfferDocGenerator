@@ -4,14 +4,14 @@
 {% block content %}
 {{ super() }}
 
-## Bundle Package: {{ bundle.name }}
+Bundle Package: {{ bundle.name }}
 
 This bundle includes the following products:
 {% for product in products %}
 - {{ product }}
 {% endfor %}
 
-Bundle Discount: {{ discount }}%
+Bundle Discount: {{ "%.0f"|format(discount) }}%
 
 For detailed information about each product, please see the attached product specifications.
 
