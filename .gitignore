@@ -60,3 +60,4 @@ testfiles/
 
 # Project specific
 output/
+.aider*
