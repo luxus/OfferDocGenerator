@@ -11,7 +11,7 @@ Dieses Bundle enthält folgende Produkte:
 - {{ product }}
 {% endfor %}
 
-Bundle-Rabatt: {{ "%.0f"|format(discount) }}%
+Bundle-Rabatt: {{ discount }}%
 
 Detaillierte Informationen zu jedem Produkt finden Sie in den beigefügten Produktspezifikationen.
 

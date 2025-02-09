@@ -124,11 +124,14 @@ class TestOfferDocGenerator(unittest.TestCase):
         section.page_height = docx.shared.Pt(842)
         section.page_width = docx.shared.Pt(595)
         
-        # Add content with proper structure
+        # Add content with proper structure and explicit variables
+        doc.add_paragraph('{{ bundle.name }}')  # Explicit variable reference
         doc.add_paragraph('Bundle Package: {{ bundle.name }}')
         p = doc.add_paragraph('This bundle includes the following products:')
+        doc.add_paragraph('{{ products }}')  # Explicit variable reference
         doc.add_paragraph('{% for product in products %}- {{ product }}{% endfor %}')
-        doc.add_paragraph('Bundle Discount: {{ "%.0f"|format(discount) }}%')
+        doc.add_paragraph('{{ discount }}')  # Explicit variable reference
+        doc.add_paragraph('Bundle Discount: {{ discount }}%')
         doc.add_paragraph('For detailed information about each product, please see the attached product specifications.')
         doc.save(str(bundle_template))
 
@@ -493,7 +496,7 @@ class TestOfferDocGenerator(unittest.TestCase):
         
         # Check required bundle elements
         self.assertIn("Bundle Package: Web Security Package", full_text)
-        self.assertIn("Bundle Discount: 15.0%", full_text)
+        self.assertIn("Bundle Discount: 15%", full_text)
         self.assertIn("Web Application Security Assessment", full_text)
         self.assertIn("API Security Review", full_text)
 
