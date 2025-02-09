@@ -84,25 +84,35 @@ class TestOfferDocGenerator(unittest.TestCase):
 - Code-Review"""
         )
 
-        # Create second product and its textblocks
-        self.product_name2 = "Network Security Audit"
+        # Create API Security Review product and textblocks
+        self.product_name2 = "API Security Review"
         (self.textblocks_dir / "products" / self.product_name2).mkdir(parents=True, exist_ok=True)
         self._create_textblock_file(
             self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_EN.docx",
-            """The Network Security Audit includes:
+            """The API Security Review includes:
 
-- Firewall configuration review
-- Intrusion detection system testing
-- Security policy evaluation"""
+- API endpoint security testing
+- Authentication mechanism review
+- Data validation assessment"""
         )
         self._create_textblock_file(
             self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_DE.docx",
-            """Die Netzwerksicherheitsprüfung umfasst:
+            """Die API-Sicherheitsüberprüfung umfasst:
 
-- Überprüfung der Firewall-Konfiguration
-- Test des Intrusion Detection Systems
-- Bewertung der Sicherheitsrichtlinien"""
+- API-Endpunkt-Sicherheitstests
+- Überprüfung der Authentifizierungsmechanismen
+- Bewertung der Datenvalidierung"""
         )
+
+        # Create bundle template
+        bundle_template = self.templates_dir / "bundle_base_EN.docx"
+        doc = docx.Document()
+        doc.add_heading('Bundle Package: {{ bundle.name }}', 0)
+        doc.add_paragraph('This bundle includes the following products:')
+        doc.add_paragraph('{% for product in products %}- {{ product }}{% endfor %}')
+        doc.add_paragraph('Bundle Discount: {{ discount }}%')
+        doc.add_paragraph('For detailed information about each product, please see the attached product specifications.')
+        doc.save(str(bundle_template))
 
         # Create base templates for EN and DE
         # English template
@@ -182,6 +192,15 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "name": "John Doe",
                 "email": "john.doe@example.com",
                 "phone": "+1 234 567 890"
+            },
+            "bundles": {
+                "web_security_pack": {
+                    "name": "Web Security Package",
+                    "products": ["Web Application Security Assessment", "API Security Review"],
+                    "discount": {"percentage": 15.0},
+                    "template": "bundle_base_{language}.docx",
+                    "variables": {}
+                }
             }
         }
         with open(self.config_file, 'w') as f:
