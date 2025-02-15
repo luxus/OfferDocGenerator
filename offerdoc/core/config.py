@@ -21,6 +21,8 @@ class SecuritySettings(BaseModel):
     enable_audit_log: bool = True
     allow_unsafe_templates: bool = False
     bundles: BundleSecurity = Field(default_factory=BundleSecurity)
+    max_merged_files: int = Field(default=10, ge=1, le=50)
+    allow_section_overwriting: bool = False
 
 class CustomerConfig(BaseModel):
     name: str

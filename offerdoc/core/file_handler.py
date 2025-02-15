@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 from docxtpl import DocxTemplate, RichText
 from .exceptions import SecurityError
 from docxcompose.composer import Composer
 from .config import AppConfig
 from .exceptions import TemplateNotFoundError
+from .docx_merger import DocxMerger
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ class FileHandler:
     
     def __init__(self, config: AppConfig):
         self.config = config
+        self.merger = None  # Initialize lazily when needed
         
     def _validate_file_security(self, path: Path) -> None:
         """Enforce security settings from config"""
@@ -96,6 +98,7 @@ class FileHandler:
 
     def get_output_path(self, product: str, language: str, currency: str, date: str) -> Path:
         """Generate output file path based on config pattern"""
+        """Generate output file path based on config pattern"""
         output_dir = self.ensure_output_dir(product)
         filename = self.config.settings.filename_pattern.format(
             product=product,
@@ -105,3 +108,40 @@ class FileHandler:
             format=self.config.settings.format
         )
         return output_dir / filename
+
+    def merge_docx_files(
+        self,
+        source_paths: List[Path],
+        target_section: str,
+        new_subsection: Optional[str] = None
+    ) -> Path:
+        """
+        Merge content from multiple DOCX files into the base document.
+        
+        Args:
+            source_paths: Paths to source DOCX files
+            target_section: Section heading where content should be inserted
+            new_subsection: Optional new subsection heading to create
+            
+        Returns:
+            Path to merged output file
+        """
+        if not self.merger:
+            self.merger = DocxMerger(self.get_template_path("EN"))
+
+        for source_path in source_paths:
+            try:
+                self.merger.merge_content(source_path, target_section, new_subsection)
+            except Exception as e:
+                logger.error(f"Error merging {source_path}: {e}")
+                continue
+                
+        output_path = self.get_output_path(
+            product="merged",
+            language="EN",
+            currency="USD",
+            date="2023-10-01"
+        )
+        
+        self.merger.save(output_path)
+        return output_path
