@@ -123,24 +123,33 @@ class DocxMerger:
             return
 
         try:
+            # Create a deep copy of the element
+            new_element = deepcopy(element)
+            
+            # Remove existing parent references if any
+            if hasattr(new_element, 'parent'):
+                delattr(new_element, 'parent')
+            
+            # Find the correct parent for insertion
             parent = insert_position.parent
             if not parent:
-                logger.warning("No parent found for insert position")
+                logger.warning("No valid parent found for element insertion")
                 return
-                
+            
             if element.tag.endswith('p'):
                 # Handle paragraph elements with their formatting
                 new_para = self.base_doc.add_paragraph()
-                new_para._element.append(deepcopy(element))
+                new_para._element = new_element
                 
                 # Adjust font properties if needed
                 self._apply_formatting(new_para)
                 
+                # Determine the insertion index after the current position
                 try:
-                    index = parent.index(insert_position)
+                    index = parent.index(insert_position) + 1
                     parent.insert(index, new_para._element)
-                except (ValueError, IndexError):
-                    # Fallback: append to end if insertion fails
+                except (ValueError, IndexError) as e:
+                    logger.warning(f"Insertion failed, appending to end: {e}")
                     parent.append(new_para._element)
             elif element.tag.endswith('tbl'):
                 # Handle tables with their content
