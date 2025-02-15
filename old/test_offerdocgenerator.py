@@ -4,11 +4,11 @@ import unittest
 import shutil
 import random
 import zipfile
-import zipfile
-from pathlib import Path
+import re
 from pathlib import Path
 import yaml
 import docx
+from docx.enum.style import WD_STYLE_TYPE
 from unittest import mock
 from docxtpl import DocxTemplate, RichText
 import offerdocgenerator
@@ -44,9 +44,6 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.test_root = self.script_dir / "test_output" 
         self.test_run_dir = self.test_root / self.TEST_DIR_NAME
         
-        # Add test for Jinja2 loops and RichText
-        self.loop_template = self.test_run_dir / "templates" / "loop_test.docx"
-        
         # Clean existing test data if cleanup enabled
         if self.CLEANUP and self.test_run_dir.exists():
             shutil.rmtree(self.test_run_dir)
@@ -54,124 +51,71 @@ class TestOfferDocGenerator(unittest.TestCase):
         # Create fresh directory structure
         self.test_run_dir.mkdir(parents=True, exist_ok=True)
         
-        # Now create subdirectories
-        self.config_file = self.test_run_dir / "test_config.yaml"
+        # Create required directories
         self.templates_dir = self.test_run_dir / "templates"
-        self.output_dir = self.test_run_dir / "output"
         self.textblocks_dir = self.test_run_dir / "textblocks"
+        self.output_dir = self.test_run_dir / "output"
+        
+        for dir_path in [self.templates_dir, self.textblocks_dir, self.output_dir]:
+            dir_path.mkdir(parents=True, exist_ok=True)
+        
+        # Create common and products directories
+        (self.textblocks_dir / "common").mkdir(exist_ok=True)
+        (self.textblocks_dir / "products").mkdir(exist_ok=True)
+        
+        # Product names for testing
         self.product_name = "Web Application Security Assessment"
-
-        # Create required subdirectories
-        self.templates_dir.mkdir(exist_ok=True)
-        self.output_dir.mkdir(exist_ok=True)
-        (self.textblocks_dir / "common").mkdir(parents=True, exist_ok=True)
-        (self.textblocks_dir / "products" / self.product_name).mkdir(parents=True, exist_ok=True)
-
-        # Create common textblocks
+        self.product_name2 = "API Security Review"
+        
+        # Create product directories
+        for product in [self.product_name, self.product_name2]:
+            (self.textblocks_dir / "products" / product).mkdir(parents=True, exist_ok=True)
+        
+        # Create base templates
+        self.template_file_en = self.templates_dir / "base_EN.docx"
+        self.template_file_de = self.templates_dir / "base_DE.docx"
+        
+        # Add loop template path definition
+        self.loop_template = self.templates_dir / "loop_test.docx"
+        
+        # Create valid DOCX templates
+        for template_path in [self.template_file_en, self.template_file_de]:
+            doc = docx.Document()
+            # Add basic structure
+            doc.add_heading('Offer Document', 0)
+            doc.add_paragraph('Offer Number: {{ offer.number }}')
+            doc.add_paragraph('Customer: {{ customer.name }}')
+            doc.add_paragraph('Currency: {{ CURRENCY }}')  # Add currency display
+            doc.add_paragraph('{{ section_1_1 }}')  # Placeholder for textblock
+            doc.save(str(template_path))
+        
+        # Create textblock files
         self._create_textblock_file(
             self.textblocks_dir / "common" / "section_1_1_EN.docx",
-            "Our standard security assessment provides a comprehensive evaluation of your web application's security posture."
+            "Common Section Content"
         )
         self._create_textblock_file(
             self.textblocks_dir / "common" / "section_1_1_DE.docx",
-            "Unsere Standard-Sicherheitsbewertung bietet eine umfassende Evaluation der Sicherheitslage Ihrer Webanwendung."
+            "Sicherheitsbewertung für Webanwendungen"  # Updated German content
         )
-
-        # Create product-specific textblocks for first product
+        
+        # Create product-specific textblocks
+        product_dir = self.textblocks_dir / "products" / self.product_name
         self._create_textblock_file(
-            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_EN.docx",
-            """The Web Application Security Assessment includes:
-
-- Vulnerability scanning
-- Manual penetration testing
-- Code review"""
+            product_dir / "section_1_1_1_EN.docx",
+            "Product Specific Content"
         )
         self._create_textblock_file(
-            self.textblocks_dir / "products" / self.product_name / "section_1_1_1_DE.docx",
-            """Die Web Application Security Assessment beinhaltet:
-
-- Schwachstellenscanning
-- Manuelle Penetrationstests
-- Code-Review"""
+            product_dir / "section_1_1_1_DE.docx",
+            "Produktspezifischer Inhalt"
         )
-
-        # Create API Security Review product and textblocks
-        self.product_name2 = "API Security Review"
-        (self.textblocks_dir / "products" / self.product_name2).mkdir(parents=True, exist_ok=True)
-        self._create_textblock_file(
-            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_EN.docx",
-            """The API Security Review includes:
-
-- API endpoint security testing
-- Authentication mechanism review
-- Data validation assessment"""
-        )
-        self._create_textblock_file(
-            self.textblocks_dir / "products" / self.product_name2 / "section_1_1_1_DE.docx",
-            """Die API-Sicherheitsüberprüfung umfasst:
-
-- API-Endpunkt-Sicherheitstests
-- Überprüfung der Authentifizierungsmechanismen
-- Bewertung der Datenvalidierung"""
-        )
-
-        # Create proper bundle templates with required variables
-        self._create_bundle_templates()
-
-        # Create base templates for EN and DE
-        # English template
-        self.template_file_en = self.templates_dir / "base_EN.docx"
-        doc = docx.Document()
-        doc.add_heading('Offer: {{ offer.number }}', 0)
-        doc.add_paragraph('Date: {{ offer.date }}')
-        doc.add_paragraph('Valid for: {{ offer.validity[LANGUAGE] }}')
-        doc.add_heading('Customer Information', 1)
-        doc.add_paragraph('{{ customer.name }}')
-        doc.add_paragraph('{{ customer.address }}')
-        doc.add_paragraph('{{ customer.city }}, {{ customer.zip }}')
-        doc.add_paragraph('{{ customer.country }}')
-        doc.add_heading('Product Description', 1)
-        p = doc.add_paragraph()
-        p.add_run('{{r section_1_1 }}')
-        doc.add_heading('Detailed Scope', 2)
-        p = doc.add_paragraph()
-        p.add_run('{{r section_1_1_1 }}')
-        doc.add_paragraph('Total Price: {{ CURRENCY }} 10,000')
-        doc.add_heading('Sales Contact', 1)
-        doc.add_paragraph('{{ sales.name }}')
-        doc.add_paragraph('{{ sales.email }}')
-        doc.add_paragraph('{{ sales.phone }}')
-        doc.save(str(self.template_file_en))
-
-        # German template
-        self.template_file_de = self.templates_dir / "base_DE.docx"
-        doc = docx.Document()
-        doc.add_heading('Angebot: {{ offer.number }}', 0)
-        doc.add_paragraph('Datum: {{ offer.date }}')
-        doc.add_paragraph('Gültig für: {{ offer.validity[LANGUAGE] }}')
-        doc.add_heading('Kundeninformationen', 1)
-        doc.add_paragraph('{{ customer.name }}')
-        doc.add_paragraph('{{ customer.address }}')
-        doc.add_paragraph('{{ customer.city }}, {{ customer.zip }}')
-        doc.add_paragraph('{{ customer.country }}')
-        doc.add_heading('Produktbeschreibung', 1)
-        p = doc.add_paragraph()
-        p.add_run('{{r section_1_1 }}')
-        doc.add_heading('Detaillierter Umfang', 2)
-        p = doc.add_paragraph()
-        p.add_run('{{r section_1_1_1 }}')
-        doc.add_paragraph('Gesamtpreis: {{ CURRENCY }} 10.000')
-        doc.add_heading('Vertriebskontakt', 1)
-        doc.add_paragraph('{{ sales.name }}')
-        doc.add_paragraph('{{ sales.email }}')
-        doc.add_paragraph('{{ sales.phone }}')
-        doc.save(str(self.template_file_de))
-
-        # Create config file
-        config = {
+        
+        # Create test config file
+        self.config_file = self.test_run_dir / "config.yaml"
+        config_data = {
             "offer": {
-                "number": "2025-001",
-                "date": "2025-02-02",
+                "number": "2024-001",
+                "date": "2024-03-15",
                 "validity": {
                     "EN": "30 days",
                     "DE": "30 Tage"
@@ -183,14 +127,19 @@ class TestOfferDocGenerator(unittest.TestCase):
                 "output": str(self.output_dir),
                 "templates": str(self.templates_dir),
                 "format": "docx",
-                "prefix": "TestOffer_"
+                "security": {
+                    "max_template_size_mb": 10,
+                    "allowed_file_types": ["docx", "dotx"],
+                    "enable_audit_log": True,
+                    "allow_unsafe_templates": False
+                }
             },
             "customer": {
-                "name": "Example Corp",
-                "address": "123 Example Street",
-                "city": "Example City",
+                "name": "Test Corp",
+                "address": "123 Test St",
+                "city": "Test City",
                 "zip": "12345",
-                "country": "Example Country"
+                "country": "Test Country"
             },
             "sales": {
                 "name": "John Doe",
@@ -200,30 +149,23 @@ class TestOfferDocGenerator(unittest.TestCase):
             "bundles": {
                 "web_security_pack": {
                     "name": "Web Security Package",
-                    "products": ["Web Application Security Assessment", "API Security Review"],
-                    "discount": {"percentage": 15.0},
-                    "template": "bundle_base_{language}.docx",
-                    "variables": {}
+                    "products": [
+                        "Web Application Security Assessment",
+                        "API Security Review"
+                    ],
+                    "discount": 15
                 }
             }
         }
+        
         with open(self.config_file, 'w') as f:
-            yaml.dump(config, f)
+            yaml.dump(config_data, f)
 
-    def _create_textblock_file(self, file_path: Path, content: str):
-        """Helper method to create a docx file with given content."""
+    def _create_textblock_file(self, path: Path, content: str):
+        """Helper method to create textblock files with proper structure"""
         doc = docx.Document()
-        # Add each paragraph with proper styling
-        for paragraph in content.split('\n\n'):
-            if paragraph.strip():
-                p = doc.add_paragraph()
-                # If it's a bullet point, use a list style
-                if paragraph.strip().startswith('-'):
-                    p.style = 'List Bullet'
-                    p.text = paragraph.strip()[2:]  # Remove the '- ' prefix
-                else:
-                    p.text = paragraph.strip()
-        doc.save(str(file_path))
+        doc.add_paragraph(content)
+        doc.save(str(path))
 
     def tearDown(self):
         """Conditional cleanup of test output directory"""
@@ -640,6 +582,139 @@ class TestOfferDocGenerator(unittest.TestCase):
         self.assertIn("settings.output\n  Field required", error_msg)
         self.assertIn("settings.templates\n  Field required", error_msg)
 
+    def test_path_security_validation(self):
+        """Test that symbolic links and unsafe paths are rejected."""
+        # Create a test symlink
+        symlink_path = self.test_run_dir / "symlink_products"
+        symlink_path.symlink_to(self.textblocks_dir / "products")
+        
+        unsafe_config = {
+            "offer": {
+                "number": "2024-001",
+                "date": "2024-03-15",
+                "validity": {
+                    "EN": "30 days",
+                    "DE": "30 Tage"
+                }
+            },
+            "settings": {
+                "products": str(symlink_path),  # Symlink path
+                "common": str(self.textblocks_dir / "common"),
+                "output": str(self.output_dir),
+                "templates": str(self.templates_dir)
+            },
+            "customer": {
+                "name": "Test Corp",
+                "address": "Test St",
+                "city": "Test City",
+                "zip": "12345",
+                "country": "Test Country"
+            },
+            "sales": {
+                "name": "Test Sales",
+                "email": "test@example.com",
+                "phone": "123456"
+            }
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(unsafe_config, f)
+        
+        with self.assertRaises(ValueError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Symbolic links not allowed in path", str(cm.exception))
+
+    def test_currency_validation(self):
+        """Test validation of currency configurations."""
+        invalid_currency_config = {
+            # ... copy basic config structure ...
+            "currencies": ["USD", "GBP"],  # Invalid currencies (only CHF/EUR allowed)
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(invalid_currency_config, f)
+        
+        with self.assertRaises(ValueError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Invalid currency", str(cm.exception))
+
+    def test_language_validation(self):
+        """Test validation of language configurations."""
+        invalid_lang_config = {
+            # ... copy basic config structure ...
+            "languages": ["EN", "FR"],  # Invalid language (only EN/DE allowed)
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(invalid_lang_config, f)
+        
+        with self.assertRaises(ValueError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Invalid language", str(cm.exception))
+
+    def test_template_pattern_validation(self):
+        """Test validation of template pattern configurations."""
+        config = {
+            # ... copy basic config structure ...
+            "settings": {
+                "template_pattern": "invalid_{unknown_var}.docx",  # Invalid variable in pattern
+                "filename_pattern": "Offer_{product}_{language}_{currency}.{format}"
+            }
+        }
+        
+        with open(self.config_file, 'w') as f:
+            yaml.dump(config, f)
+        
+        with self.assertRaises(ValueError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Invalid template pattern", str(cm.exception))
+
+    def test_textblock_pattern_validation(self):
+        """Test validation of textblock pattern configurations."""
+        invalid_patterns = [
+            "{var_name}",  # Missing extension
+            "invalid_{unknown_var}.docx",  # Invalid variable
+            "{var_name}_{language}.invalid"  # Invalid extension
+        ]
+        
+        for pattern in invalid_patterns:
+            config = {
+                # ... copy basic config structure ...
+                "textblock_patterns": [pattern]
+            }
+            
+            with open(self.config_file, 'w') as f:
+                yaml.dump(config, f)
+            
+            with self.assertRaises(ValueError) as cm:
+                offerdocgenerator.load_config(self.config_file)
+            self.assertIn("Invalid textblock pattern", str(cm.exception))
+
+    def test_security_settings_validation(self):
+        """Test validation of security settings."""
+        invalid_security_configs = [
+            {"max_template_size_mb": 0},  # Too small
+            {"max_template_size_mb": 101},  # Too large
+            {"allowed_file_types": ["pdf"]},  # Invalid file type
+            {"max_products": 11},  # Exceeds maximum
+            {"max_discount": 101.0}  # Exceeds maximum percentage
+        ]
+        
+        for invalid_security in invalid_security_configs:
+            config = {
+                # ... copy basic config structure ...
+                "settings": {
+                    "security": invalid_security
+                }
+            }
+            
+            with open(self.config_file, 'w') as f:
+                yaml.dump(config, f)
+            
+            with self.assertRaises(ValueError) as cm:
+                offerdocgenerator.load_config(self.config_file)
+            self.assertIn("Invalid security settings", str(cm.exception))
+
     def test_custom_settings_with_defaults(self):
         """Verify custom settings override defaults and missing settings use defaults."""
         custom_config = {
@@ -769,12 +844,84 @@ class TestOfferDocGenerator(unittest.TestCase):
         """Generate test bundle templates programmatically"""
         for lang in ['EN', 'DE']:
             doc = docx.Document()
-            doc.add_paragraph('{{ bundle.name }}')
-            doc.add_paragraph('Bundle Package: {{ bundle.name }}')
-            doc.add_paragraph('Bundle Discount: {{ discount }}%')
-            doc.add_paragraph('Products: {% for product in products %}{{ product }}{% endfor %}')
+            doc.add_heading('Bundle Offer', 0)
+            doc.add_paragraph('Bundle Name: {{ bundle.name }}')
+            doc.add_paragraph('Currency: {{ CURRENCY }}')
+            doc.add_paragraph('Discount: {{ bundle.discount }}%')
+            doc.add_paragraph('Products:')
+            p = doc.add_paragraph()
+            p.add_run('{% for product in products %}')
+            p.add_run('\n- {{ product }}')
+            p.add_run('{% endfor %}')
             template_path = self.templates_dir / f"bundle_base_{lang}.docx"
             doc.save(template_path)
+
+    def test_bundle_configuration(self):
+        """Test valid and invalid bundle configurations."""
+        # Valid bundle configuration
+        valid_config = {
+            "offer": {
+                "number": "2024-001",
+                "date": "2024-03-15",
+                "validity": {
+                    "EN": "30 days",
+                    "DE": "30 Tage"
+                }
+            },
+            "settings": {
+                "products": str(self.products_dir),
+                "common": str(self.textblocks_dir / "common"),
+                "output": str(self.output_dir),
+                "templates": str(self.templates_dir),
+                "security": {
+                    "bundles": {
+                        "max_products": 3,
+                        "max_discount": 20.0
+                    }
+                }
+            },
+            "customer": {
+                "name": "Test Corp",
+                "address": "Test St",
+                "city": "Test City",
+                "zip": "12345",
+                "country": "Test Country"
+            },
+            "sales": {
+                "name": "Test Sales",
+                "email": "test@example.com",
+                "phone": "123456"
+            },
+            "bundles": {
+                "web_security_pack": {
+                    "name": "Web Security Package",
+                    "products": ["Product1", "Product2"],
+                    "discount": {"percentage": 15.0},  # Correct format for discount
+                    "template": "bundle_template.docx",
+                    "variables": {
+                        "description": "Complete web security solution"
+                    }
+                }
+            }
+        }
+
+        with open(self.config_file, 'w') as f:
+            yaml.dump(valid_config, f)
+
+        # This should not raise an error
+        config = offerdocgenerator.load_config(self.config_file)
+        self.assertEqual(config.bundles["web_security_pack"].discount["percentage"], 15.0)
+
+        # Test invalid bundle configuration
+        invalid_config = deepcopy(valid_config)
+        invalid_config["bundles"]["web_security_pack"]["discount"] = 15  # Invalid: not a dict
+
+        with open(self.config_file, 'w') as f:
+            yaml.dump(invalid_config, f)
+
+        with self.assertRaises(ValidationError) as cm:
+            offerdocgenerator.load_config(self.config_file)
+        self.assertIn("Input should be a valid dictionary", str(cm.exception))
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from docx import Document
 from docxtpl import DocxTemplate, RichText
 import yaml
+import re
 
 from offerdoc.core.config import load_config, AppConfig
 from offerdoc.core.exceptions import handle_document_errors
