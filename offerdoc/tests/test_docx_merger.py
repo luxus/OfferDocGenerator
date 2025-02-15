@@ -1,11 +1,18 @@
 import pytest
+import sys
+import os
 from pathlib import Path
 from docxtpl import DocxTemplate
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from ..core.docx_merger import DocxMerger
-from ..core.exceptions import DocumentGenerationError
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent.resolve()
+sys.path.append(str(project_root))
+
+from core.docx_merger import DocxMerger
+from core.exceptions import DocumentGenerationError
 
 @pytest.fixture
 def base_template(tmp_path):
