@@ -128,8 +128,8 @@ class DocxMerger:
                 logger.warning("No parent found for insert position")
                 return
                 
-            # Handle paragraph elements with their formatting
             if element.tag.endswith('p'):
+                # Handle paragraph elements with their formatting
                 new_para = self.base_doc.add_paragraph()
                 new_para._element.append(deepcopy(element))
                 
@@ -142,17 +142,20 @@ class DocxMerger:
                 except (ValueError, IndexError):
                     # Fallback: append to end if insertion fails
                     parent.append(new_para._element)
-        elif element.tag.endswith('tbl'):
-            # Handle tables with their content
-            new_table = self.base_doc.add_table(rows=0, cols=1)
-            for row in element.findall('.//w:tr'):
-                new_row = new_table.add_row()
-                for cell in row.findall('.//w:tc'):
-                    new_cell = new_row.cells[0]
-                    self._copy_table_content(cell, new_cell)
-        elif element.tag.endswith('sectPr'):
-            # Handle section properties
-            insert_position.append(deepcopy(element))
+            elif element.tag.endswith('tbl'):
+                # Handle tables with their content
+                new_table = self.base_doc.add_table(rows=0, cols=1)
+                for row in element.findall('.//w:tr'):
+                    new_row = new_table.add_row()
+                    for cell in row.findall('.//w:tc'):
+                        new_cell = new_row.cells[0]
+                        self._copy_table_content(cell, new_cell)
+            elif element.tag.endswith('sectPr'):
+                # Handle section properties
+                insert_position.append(deepcopy(element))
+        except Exception as e:
+            logger.error(f"Error processing element {element.tag}: {e}")
+            raise
 
     def _apply_formatting(self, paragraph) -> None:
         """Apply formatting rules to maintain consistency."""
