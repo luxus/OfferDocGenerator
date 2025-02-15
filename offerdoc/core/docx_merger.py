@@ -55,7 +55,11 @@ class DocxMerger:
                 raise ValueError(f"Section '{target_section}' not found in base document")
 
             # Determine where to insert new content
-            insert_position = target_para.next_sibling
+            insert_position = None
+            if hasattr(target_para, 'next_sibling'):
+                insert_position = target_para.next_sibling
+            if not insert_position:
+                insert_position = target_para
 
             # Process each element from source document
             for element in source_doc.element.body:
@@ -117,18 +121,27 @@ class DocxMerger:
         """Process and insert an element from the source document."""
         if not insert_position:
             return
-            
-        # Handle paragraph elements with their formatting
-        if element.tag.endswith('p'):
-            new_para = self.base_doc.add_paragraph()
-            new_para._element.append(deepcopy(element))
-            
-            # Adjust font properties if needed
-            self._apply_formatting(new_para)
-            
+
+        try:
             parent = insert_position.parent
-            index = parent.index(insert_position)
-            parent.insert(index, new_para._element)
+            if not parent:
+                logger.warning("No parent found for insert position")
+                return
+                
+            # Handle paragraph elements with their formatting
+            if element.tag.endswith('p'):
+                new_para = self.base_doc.add_paragraph()
+                new_para._element.append(deepcopy(element))
+                
+                # Adjust font properties if needed
+                self._apply_formatting(new_para)
+                
+                try:
+                    index = parent.index(insert_position)
+                    parent.insert(index, new_para._element)
+                except (ValueError, IndexError):
+                    # Fallback: append to end if insertion fails
+                    parent.append(new_para._element)
         elif element.tag.endswith('tbl'):
             # Handle tables with their content
             new_table = self.base_doc.add_table(rows=0, cols=1)

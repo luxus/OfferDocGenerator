@@ -87,9 +87,13 @@ class FileHandler:
 
     def ensure_output_dir(self, product: str) -> Path:
         """Create output directory if needed"""
-        output_dir = self.config.output_path / product
-        output_dir.mkdir(parents=True, exist_ok=True)
-        return output_dir
+        try:
+            output_dir = self.config.output_path / product
+            output_dir.mkdir(parents=True, exist_ok=True)
+            return output_dir
+        except Exception as e:
+            logger.error(f"Failed to create output directory for {product}: {e}")
+            raise
 
     def get_template_path(self, language: str) -> Path:
         """Get template path for given language"""
