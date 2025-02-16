@@ -27,7 +27,8 @@ class FileHandler:
 
     def save_output(self, content: bytes, filename: str) -> Path:
         """Save generated document to output directory."""
-        output_path = self.config.output_path / filename
+        # Ensure the file is saved within the output_dir's output subdirectory
+        output_path = self.config.output_path / "output" / filename
         output_path.parent.mkdir(exist_ok=True, parents=True)
         
         logger.info(f"Saving document to {output_path}")

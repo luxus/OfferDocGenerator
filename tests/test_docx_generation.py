@@ -8,9 +8,9 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     output_dir = tmp_path / "base_templates"
     output_dir.mkdir()
     
-    # Generate base template
+    # Generate base template in templates subdirectory
     config_generator = ConfigGenerator(output_dir=str(output_dir))
-    docx_path = config_generator.create_docx_template("base_en.docx")
+    docx_path = config_generator.create_docx_template("templates/base_en.docx")
     
     assert docx_path.exists()
     file_handler = FileHandler(Config())

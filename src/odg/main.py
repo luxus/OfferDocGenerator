@@ -14,8 +14,8 @@ class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
         self.script_dir = Path(__file__).parent
         self.output_dir = Path(output_dir).expanduser().resolve()
-
-        # Clean existing temp directory if it exists and KEEP_TMP is not set
+        
+        # Ensure the output directory exists and is clean if not validating
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         parent_dir = self.output_dir.parent
         if parent_dir.exists() and (self.output_dir in parent_dir.iterdir()) and not keep_tmp and not is_validating:
@@ -205,16 +205,12 @@ class ConfigGenerator:
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         
         if not keep_tmp:
-            if isinstance(path, str):
-                path = Path(path)
-            
-            if isinstance(path, Path) and path.exists():
-                # Only remove temporary files, preserve existing config.yaml
-                for item in path.iterdir():
-                    if item.is_file() and item.name != "config.yaml":
-                        item.unlink()
-                    elif item.is_dir():
-                        shutil.rmtree(item, ignore_errors=True)
+            # Remove all contents except config.yaml
+            for item in path.iterdir():
+                if item.is_file() and item.name != "config.yaml":
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item, ignore_errors=True)
 
 # Helper function to create base directory structure
 def setup_default_folders(output_dir: Path = None):
