@@ -133,11 +133,16 @@ def test_full_config_validation(config_generator):
     
     # Verify required settings exist
     settings = loaded_config["settings"]
+    # Verify base structure
     assert "base_path" in settings, "Missing base_path in settings"
-    assert "templates" in settings, "Missing templates in settings"
-    assert "common" in settings, "Missing common in settings"
-    assert "products" in settings, "Missing products in settings"
-    assert "output" in settings, "Missing output in settings"
+    
+    # Verify folders dictionary contains expected paths
+    assert "folders" in settings, "Missing folders configuration"
+    folders = settings["folders"]
+    required_folders = ["templates", "common", "products", "output"]
+    for folder in required_folders:
+        assert folder in folders, f"Missing {folder} in folders configuration"
+    assert "output_prefix" in settings, "Missing output_prefix in settings"
 
 @pytest.mark.parametrize("language,expected", [
     ("en", "Hello"),
