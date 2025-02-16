@@ -18,7 +18,11 @@ class ConfigGenerator:
         # Ensure the output directory exists and is clean if not validating
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         parent_dir = self.output_dir.parent
-        if parent_dir.exists() and (self.output_dir in parent_dir.iterdir()) and not keep_tmp and not is_validating:
+        
+        if (parent_dir.exists() 
+            and (self.output_dir in parent_dir.iterdir()) 
+            and not keep_tmp 
+            and not is_validating):
             self._clean_temp_directory(self.output_dir)
         
         # Create fresh directory structure based on documentation
@@ -205,12 +209,8 @@ class ConfigGenerator:
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         
         if not keep_tmp:
-            # Remove all contents except config.yaml
-            for item in path.iterdir():
-                if item.is_file() and item.name != "config.yaml":
-                    item.unlink()
-                elif item.is_dir():
-                    shutil.rmtree(item, ignore_errors=True)
+            # Remove the entire directory and all its contents
+            shutil.rmtree(path, ignore_errors=True)
 
 # Helper function to create base directory structure
 def setup_default_folders(output_dir: Path = None):
