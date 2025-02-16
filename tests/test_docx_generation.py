@@ -1,12 +1,29 @@
 import os
 from pathlib import Path
 import pytest
+import yaml
 from docx import Document
 from src.odg.utils.file_handler import FileHandler
 from src.odg.main import ConfigGenerator
+from src.config.settings import Config
 
 @pytest.fixture
 def config_generator(tmp_path):
+    # Create minimal config.yaml
+    config_data = {
+        "output_dir": str(tmp_path),
+        "prefix": "Offer",
+        "default_language": "en",
+        "supported_languages": ["en", "de", "fr"]
+    }
+    config_file = tmp_path / "config.yaml"
+    with open(config_file, 'w') as f:
+        yaml.dump(config_data, f)
+    
+    # Create necessary directories
+    (tmp_path / "templates").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "output").mkdir(parents=True, exist_ok=True)
+    
     return ConfigGenerator(output_dir=tmp_path)
 
 def test_generate_base_template_with_jinja_variables(config_generator, tmp_path):
