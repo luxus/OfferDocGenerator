@@ -23,7 +23,7 @@ def config_generator(tmp_path):
     test_dir = tmp_path / "config"
     test_dir.mkdir(parents=True, exist_ok=True)
     print(f"Creating test ConfigGenerator with tmpdir: {test_dir}")
-    cg = ConfigGenerator(output_dir=str(test_dir))
+    cg = ConfigGenerator(output_dir=str(test_dir.resolve()))
     
     # Ensure environment is clean
     if "TEST_OUTPUT_DIR" in os.environ:
@@ -135,7 +135,7 @@ def test_cli_create_folder_structure(tmp_path):
     output_dir = tmp_path / "offers"
     
     # Run CLI command to create structure
-    config_gen = ConfigGenerator(output_dir=str(output_dir))
+    config_gen = ConfigGenerator(output_dir=str(output_dir.resolve()))
     config_path = config_gen.generate_config()
     assert config_path.exists(), f"Config file not created at: {config_path}"
     
@@ -162,7 +162,7 @@ def test_cli_config_contents(cli_test_directory):
     output_dir = cli_test_directory / "test_project"
     
     # Generate config and update base_path as per CLI functionality
-    config_gen = ConfigGenerator(output_dir=str(output_dir))
+    config_gen = ConfigGenerator(output_dir=str(output_dir.resolve()))
     config_path = config_gen.generate_config()
     
     with open(config_path, 'r') as f:
@@ -174,7 +174,7 @@ def test_cli_config_contents(cli_test_directory):
 
 def test_cli_output(cli_test_directory):
     # Test CLI output and validation
-    config_gen = ConfigGenerator(output_dir=cli_test_directory / "test_project")
+    config_gen = ConfigGenerator(output_dir=str((cli_test_directory / "test_project").resolve()))
     config_path = config_gen.generate_config()
     
     # Ensure that the validation occurs
