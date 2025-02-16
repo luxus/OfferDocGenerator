@@ -159,17 +159,18 @@ class ConfigGenerator:
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template"""
         try:
-            # First ensure we have a template
+            # Ensure template name has .docx extension
             if not template_name.endswith('.docx'):
                 template_name = f"{template_name}.docx"
             
-            # Create template if it doesn't exist
+            # Get template path
             templates_dir = self.output_dir / "templates"
             template_path = templates_dir / template_name
             
+            # Create template if it doesn't exist
             if not template_path.exists():
                 template_path = self.create_docx_template(template_name)
-                if not template_path:
+                if template_path is None or not template_path.exists():
                     raise FileNotFoundError(f"Could not create template: {template_name}")
             
             # Create output directory if needed

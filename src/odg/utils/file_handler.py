@@ -43,11 +43,14 @@ class FileHandler:
             
             # Check both style name and numbering property
             for paragraph in document.paragraphs:
-                if (paragraph.style and 
-                    (paragraph.style.name.startswith("List Number") or
-                     hasattr(paragraph, "_element") and 
-                     paragraph._element.pPr and 
-                     paragraph._element.pPr.numPr is not None)):
+                # Check style name first
+                if paragraph.style is not None and paragraph.style.name.startswith("List Number"):
+                    return True
+                    
+                # Check numbering property
+                if (hasattr(paragraph, "_element") and 
+                    paragraph._element.pPr is not None and 
+                    paragraph._element.pPr.numPr is not None):
                     return True
             
             return False
