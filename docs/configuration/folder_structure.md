@@ -1,60 +1,91 @@
 # Default Folder Structure
 
-The default folder structure assumes a root directory where all configuration and assets are stored. This can be overwritten in the main configuration file.
+The default folder structure is organized to separate concerns clearly and support automatic detection of files based on naming conventions.
 
-```
+```text
 base/
-├── templates/                # Main template files (e.g., main_de.docx, section1_1_en.docx)
-│   ├── common/              # Common template fragments used across sections/languages
-│   └── Web Application Security Assessment/   # Product-specific template folder
-│       └── section1_1_de.docx   # Example template file with language suffix
-├── products/                # Product-specific configuration and data
-│   ├── product1/            # Example product folder
-│   │   ├── config.yaml     # Product-specific configuration (optional)
-│   │   └── data/           # Additional product-related files (e.g., images, custom templates)
-│   └── product2/            # Another product example
-├── common/                  # Shared DOCX fragments and assets used across all products
-└── output/                  # Generated documents
+├── templates/                 # Main template files (e.g., base_en.docx, section1_2_de.docx)
+│   └── common/               # Common template fragments used across sections or languages
+├── products/                 # Product-specific configuration and data
+│   ├── Web Application Security Assessment/  # Example product folder
+│   │   ├── config.yaml      # Product-specific configuration (optional)
+│   │   └── data/            # Additional product-related files (e.g., images, custom templates)
+│   └── Another Product/      # Another product example
+├── common/                   # Shared DOCX fragments and assets used across all products
+└── output/                   # Generated documents
 ```
 
 ## Explanation of Folders
 
 ### `templates/`
 - Contains the main template files.
-- Templates use language suffixes in filenames (e.g., `_de.docx`, `_en.docx`).
-- Product-specific templates are stored in their own subfolders under `templates/`.
+- Templates use language suffixes in filenames (e.g., `_en.docx`, `_de.docx`).
+- Product-specific templates are stored directly under `templates/`.
 
 ### `common/`
 - Shared resources used across all products and sections.
 - Includes:
-  - Images and media files
-  - Style definitions
-  - Common DOCX fragments
+    - Images and media files
+    - Style definitions
+    - Common DOCX fragments
 
 ### `products/`
 - Folder for product-specific configurations and data.
-- Each product has its own subfolder (e.g., `product1/`, `product2/`).
+- Each product has its own subfolder (e.g., `Web Application Security Assessment/`, `Another Product/`).
 - Product folders can contain:
-  - A `config.yaml` file if special overrides are needed.
-  - Additional files or templates specific to the product.
+    - A `config.yaml` file if special overrides are needed.
+    - Additional files or templates specific to the product.
 
 ### `output/`
 - Default directory for generated documents.
 - Generated files follow naming patterns: `[product]_[section]_[LANG]_[date].docx`.
 
-## Configuration
-Paths can be customized in the main configuration file:
+## Configuration and Internationalization
+
+The main configuration file defines paths and settings:
 
 ```yaml
+# config.yaml
 paths:
-  base: ./base
-  templates: ${base}/templates
-  products: ${base}/products
-  common: ${base}/common
-  output: ${base}/output
+  base: ./base                 # Root directory for all other folders
+  templates: ${base}/templates # Main template files
+  common: ${base}/common       # Shared DOCX fragments and assets
+  products: ${base}/products   # Product-specific configurations
+  output: ${base}/output      # Output directory
+
+internationalization:
+  default_language: en         # Default language code
+  supported_languages: [en, de, fr]  # List of supported languages
 ```
 
-This structure ensures that:
-- Language-specific templates are easily identifiable using ISO-style suffixes.
-- Products have dedicated folders for their specific configurations and data.
-- Common resources are centralized, promoting reuse across projects.
+## Variable Handling and Multi-Language Support
+
+- **Variables in DOCX Files**:
+    - Use placeholders like `{{ variable_name }}` in DOCX files.
+    - Avoid dot notation (e.g., `customer.address`); use underscores instead (e.g., `customer_address`).
+
+- **Multi-Language Variables**:
+    - Define variables with language-specific suffixes if necessary:
+    ```yaml
+    variables:
+      customer:
+        city: "Munich"             # Default value (fallback)
+        city_de: "München"         # German override
+    ```
+    - System checks for language-specific variables first (e.g., `city_de`), then falls back to default.
+
+## File Naming Conventions
+
+- **Templates**:
+    - Use language codes as suffixes (e.g., `base_en.docx`, `section1_2_de.docx`).
+    - Enables automatic detection based on current language.
+
+- **Products**:
+    - Product-specific files go directly under their respective product folders.
+    - Example: `products/Web Application Security Assessment/section1_2_de.docx`.
+
+## Best Practices
+
+- Keep templates modular by using common fragments for shared content.
+- Maintain consistent naming conventions for automatic detection.
+- Regularly review configuration to ensure paths and settings align with project structure.
