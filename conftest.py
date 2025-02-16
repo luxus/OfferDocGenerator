@@ -70,8 +70,10 @@ def pytest_configure(config):
     root_logger.addHandler(stream_handler)
     root_logger.setLevel(logging.DEBUG)
     
-    # Mark that we're in testing mode
+    # Mark that we're in testing mode and clear any TEST_OUTPUT_DIR
     os.environ["TESTING"] = "True"
+    if "TEST_OUTPUT_DIR" in os.environ:
+        del os.environ["TEST_OUTPUT_DIR"]
     
     config.addinivalue_line(
         "markers",
