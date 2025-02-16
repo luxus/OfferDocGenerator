@@ -25,32 +25,15 @@ logger.addHandler(handler)
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
-        testing_mode = os.getenv("TESTING", "False").lower() == "true"
-        keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-        
         if output_dir == "tmp":
-            if testing_mode:
-                # Use tests/tmp as the temporary directory during testing
-                self.output_dir = Path("tests") / "tmp"
-                logger.debug(f"Using test directory: {self.output_dir}")
-            else:
-                # Create a new temp dir when not in testing mode
-                tmp_dir = tempfile.mkdtemp()
-                self.output_dir = Path(tmp_dir) / "tmp"
+            # Create a new temp dir
+            tmp_dir = tempfile.mkdtemp()
+            self.output_dir = Path(tmp_dir)
         else:
-            # Ensure output_dir is absolute and use it directly in testing mode
+            # Use provided directory
             self.output_dir = Path(output_dir).resolve()
 
-        # Ensure the directory exists
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
-        
-        if testing_mode and not keep_tmp and not is_validating:
-            logger.debug(f"Cleaning existing test directory: {self.output_dir}")
-            # Clean up any existing test directory
-            if self.output_dir.exists():
-                self._clean_temp_directory(self.output_dir)
         
         # Create output directory unless we're just validating
         if not is_validating:
@@ -245,30 +228,13 @@ class ConfigGenerator:
             print(f"Error creating sample docx: {e}")
             raise
 
-    @staticmethod
-    def _clean_temp_directory(path):
-        """Clean up temporary files unless KEEP_TMP is True"""
-        keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-        
-        if not keep_tmp:
-            logger.debug(f"Cleaning temporary directory: {path}")
-            try:
-                if Path(path).exists():
-                    shutil.rmtree(path, ignore_errors=True)
-                    logger.debug(f"Successfully removed directory: {path}")
-            except Exception as e:
-                logger.error(f"Error cleaning directory {path}: {e}")
 
 # Helper function to create base directory structure
 def setup_default_folders(output_dir: Path = None):
     """Create default folder structure for quick setup"""
     if not output_dir:
-        if os.getenv("TESTING", "False").lower() == "true":
-            output_dir = Path("tests") / "tmp"
-            logger.debug(f"Using test directory: {output_dir}")
-        else:
-            output_dir = Path.cwd() / "tmp"
-            logger.debug(f"Using default output directory: {output_dir}")
+        output_dir = Path.cwd() / "tmp"
+        logger.debug(f"Using default output directory: {output_dir}")
     
     # Create main directories
     output_dir.mkdir(exist_ok=True)
