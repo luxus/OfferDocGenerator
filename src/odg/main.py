@@ -17,21 +17,16 @@ class ConfigGenerator:
         
         # Determine if we are in a test context
         testing = os.getenv("TESTING", "False").lower() == "true"
-        
-        # Ensure the output directory exists and is clean if not validating and in test context
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-        parent_dir = self.output_dir.parent
         
-        if (parent_dir.exists() 
-            and (self.output_dir in parent_dir.iterdir()) 
-            and testing  # Only cleanup during tests
-            and not keep_tmp 
-            and not is_validating):
-            self._clean_temp_directory(self.output_dir)
+        if testing and not keep_tmp and not is_validating:
+            # Clean up any existing test directory
+            if self.output_dir.exists():
+                self._clean_temp_directory(self.output_dir)
         
-        # Only create directories if not in test mode or explicitly needed
-        if not testing or not is_validating:
-            self.output_dir.mkdir(exist_ok=True)
+        # Create output directory unless we're just validating
+        if not is_validating:
+            self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_config(self) -> Path:
         """Generate config.yaml based on documentation files"""

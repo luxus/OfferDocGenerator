@@ -13,3 +13,9 @@ def pytest_sessionstart(session):
     """Set up test environment variables."""
     os.environ["TESTING"] = "True"
     os.environ["KEEP_TMP"] = "False"
+
+def pytest_sessionfinish(session, exitstatus):
+    """Clean up after all tests complete."""
+    # Reset environment variables
+    os.environ["TESTING"] = "False"
+    os.environ["KEEP_TMP"] = "False"
