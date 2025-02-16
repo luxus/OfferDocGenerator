@@ -278,14 +278,24 @@ class ConfigGenerator:
             }
             doc.render(context)
             
+            # Add all required sections based on template type
             if "product" in template_name.lower():
-                doc.add_heading("Product Overview", level=1)
-                doc.add_paragraph("Product overview content goes here...")
+                required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
+                
+                # Get additional sections from config if available
+                if "products" in config_data and config_data["products"]:
+                    product = config_data["products"][0]
+                    if "sections" in product:
+                        required_sections.extend([s for s in product["sections"] if s not in required_sections])
+                
+                for section in required_sections:
+                    doc.add_heading(section, level=1)
+                    doc.add_paragraph(f"{section} content goes here...")
             else:
                 doc.add_heading("General Information", level=1)
                 doc.add_paragraph("General information content goes here...")
-            
-            doc.add_heading("Technical Specifications", level=1)
+                doc.add_heading("Technical Specifications", level=1)
+                doc.add_paragraph("Technical specifications content goes here...")
             
             # Add numbered list with nested items
             paragraph = doc.add_paragraph("First item", style='List Number')

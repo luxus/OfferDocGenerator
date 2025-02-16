@@ -126,7 +126,8 @@ class FileHandler:
                     heading_text = p.text.split('.')[-1].strip()
                     # Remove any numbering at the start
                     heading_text = ' '.join(w for w in heading_text.split() if not w[0].isdigit())
-                    headings.append(heading_text)
+                    headings.append(heading_text.strip())
+                    logger.debug(f"Found heading: {heading_text.strip()}")
             
             # Check each required section is present
             missing = []
