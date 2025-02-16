@@ -12,39 +12,42 @@ All variables in DOCX templates must use the double curly brace syntax:
 1. Use lowercase letters and underscores
 2. No spaces or special characters
 3. Be descriptive and specific
-4. Use prefixes for categorization
+4. Use language suffixes for translations
 
 ### Examples
 ✅ Good variable names:
 - `customer_address`
 - `invoice_total_amount`
 - `project_start_date`
+- `company_name_de` (German translation)
+- `address_en` (English translation)
 
 ❌ Avoid:
 - `customerAddress` (use underscores)
 - `Customer Address` (no spaces)
 - `var1` (not descriptive)
+- `de_company_name` (suffix goes at end)
 
 ## Multi-Language Support
 
 ### Language-Specific Variables
-Variables can be defined per language using suffixes:
+Add language code suffixes to variable names:
 ```yaml
 # In config.yaml
 variables:
-  company_name_en: "Example Corp"
-  company_name_de: "Beispiel GmbH"
-  address_en: "123 Main St"
-  address_de: "Hauptstraße 123"
+  company_name: "Example Corp"      # Default fallback
+  company_name_de: "Beispiel GmbH"  # German version
+  company_name_fr: "Exemple SARL"   # French version
+  
+  address: "123 Main St"           # Default fallback
+  address_de: "Hauptstraße 123"    # German version
 ```
 
-### Default Values
-Always provide a default value without language suffix:
-```yaml
-company_name: "Example Corp"  # Fallback value
-```
+### Variable Resolution
+1. System checks for language-specific version first (e.g., `company_name_de`)
+2. Falls back to default version if not found (e.g., `company_name`)
 
-## Variable Categories
+## Common Variable Categories
 
 ### Customer Information
 - `customer_name`
@@ -66,15 +69,14 @@ company_name: "Example Corp"  # Fallback value
 ## Configuration Example
 ```yaml
 variables:
-  # Default values
+  # Default values (fallbacks)
   customer_name: "Example Corp"
   project_name: "Security Assessment"
   
   # Language-specific values
-  en:
-    customer_name: "Example Corporation"
-    project_name: "Security Assessment Project"
-  de:
-    customer_name: "Beispiel GmbH"
-    project_name: "Sicherheitsbewertungsprojekt"
+  customer_name_de: "Beispiel GmbH"
+  customer_name_fr: "Exemple SARL"
+  
+  project_name_de: "Sicherheitsbewertung"
+  project_name_fr: "Évaluation de Sécurité"
 ```
