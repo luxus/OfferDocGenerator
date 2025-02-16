@@ -3,10 +3,16 @@ from pathlib import Path
 import yaml
 import pytest
 import shutil
+import tempfile
 from main import ConfigGenerator
 
+@pytest.fixture
+def keep_tmp():
+    """Control whether to keep temporary test files"""
+    return os.getenv("KEEP_TMP", "False").lower() == "true"
+
 @pytest.fixture(scope="function")
-def config_generator(tmp_path):
+def config_generator(tmp_path, keep_tmp):
     # Use tmp_path fixture to create clean temp directory for each test
     output_dir = tmp_path / "tmp"
     
@@ -15,8 +21,7 @@ def config_generator(tmp_path):
     
     yield cg
     
-    # Optional: Keep temp files for manual review by setting an environment variable
-    if os.getenv("KEEP_TMP", "False").lower() == "true":
+    if keep_tmp:
         print(f"Temporary files preserved at: {output_dir}")
     else:
         # Clean up after test
@@ -67,18 +72,26 @@ def test_internationalization_settings(config_generator):
     assert "default_language" in intl_section, "Default language missing"
     assert intl_section["default_language"] == "en", "Default language must be 'en'"
 
-def test_temp_folder_cleanup(config_generator):
+def test_temp_folder_cleanup(keep_tmp):
     """Test temporary directory cleanup"""
-    # Create a file to test deletion
-    test_file = config_generator.output_dir / "test_file.txt"
-    with open(test_file, "w") as f:
-        f.write("Test content")
+    try:
+        output_dir = Path(tempfile.gettempdir()) / "offerdocgenerator_test"
+        # Create a file to test deletion
+        test_file = output_dir / "test_file.txt"
+        test_file.parent.mkdir(exist_ok=True)
+        with open(test_file, "w") as f:
+            f.write("Test content")
         
-    # Clean up
-    ConfigGenerator._clean_temp_directory(config_generator.output_dir)
-    
-    # Verify cleanup
-    assert not test_file.exists(), "Temporary file was not deleted"
+        # Clean up
+        ConfigGenerator._clean_temp_directory(output_dir)
+        
+        if keep_tmp:
+            assert test_file.exists(), "Temporary file was deleted despite KEEP_TMP=True"
+        else:
+            assert not test_file.exists(), "Temporary file was not deleted"
+    finally:
+        if not keep_tmp and test_file.exists():
+            test_file.unlink()
 
 @pytest.mark.end_to_end
 def test_full_config_validation(config_generator):

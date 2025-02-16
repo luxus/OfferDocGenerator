@@ -83,6 +83,9 @@ class ConfigGenerator:
                 raise ValueError(f"Missing required key: {key}")
 
     @staticmethod
-    def _clean_temp_directory(path: Path):
-        """Clean up temporary files"""
-        shutil.rmtree(path, ignore_errors=True)
+    def _clean_temp_directory(path):
+        """Clean up temporary files unless KEEP_TMP is True"""
+        if os.getenv("KEEP_TMP", "False").lower() != "true":
+            path = Path(path) if not isinstance(path, Path) else path
+            if path.exists():
+                shutil.rmtree(path, ignore_errors=True)
