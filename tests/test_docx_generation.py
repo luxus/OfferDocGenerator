@@ -11,7 +11,8 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     os.environ["TESTING"] = "True"
     os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
     
-    output_dir = "base_templates"
+    output_dir_str = "base_templates"
+    output_dir = Path(output_dir_str)  # Convert to Path
     
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     docx_path = config_generator.create_docx_template("base_en.docx")
@@ -19,7 +20,7 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     # Verify all files are within tmp_path
     assert docx_path.exists()
     assert docx_path.is_relative_to(tmp_path)
-    assert docx_path.parent == output_dir / "templates"
+    assert docx_path.parent == Path(tmp_path) / output_dir_str / "templates"
     assert docx_path.name == "base_en.docx"
     file_handler = FileHandler(Config())
     assert file_handler.has_numbered_lists(docx_path)
@@ -30,7 +31,8 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     os.environ["TESTING"] = "True"
     os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
     
-    output_dir = "product_templates"
+    output_dir_str = "product_templates"
+    output_dir = Path(output_dir_str)  # Convert to Path
     
     # Generate sample product config with .docx extension within tmp_path
     products_config = {
@@ -52,7 +54,7 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
             
             # Adjust the expected path based on the actual output directory
             expected_filename = product['name'].replace('.docx', '')
-            expected_path = output_dir / "generated" / f"sample_{expected_filename}.docx"
+            expected_path = Path(tmp_path) / output_dir_str / "generated" / f"sample_{expected_filename}.docx"
             assert expected_path.exists(), f"Expected file not found at: {expected_path}"
             assert file_handler.has_numbered_lists(docx_path), f"Missing numbered lists in {docx_path}"
         except Exception as e:
