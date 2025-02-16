@@ -186,14 +186,17 @@ class ConfigGenerator:
             templates_dir = self.output_dir / "templates"
             template_path = templates_dir / template_name
             
+            # Get paths for both template locations
+            generated_dir = self.output_dir / "generated"
+            generated_path = generated_dir / template_name
+            
             # Create template if it doesn't exist
-            if not template_path.exists():
+            if not template_path.exists() and not generated_path.exists():
                 template_path = self.create_docx_template(template_name)
                 if template_path is None or not template_path.exists():
                     raise FileNotFoundError(f"Could not create template: {template_name}")
             
             # Create generated directory if needed
-            generated_dir = self.output_dir / "generated"
             generated_dir.mkdir(exist_ok=True)
             
             # Create a sample document with unique name
@@ -202,9 +205,10 @@ class ConfigGenerator:
             # Copy template to sample output
             if template_path.exists():
                 shutil.copy2(template_path, sample_output)
-            else:
-                # If template doesn't exist in templates dir, try generated dir
+            elif generated_path.exists():
                 shutil.copy2(generated_path, sample_output)
+            else:
+                raise FileNotFoundError(f"Template not found in either location: {template_name}")
             
             if not sample_output.exists():
                 raise FileNotFoundError(f"Failed to create sample file: {sample_output}")
