@@ -107,41 +107,26 @@ class FileHandler:
             logger.error(f"Error validating merged document: {e}")
             return False
 
-    def has_required_sections(self, docx_path: Path, is_product: bool = False) -> bool:
-        """Verify presence of required sections"""
+    def has_required_sections(self, docx_path: Path) -> bool:
+        """Verify presence of required sections in the merged document."""
         try:
             document = Document(str(docx_path))
             
-            # Define required sections based on product flag
-            if is_product:
-                required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
-            else:
-                # Base template requires only Introduction and General Information
-                required_sections = ["Introduction", "General Information"]
+            required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
+            found_sections = []
             
-            # Extract all Heading 1 paragraphs as section names
-            headings = []
-            for p in document.paragraphs:
-                if p.style and p.style.name == 'Heading 1':
-                    # Clean up the heading text by removing section numbers and extra whitespace
-                    heading_text = p.text.split('.')[-1].strip()
-                    # Remove any numbering at the start
-                    heading_text = ' '.join(w for w in heading_text.split() if not w[0].isdigit())
-                    headings.append(heading_text.strip())
-                    logger.debug(f"Found heading: {heading_text.strip()}")
+            for paragraph in document.paragraphs:
+                if paragraph.style.name == 'Heading 1':
+                    section_name = paragraph.text.split('.')[-1].strip()
+                    if any(section in section_name for section in required_sections):
+                        found_sections.append(section_name)
             
-            # Check each required section is present
-            missing = []
-            for section in required_sections:
-                if not any(section in h for h in headings):
-                    missing.append(section)
-                    logger.warning(f"Missing required section: {section}")
-            
+            missing = [sec for sec in required_sections if sec not in found_sections]
             if missing:
-                logger.warning(f"Document at {docx_path} is missing sections: {', '.join(missing)}")
+                logger.warning(f"Missing sections: {missing}")
                 return False
             return True
-            
+        
         except Exception as e:
-            logger.error(f"Error checking required sections: {e}")
+            logger.error(f"Error checking sections: {e}")
             return False
