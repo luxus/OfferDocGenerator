@@ -131,10 +131,7 @@ class ConfigGenerator:
             
             template_path = templates_dir / template_name
             
-            if template_path.exists():
-                print(f"Template already exists: {template_path}")
-                return template_path
-            
+            # Always create a new template to ensure it has the correct structure
             doc = Document()
             
             # Add title and basic structure
@@ -158,35 +155,36 @@ class ConfigGenerator:
             for ph in placeholders:
                 doc.add_paragraph(f"{{{{ {ph} }}}}")
             
-            # Add required sections
+            # Add Introduction section
             doc.add_heading("Introduction", level=1)
             doc.add_paragraph("Introduction content goes here...")
             
             # Load config data
             config_path = self.output_dir / "config.yaml"
-            with open(config_path, 'r') as f:
-                config_data = yaml.safe_load(f)
+            if config_path.exists():
+                with open(config_path, 'r') as f:
+                    config_data = yaml.safe_load(f)
 
-            # Add sections based on document type and config
-            if "product" in template_name.lower():
-                # Get product sections from config
-                if "products" in config_data and config_data["products"]:
-                    product = config_data["products"][0]
-                    if "sections" in product:
-                        for section in product["sections"]:
+                # Add sections based on document type and config
+                if "product" in template_name.lower():
+                    # Always include required product sections
+                    required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
+                    
+                    # Get additional sections from config if available
+                    if "products" in config_data and config_data["products"]:
+                        product = config_data["products"][0]
+                        if "sections" in product:
+                            required_sections.extend([s for s in product["sections"] if s not in required_sections])
+                    
+                    for section in required_sections:
+                        if section != "Introduction":  # Already added above
                             doc.add_heading(section, level=1)
                             doc.add_paragraph(f"{section} content goes here...")
-                    else:
-                        # Fallback to required sections if none specified
-                        required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
-                        for section in required_sections:
-                            doc.add_heading(section, level=1)
-                            doc.add_paragraph(f"{section} content goes here...")
-            else:
-                # Default sections for non-product templates
-                doc.add_heading("General Information", level=1)
-                doc.add_paragraph("General information content goes here...")
-                doc.add_heading("Technical Specifications", level=1)
+                else:
+                    # Default sections for non-product templates
+                    doc.add_heading("General Information", level=1)
+                    doc.add_paragraph("General information content goes here...")
+                    doc.add_heading("Technical Specifications", level=1)
             
             # Add numbered list with proper nesting
             doc.add_paragraph("First item", style='List Number')
@@ -198,11 +196,11 @@ class ConfigGenerator:
             
             doc.save(template_path)
             
-            print(f"Created template file: {template_path}")
+            logger.info(f"Created template file: {template_path}")
             return template_path
             
         except Exception as e:
-            print(f"Error creating template: {e}")
+            logger.error(f"Error creating template: {e}")
             return None
 
     def merge_docx_files(self, input_paths: List[Path], output_path: Path) -> None:

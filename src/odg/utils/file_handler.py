@@ -119,20 +119,26 @@ class FileHandler:
                 required_sections = ["Introduction", "General Information", "Technical Specifications"]
             
             # Extract all Heading 1 paragraphs as section names
-            headings = [
-                p.text.split('.')[-1].strip()  # Remove section numbers if present
-                for p in document.paragraphs 
-                if p.style and p.style.name == 'Heading 1'
-            ]
+            headings = []
+            for p in document.paragraphs:
+                if p.style and p.style.name == 'Heading 1':
+                    # Clean up the heading text by removing section numbers and extra whitespace
+                    heading_text = p.text.split('.')[-1].strip()
+                    # Remove any numbering at the start
+                    heading_text = ' '.join(w for w in heading_text.split() if not w[0].isdigit())
+                    headings.append(heading_text)
             
             # Check each required section is present
             missing = []
             for section in required_sections:
-                if not any(h.startswith(section) for h in headings):
+                if not any(section in h for h in headings):
                     missing.append(section)
                     logger.warning(f"Missing required section: {section}")
             
-            return len(missing) == 0
+            if missing:
+                logger.warning(f"Document at {docx_path} is missing sections: {', '.join(missing)}")
+                return False
+            return True
             
         except Exception as e:
             logger.error(f"Error checking required sections: {e}")
