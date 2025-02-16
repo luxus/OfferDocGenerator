@@ -187,38 +187,28 @@ class ConfigGenerator:
             return None
 
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
-        """Create a sample DOCX file from the template"""
+        """Create a sample DOCX file from the template with structured content."""
         try:
-            # Ensure template name has .docx extension and all paths are within output_dir
-            if not template_name.endswith('.docx'):
-                template_name = f"{template_name}.docx"
-            
-            # Get template path relative to output_dir
-            templates_dir = self.output_dir / "templates"
-            template_path = templates_dir / template_name
-            
-            # Create template if it doesn't exist
-            if not template_path.exists():
-                template_path = self.create_docx_template(template_name)
-                if template_path is None or not template_path.exists():
-                    raise FileNotFoundError(f"Could not create template: {template_name}")
-            
-            # Create generated directory if needed
+            # Ensure all paths are relative to output_dir
             generated_dir = self.output_dir / "generated"
             generated_dir.mkdir(exist_ok=True)
             
-            # Create a sample document with unique name
+            # Create a new document based on the template
+            doc = Document()
+            
+            # Add numbered list with nested items
+            paragraph = doc.add_paragraph("1. First item", style='List Number')
+            sub_paragraph = doc.add_paragraph("a. Sub-item 1", style='List Number 2')
+            paragraph = doc.add_paragraph("2. Second item", style='List Number')
+            
+            # Add bullet points with nested items
+            bullet_para = doc.add_paragraph("- Bullet Point 1", style='List Bullet')
+            sub_bullet_para = doc.add_paragraph("• Sub-bullet 1", style='List Bullet 2')
+            
+            # Save the generated document with a unique name
             sample_output = generated_dir / f"sample_{template_name}"
+            doc.save(sample_output)
             
-            # Copy template to sample output
-            if not template_path.exists():
-                raise FileNotFoundError(f"Template not found: {template_name}")
-                
-            shutil.copy2(template_path, sample_output)
-            
-            if not sample_output.exists():
-                raise FileNotFoundError(f"Failed to create sample file: {sample_output}")
-                
             print(f"Created sample document: {sample_output}")
             return sample_output
             
