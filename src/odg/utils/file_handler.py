@@ -3,7 +3,7 @@ from typing import List
 import logging
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
-from ..config.settings import Config
+from src.config.settings import Config
 
 logger = logging.getLogger(__name__)
 
