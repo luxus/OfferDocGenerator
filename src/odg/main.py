@@ -1,5 +1,6 @@
 import os
 import argparse
+import logging
 from pathlib import Path
 import yaml
 from datetime import date
@@ -10,32 +11,44 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 VERSION = "1.0.0"
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
+        # If output_dir is relative, make it relative to current working directory
+        if output_dir == "tmp":
+            output_dir = os.path.join(os.getcwd(), "tmp")
+            
         # Convert output_dir to absolute path
         self.output_dir = Path(output_dir).expanduser().resolve()
+        logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         
         # Determine if we are in a test context
         testing = os.getenv("TESTING", "False").lower() == "true"
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         
         if testing and not keep_tmp and not is_validating:
+            logger.debug(f"Cleaning existing test directory: {self.output_dir}")
             # Clean up any existing test directory
             if self.output_dir.exists():
                 self._clean_temp_directory(self.output_dir)
         
         # Create output directory unless we're just validating
         if not is_validating:
+            logger.debug(f"Creating output directory: {self.output_dir}")
             self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_config(self) -> Path:
         """Generate config.yaml based on documentation files"""
+        logger.debug(f"Generating config in: {self.output_dir}")
+        
         # Create necessary directories
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        (self.output_dir / "templates").mkdir(exist_ok=True)
-        (self.output_dir / "common").mkdir(exist_ok=True)
-        (self.output_dir / "products").mkdir(exist_ok=True)
-        (self.output_dir / "output").mkdir(exist_ok=True)
+        for subdir in ["templates", "common", "products", "output"]:
+            dir_path = self.output_dir / subdir
+            logger.debug(f"Creating directory: {dir_path}")
+            dir_path.mkdir(parents=True, exist_ok=True)
 
         config_data: Dict[str, Any] = {
             "offer": {

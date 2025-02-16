@@ -35,9 +35,13 @@ def config_generator():
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
     with tempfile.TemporaryDirectory() as tmpdir:
         os.environ["TESTING"] = "True"
-        cg = ConfigGenerator(output_dir=str(tmpdir))
+        tmpdir_path = Path(tmpdir).resolve()
+        print(f"Creating test ConfigGenerator with tmpdir: {tmpdir_path}")
+        cg = ConfigGenerator(output_dir=str(tmpdir_path))
         yield cg
         # Cleanup happens automatically when context exits
+        if Path(tmpdir).exists():
+            shutil.rmtree(tmpdir, ignore_errors=True)
         os.environ["TESTING"] = "False"
 
 def test_valid_config_generation(config_generator):
