@@ -13,11 +13,12 @@ VERSION = "1.0.0"
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
         self.script_dir = Path(__file__).parent
-        self.output_dir = Path(output_dir).resolve()
-        
+        self.output_dir = Path(output_dir).expanduser().resolve()
+
         # Clean existing temp directory if it exists and KEEP_TMP is not set
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-        if self.output_dir.exists() and not keep_tmp and not is_validating:
+        parent_dir = self.output_dir.parent
+        if parent_dir.exists() and (self.output_dir in parent_dir.iterdir()) and not keep_tmp and not is_validating:
             self._clean_temp_directory(self.output_dir)
         
         # Create fresh directory structure based on documentation
