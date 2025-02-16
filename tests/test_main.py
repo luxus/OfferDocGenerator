@@ -20,20 +20,15 @@ def cli_test_directory(tmp_path):
 @pytest.fixture(scope="function")
 def config_generator(tmp_path):
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    # Always use tmp_path during tests, ignore TEST_OUTPUT_DIR
-    test_output_dir = str(tmp_path / "config")
-    
-    # Ensure the output directory exists
-    Path(test_output_dir).mkdir(parents=True, exist_ok=True)
-    
     # Set testing environment variables
     os.environ["TESTING"] = "True"
     
+    test_output_dir = str(tmp_path / "config")
     cg = ConfigGenerator(output_dir=test_output_dir)
     
     yield cg
     
-    # Always clean up our temporary directory
+    # Clean up
     shutil.rmtree(Path(test_output_dir), ignore_errors=True)
 
 def test_valid_config_generation(config_generator, tmp_path):
@@ -153,6 +148,11 @@ def test_cli_create_folder_structure(tmp_path):
 
 def test_cli_config_contents(cli_test_directory):
     output_dir = cli_test_directory / "test_project"
+    
+    # Set testing environment variables
+    os.environ["TESTING"] = "True"
+    os.environ["TEST_OUTPUT_DIR"] = str(output_dir)
+    
     config_gen = ConfigGenerator(output_dir=str(output_dir))
     config_path = config_gen.generate_config()
     
