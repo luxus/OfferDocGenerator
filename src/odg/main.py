@@ -30,19 +30,19 @@ class ConfigGenerator:
         
         if output_dir == "tmp":
             if testing_mode:
-                # Use the provided output_dir instead of creating a new temp dir
+                # Use the provided output_dir directly in testing mode
                 self.output_dir = Path(output_dir)
                 logger.debug(f"Using test directory: {self.output_dir}")
             else:
-                self.output_dir = Path(os.getcwd()) / "tmp"
+                # Create a new temp dir when not in testing mode
+                tmp_dir = tempfile.mkdtemp()
+                self.output_dir = Path(tmp_dir) / "tmp"
         else:
-            # Ensure output_dir is an absolute path
-            self.output_dir = Path(output_dir).expanduser().resolve()
-            # In testing mode, if path is not under /tmp, create a temp dir
-            if testing_mode and not str(self.output_dir).startswith('/tmp/'):
-                temp_dir = Path(tempfile.mkdtemp())
-                logger.debug(f"Moving specified path under temp directory: {temp_dir}")
-                self.output_dir = temp_dir / self.output_dir.name
+            # Ensure output_dir is absolute and use it directly in testing mode
+            self.output_dir = Path(output_dir).resolve()
+
+        # Ensure the directory exists
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         
