@@ -12,7 +12,7 @@ VERSION = "1.0.0"
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
-        self.script_dir = Path(__file__).parent
+        # Convert output_dir to absolute path
         self.output_dir = Path(output_dir).expanduser().resolve()
         
         # Determine if we are in a test context
@@ -224,7 +224,7 @@ class ConfigGenerator:
 def setup_default_folders(output_dir: Path = None):
     """Create default folder structure for quick setup"""
     if not output_dir:
-        output_dir = Path(__file__).parent / "tmp"
+        output_dir = Path.cwd() / "tmp"
     
     # Create main directories
     output_dir.mkdir(exist_ok=True)

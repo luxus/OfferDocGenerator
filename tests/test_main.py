@@ -34,9 +34,11 @@ def keep_tmp():
 def config_generator():
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
     with tempfile.TemporaryDirectory() as tmpdir:
+        os.environ["TESTING"] = "True"
         cg = ConfigGenerator(output_dir=str(tmpdir))
         yield cg
         # Cleanup happens automatically when context exits
+        os.environ["TESTING"] = "False"
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""
