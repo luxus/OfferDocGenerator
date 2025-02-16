@@ -488,6 +488,13 @@ Docx test templates are in `tests/templates/`. To generate final docx files::
    cd tests/
    python runtests.py
 
+To generate a template for testing purposes, set the TEST_OUTPUT_DIR environment variable::
+
+   export TEST_OUTPUT_DIR=/tmp/test_output
+   odg create-template --name=test_template.docx
+
+This will place the generated template in /tmp/test_output/templates.
+
 Generated files are located in `tests/output` directory.
 
 If you are not sure about your python environment, python-docx-template provides Pipfiles

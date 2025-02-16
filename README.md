@@ -25,6 +25,16 @@ odg create my_project
 odg --version
 ```
 
+## Environment Variables
+
+- **TEST_OUTPUT_DIR**: Optional directory for test file generation. Useful during testing to isolate output files.
+
+Example:
+```bash
+export TEST_OUTPUT_DIR=/path/to/test/dir
+odg create-template --name=test_template.docx
+```
+
 ## License
 
 MIT License

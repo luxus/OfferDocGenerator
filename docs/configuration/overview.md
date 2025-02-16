@@ -18,6 +18,18 @@ The configuration system is organized into several key components:
 - Template-based document generation
 - Variable substitution system
 
+## Environment Variables
+
+The following environment variables can be used to customize the behavior of ODG:
+
+- **TEST_OUTPUT_DIR**: Specifies the directory where test files (e.g., templates, sample documents) will be generated. This is particularly useful during testing to ensure output is isolated.
+
+Example usage:
+```bash
+export TEST_OUTPUT_DIR=/path/to/test/dir
+odg create-template --name=test_template.docx
+```
+
 For detailed information about specific aspects of the configuration system, please refer to:
 - [Folder Structure](folder_structure.md)
 - [Variables Documentation](variables.md)
