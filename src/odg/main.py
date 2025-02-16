@@ -198,28 +198,28 @@ class ConfigGenerator:
 
     def _update_section_numbering(self, doc: Document) -> None:
         """Update section headings to ensure continuous numbering."""
-        current_heading_level = 1
-        current_section_number = 0
+        current_section = 0
         sub_section_count = 0
 
         for paragraph in doc.paragraphs:
             if paragraph.style.name.startswith("Heading"):
                 level = int(paragraph.style.name.split()[-1])
                 
-                # Determine the new number based on heading level
+                # Extract the original text without numbering
+                original_text = paragraph.text.split('.')[-1].strip()
+                
                 if level == 1:
-                    current_section_number += 1
+                    current_section += 1
                     sub_section_count = 0
-                    # Extract original text without any existing numbering
-                    original_text = paragraph.text.split('.')[-1].strip() if '.' in paragraph.text else paragraph.text.strip()
-                    paragraph.text = f"{current_section_number}. {original_text}"
+                    new_heading = f"{current_section}. {original_text}"
                 elif level == 2:
                     sub_section_count += 1
-                    original_text = paragraph.text.split('.')[-1].strip() if '.' in paragraph.text else paragraph.text.strip()
-                    paragraph.text = f"{current_section_number}.{sub_section_count}. {original_text}"
+                    new_heading = f"{current_section}.{sub_section_count}. {original_text}"
                 else:
-                    # Keep higher level headings unchanged
+                    # Higher levels remain unchanged
                     continue
+                
+                paragraph.text = new_heading
 
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template with structured content."""

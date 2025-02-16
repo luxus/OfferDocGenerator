@@ -80,16 +80,26 @@ class FileHandler:
             document = Document(str(docx_path))
             
             current_section_number = 0
+            expected_next_section = 1
+            
             for paragraph in document.paragraphs:
                 if paragraph.style.name.startswith("Heading"):
                     level = int(paragraph.style.name.split()[-1])
-                    text_parts = paragraph.text.split('.')
-                    if len(text_parts) >= 2 and text_parts[0].isdigit():
-                        section_num = int(text_parts[0])
-                        if section_num != current_section_number + 1:
-                            logger.warning(f"Section numbering discontinuity at {paragraph.text}")
+                    
+                    # Check only Heading 1 levels for section numbers
+                    if level == 1:
+                        parts = paragraph.text.split('.')
+                        if len(parts) < 2 or not parts[0].isdigit():
+                            logger.warning(f"Invalid section numbering format at: {paragraph.text}")
                             return False
-                        current_section_number += 1
+                        
+                        current_section_number = int(parts[0])
+                        
+                        if current_section_number != expected_next_section:
+                            logger.warning(f"Section numbering discontinuity: expected {expected_next_section}, got {current_section_number}")
+                            return False
+                        
+                        expected_next_section += 1
             
             return True
         
@@ -102,33 +112,27 @@ class FileHandler:
         try:
             document = Document(str(docx_path))
             
-            # Define base required sections
-            required_sections = ["Introduction", "Technical Specifications"]
-            
-            # Add specific sections based on document type
+            # Define required sections based on product flag
             if is_product:
-                required_sections.append("Product Overview")
+                required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
             else:
-                required_sections.append("General Information")
+                required_sections = ["Introduction", "General Information", "Technical Specifications"]
             
-            # Get all heading level 1 paragraphs
+            # Extract all Heading 1 paragraphs as section names
             headings = [
-                p.text.strip() 
+                p.text.split('.')[-1].strip()  # Remove section numbers if present
                 for p in document.paragraphs 
-                if p.style and p.style.name.startswith("Heading 1")
+                if p.style and p.style.name == 'Heading 1'
             ]
             
-            # Check if all required sections are present
-            missing_sections = [
-                section for section in required_sections 
-                if not any(heading.startswith(section) for heading in headings)
-            ]
+            # Check each required section is present
+            missing = []
+            for section in required_sections:
+                if not any(h.startswith(section) for h in headings):
+                    missing.append(section)
+                    logger.warning(f"Missing required section: {section}")
             
-            if missing_sections:
-                logger.warning(f"Missing required sections: {missing_sections}")
-                return False
-                
-            return True
+            return len(missing) == 0
             
         except Exception as e:
             logger.error(f"Error checking required sections: {e}")
