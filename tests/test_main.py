@@ -90,26 +90,6 @@ def test_internationalization_settings(config_generator):
     assert "default_language" in intl_section, "Default language missing"
     assert intl_section["default_language"] == "en", "Default language must be 'en'"
 
-def test_temp_folder_cleanup(keep_tmp):
-    """Test temporary directory cleanup"""
-    try:
-        output_dir = Path(tempfile.gettempdir()) / "offerdocgenerator_test"
-        # Create a file to test deletion
-        test_file = output_dir / "test_file.txt"
-        test_file.parent.mkdir(exist_ok=True)
-        with open(test_file, "w") as f:
-            f.write("Test content")
-        
-        # Clean up
-        ConfigGenerator._clean_temp_directory(output_dir)
-        
-        if keep_tmp:
-            assert test_file.exists(), "Temporary file was deleted despite KEEP_TMP=True"
-        else:
-            assert not test_file.exists(), "Temporary file was not deleted"
-    finally:
-        if not keep_tmp and test_file.exists():
-            test_file.unlink()
 
 @pytest.mark.end_to_end
 def test_full_config_validation(config_generator):

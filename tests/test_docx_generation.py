@@ -11,6 +11,9 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
     output_dir = tmp_path / "base_templates"
     
+    # Initialize Config with the test output directory
+    config = Config(output_dir=output_dir)
+    
     # Generate base template in templates subdirectory within tmp_path
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     docx_path = config_generator.create_docx_template("base_en.docx")
