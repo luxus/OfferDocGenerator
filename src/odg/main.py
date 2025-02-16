@@ -35,6 +35,13 @@ class ConfigGenerator:
 
     def generate_config(self) -> Path:
         """Generate config.yaml based on documentation files"""
+        # Create necessary directories
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        (self.output_dir / "templates").mkdir(exist_ok=True)
+        (self.output_dir / "common").mkdir(exist_ok=True)
+        (self.output_dir / "products").mkdir(exist_ok=True)
+        (self.output_dir / "output").mkdir(exist_ok=True)
+
         config_data: Dict[str, Any] = {
             "offer": {
                 "number": f"OFFER-{date.today().isoformat()}",
