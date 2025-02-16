@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import pytest
+from docx import Document
 from src.odg.utils.file_handler import FileHandler
 from src.odg.main import ConfigGenerator
 from src.config.settings import Config
