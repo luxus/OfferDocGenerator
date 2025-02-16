@@ -30,7 +30,7 @@ class ConfigGenerator:
             },
             # From docs/configuration/folder_structure.md
             "settings": {
-                "base_path": "./",
+                "base_path": str(self.output_dir.resolve()),
                 "templates": "./templates",
                 "common": "./common",
                 "products": "./products",
@@ -135,15 +135,6 @@ if __name__ == "__main__":
         
         # Generate and save config file
         config_path = config_gen.generate_config()
-        
-        # Update base_path in config.yaml to point to the new folder
-        with open(config_path, 'r') as f:
-            config_data = yaml.safe_load(f)
-            
-        config_data['settings']['base_path'] = str(output_dir.absolute())
-        
-        with open(config_path, 'w') as f:
-            yaml.dump(config_data, f)
         
         # Print success message
         print(f"Created project structure in: {output_dir}")
