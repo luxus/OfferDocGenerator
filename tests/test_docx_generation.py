@@ -35,7 +35,7 @@ def config_generator(tmp_path):
         },
         "products": [
             {
-                "name": "SampleProduct",
+                "name": "Web Application Security Assessment",
                 "sections": ["Introduction", "Product Overview", "Technical Specifications"]
             }
         ]

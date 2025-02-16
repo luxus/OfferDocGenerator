@@ -326,8 +326,8 @@ class ConfigGenerator:
                 
                 # Get additional sections from config if available
                 if "products" in config_data and config_data["products"]:
-                    product = config_data["products"][0]
-                    if "sections" in product:
+                    product = next((p for p in config_data["products"] if p["name"] == product_name), None)
+                    if product and "sections" in product:
                         required_sections.extend([s for s in product["sections"] if s not in required_sections])
                 
                 for section in required_sections:
