@@ -1,10 +1,14 @@
 import os
+import sys
 from pathlib import Path
 import yaml
 import pytest
 import shutil
 import tempfile
-from main import ConfigGenerator
+
+# Add src directory to Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+from odg.main import ConfigGenerator
 
 @pytest.fixture
 def cli_test_directory():
