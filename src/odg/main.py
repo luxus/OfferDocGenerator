@@ -320,38 +320,44 @@ class ConfigGenerator:
             # Convert to Document for additional modifications
             doc = Document(base_template_path)
             
+            # Get existing headings
+            existing_headings = [p.text.split('.')[-1].strip() for p in doc.paragraphs 
+                               if p.style.name.startswith("Heading")]
+
             # Add all required sections based on template type
             if "product" in base_template_name.lower():
                 # Get sections from config for the specific product
                 if "products" in config_data and config_data["products"]:
                     product = next((p for p in config_data["products"] if p["name"] == product_name), None)
                     if product:
-                        # Get sections, falling back to default if none specified
-                        required_sections = product.get("sections", [
-                            "Introduction",
-                            "Product Overview",
-                            "Technical Specifications"
-                        ])
-                        # Ensure we don't duplicate the Introduction section
-                        if "Introduction" in required_sections and doc.paragraphs and "Introduction" in doc.paragraphs[0].text:
-                            required_sections.remove("Introduction")
+                        # Get sections from product config
+                        required_sections = product.get("sections", [])
+                        if not required_sections:
+                            # Fallback to default sections if none specified
+                            required_sections = [
+                                "Introduction",
+                                "Product Overview",
+                                "Technical Specifications"
+                            ]
                         
+                        # Add each required section if not already present
                         for section in required_sections:
-                            doc.add_heading(section, level=1)
-                            doc.add_paragraph(f"{section} content goes here...")
+                            if section not in existing_headings:
+                                doc.add_heading(section, level=1)
+                                doc.add_paragraph(f"{section} content goes here...")
                 else:
                     # Fallback to default sections if no products defined
                     default_sections = ["Introduction", "Product Overview", "Technical Specifications"]
                     for section in default_sections:
-                        if not (doc.paragraphs and section in doc.paragraphs[0].text):
+                        if section not in existing_headings:
                             doc.add_heading(section, level=1)
                             doc.add_paragraph(f"{section} content goes here...")
             else:
                 # Default sections for non-product templates
-                doc.add_heading("General Information", level=1)
-                doc.add_paragraph("General information content goes here...")
-                doc.add_heading("Technical Specifications", level=1)
-                doc.add_paragraph("Technical specifications content goes here...")
+                for section in ["General Information", "Technical Specifications"]:
+                    if section not in existing_headings:
+                        doc.add_heading(section, level=1)
+                        doc.add_paragraph(f"{section} content goes here...")
             
             # Add numbered list with nested items
             paragraph = doc.add_paragraph("First item", style='List Number')
