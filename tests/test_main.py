@@ -18,9 +18,9 @@ def cli_test_directory(tmp_path):
     yield test_dir
 
 @pytest.fixture(scope="function")
-def config_generator(tmp_path):
+def config_generator(cli_test_directory):
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    test_dir = tmp_path / "config"
+    test_dir = cli_test_directory / "config"
     test_dir.mkdir(parents=True, exist_ok=True)
     print(f"Creating test ConfigGenerator with tmpdir: {test_dir}")
     cg = ConfigGenerator(output_dir=str(test_dir.resolve()))
@@ -126,13 +126,14 @@ def test_multi_language_support(config_generator, language, expected):
     # This would require more complex setup but demonstrates pytest's capabilities
     pass
 
-def test_cli_create_folder_structure(tmp_path):
+def test_cli_create_folder_structure(cli_test_directory):
     # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR
     os.environ["TESTING"] = "True"
     if "TEST_OUTPUT_DIR" in os.environ:
         del os.environ["TEST_OUTPUT_DIR"]
         
-    output_dir = tmp_path / "offers"
+    output_dir = cli_test_directory / "offers"
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Run CLI command to create structure
     config_gen = ConfigGenerator(output_dir=str(output_dir.resolve()))
@@ -151,6 +152,7 @@ def test_cli_create_folder_structure(tmp_path):
     
     for dir_ in required_dirs:
         assert dir_.exists(), f"Directory {dir_} does not exist"
+        assert dir_.is_relative_to(cli_test_directory), f"Directory {dir_} is outside test directory"
 
 def test_cli_config_contents(cli_test_directory):
     # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR
