@@ -10,14 +10,14 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     os.environ["TESTING"] = "True"
     
     output_dir = tmp_path / "base_templates"
-    output_dir.mkdir()
     
     # Generate base template in templates subdirectory
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     docx_path = config_generator.create_docx_template("base_en.docx")
     
     assert docx_path.exists()
-    assert (output_dir / "templates" / "base_en.docx").exists()
+    assert docx_path.parent == output_dir / "templates"
+    assert docx_path.name == "base_en.docx"
     file_handler = FileHandler(Config())
     assert file_handler.has_numbered_lists(docx_path)
     
@@ -27,13 +27,12 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     os.environ["TESTING"] = "True"
     
     output_dir = tmp_path / "product_templates"
-    output_dir.mkdir()
     
-    # Generate sample product config
+    # Generate sample product config with .docx extension
     products_config = {
         "products": [
-            {"name": "Product 1", "sections": ["Section A", "Section B"]},
-            {"name": "Product 2", "sections": ["Section C", "Section D"]}
+            {"name": "Product1.docx", "sections": ["Section A", "Section B"]},
+            {"name": "Product2.docx", "sections": ["Section C", "Section D"]}
         ]
     }
     

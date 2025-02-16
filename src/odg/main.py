@@ -104,17 +104,12 @@ class ConfigGenerator:
     def create_docx_template(self, template_name: str = "base_en.docx") -> Path:
         """Create a basic DOCX template with placeholders"""
         try:
-            # Ensure generated directory exists
-            generated_dir = self.output_dir / "generated"
-            generated_dir.mkdir(exist_ok=True)
-            
             # Create templates directory
             templates_dir = self.output_dir / "templates"
             templates_dir.mkdir(exist_ok=True)
             
-            # Create the template file paths
+            # Create the template file path
             template_path = templates_dir / template_name
-            generated_path = generated_dir / template_name
             
             if template_path.exists():
                 print(f"Template already exists: {template_path}")
@@ -186,12 +181,8 @@ class ConfigGenerator:
             templates_dir = self.output_dir / "templates"
             template_path = templates_dir / template_name
             
-            # Get paths for both template locations
-            generated_dir = self.output_dir / "generated"
-            generated_path = generated_dir / template_name
-            
             # Create template if it doesn't exist
-            if not template_path.exists() and not generated_path.exists():
+            if not template_path.exists():
                 template_path = self.create_docx_template(template_name)
                 if template_path is None or not template_path.exists():
                     raise FileNotFoundError(f"Could not create template: {template_name}")
