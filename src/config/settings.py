@@ -7,7 +7,11 @@ class Config(BaseSettings):
     output_dir: Path = Path("./tmp")
     prefix: str = "Offer"
     base_path: Path = Path("./base")
-    variables: Dict[str, Any] = {}  # For custom template variables
+    variables: Dict[str, Any] = {
+        "customer": "Default Customer",  # Default customer name
+        "product_name": "",
+        "currency": "EUR"
+    }  # For custom template variables
     folders: Dict[str, Path] = {
         "templates": "./templates",
         "common": "./common",

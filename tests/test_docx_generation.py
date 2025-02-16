@@ -14,7 +14,12 @@ def config_generator(tmp_path):
         "output_dir": str(tmp_path),
         "prefix": "Offer",
         "default_language": "en",
-        "supported_languages": ["en", "de", "fr"]
+        "supported_languages": ["en", "de", "fr"],
+        "variables": {
+            "customer": "Test Customer",
+            "product_name": "Test Product",
+            "currency": "EUR"
+        }
     }
     config_file = tmp_path / "config.yaml"
     with open(config_file, 'w') as f:
