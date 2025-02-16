@@ -23,9 +23,9 @@ class EmojiFormatter(logging.Formatter):
         msg = record.getMessage()
         additional_emoji = ""
         
-        if re.search(r'Creating directory|Creating output directory', msg):
+        if re.search(r'creating directory|creating output directory', msg, re.IGNORECASE):
             additional_emoji += "📁"
-        elif 'Deleting file' in msg:
+        elif 'deleting file' in msg.lower():
             additional_emoji += "🗑️"
         
         full_emoji = base_emoji + additional_emoji
