@@ -9,9 +9,9 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     """Test base template generation with numbered lists"""
     # Set environment variables for testing
     os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "base_templates")
+    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
     
-    output_dir = Path(os.environ["TEST_OUTPUT_DIR"])
+    output_dir = "base_templates"
     
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     docx_path = config_generator.create_docx_template("base_en.docx")
@@ -28,10 +28,9 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     """Test product template generation with numbered lists"""
     # Set TESTING environment variable and output directory
     os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "product_templates")
+    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
     
-    output_dir = Path(os.environ["TEST_OUTPUT_DIR"])
-    output_dir.mkdir(exist_ok=True)
+    output_dir = "product_templates"
     
     # Generate sample product config with .docx extension within tmp_path
     products_config = {

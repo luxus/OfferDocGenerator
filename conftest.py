@@ -90,10 +90,14 @@ def setup_testing_env(tmp_path):
     
     yield
     
-    # Cleanup if TEST_OUTPUT_DIR is a subdirectory of tmp_path
+    # Always clean up the test output directory
     test_output_dir = Path(os.getenv("TEST_OUTPUT_DIR", ""))
-    if test_output_dir.is_relative_to(tmp_path):
-        shutil.rmtree(test_output_dir, ignore_errors=True)
+    if test_output_dir.exists() and test_output_dir.is_relative_to(tmp_path):
+        for item in test_output_dir.iterdir():
+            if item.is_dir():
+                shutil.rmtree(item, ignore_errors=True)
+            else:
+                item.unlink(missing_ok=True)
     
     # Restore original TEST_OUTPUT_DIR if it existed
     if original_test_output_dir:
