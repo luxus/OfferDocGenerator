@@ -138,6 +138,7 @@ def test_cli_create_folder_structure(tmp_path):
     config_path = config_gen.generate_config()
     assert config_path.exists(), f"Config file not created at: {config_path}"
     
+    output_dir = Path(config_gen.output_dir)
     required_dirs = [
         output_dir,
         output_dir / "templates",
@@ -164,7 +165,7 @@ def test_cli_config_contents(cli_test_directory):
         loaded_config = yaml.safe_load(f)
         
     assert "base_path" in loaded_config["settings"], "Missing base_path"
-    expected_base_path = str(output_dir.resolve())
+    expected_base_path = str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve())
     assert loaded_config["settings"]["base_path"] == expected_base_path, f"Base path not set to: {expected_base_path}"
 
 def test_cli_output(cli_test_directory):
