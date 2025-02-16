@@ -12,20 +12,22 @@ def keep_tmp():
     return os.getenv("KEEP_TMP", "False").lower() == "true"
 
 @pytest.fixture(scope="function")
-def config_generator(tmp_path, keep_tmp):
-    # Use tmp_path fixture to create clean temp directory for each test
-    output_dir = tmp_path / "tmp"
+def config_generator(keep_tmp):
+    # Create temp directory within script's location
+    script_dir = Path(__file__).parent
+    output_dir = script_dir / "tmp"
     
     # Initialize config generator
     cg = ConfigGenerator(output_dir=str(output_dir))
     
     yield cg
     
-    if keep_tmp:
-        print(f"Temporary files preserved at: {output_dir}")
-    else:
+    if not keep_tmp:
         # Clean up after test
-        ConfigGenerator._clean_temp_directory(output_dir)
+        cg._clean_temp_directory(output_dir)
+        print(f"Temporary files deleted from: {output_dir}")
+    else:
+        print(f"Temporary files preserved at: {output_dir}")
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""

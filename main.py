@@ -85,7 +85,13 @@ class ConfigGenerator:
     @staticmethod
     def _clean_temp_directory(path):
         """Clean up temporary files unless KEEP_TMP is True"""
-        if os.getenv("KEEP_TMP", "False").lower() != "true":
-            path = Path(path) if not isinstance(path, Path) else path
-            if path.exists():
+        keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
+        
+        if not keep_tmp:
+            # Ensure path is a Path object
+            if isinstance(path, str):
+                path = Path(path)
+            
+            # Clean up only if the directory exists and KEEP_TMP is False
+            if isinstance(path, Path) and path.exists():
                 shutil.rmtree(path, ignore_errors=True)
