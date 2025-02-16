@@ -346,6 +346,59 @@ def main():
         if not config_gen.validate_config(config_path):
             print("Config validation failed. Please check your configuration.")
             return 1
+
+        # Ask user if they want to create template and sample files
+        while True:
+            prompt = "\nWould you like to create additional template files? (y/N) "
+            create_template = input(prompt).lower().strip()
+            
+            if create_template == 'y':
+                # Create the DOCX template
+                print("\nCreating template file...")
+                template_name = "base_en.docx"
+                template_path = config_gen.create_docx_template(template_name)
+                
+                if not template_path:
+                    print("Error creating template file.")
+                    return 1
+                
+            elif create_template == 'n' or create_template == '':
+                # Don't create any additional files
+                pass
+            
+            else:
+                print("\nPlease enter either 'y' or 'n'.")
+                continue
+            
+            break
+
+        # After optionally creating the template, ask about the sample file
+        if create_template.lower() == 'y':
+            while True:
+                prompt = "\nWould you like to create a sample document using this template? (y/N) "
+                create_sample = input(prompt).lower().strip()
+                
+                if create_sample == 'y':
+                    # Create the sample DOCX file
+                    print("\nCreating sample document...")
+                    sample_template_name = "base_en.docx"
+                    sample_path = config_gen.create_sample_docx(sample_template_name)
+                    
+                    if not sample_path:
+                        print("Error creating sample document.")
+                        return 1
+                    
+                elif create_sample == 'n' or create_sample == '':
+                    # Don't create any additional files
+                    pass
+                
+                else:
+                    print("\nPlease enter either 'y' or 'n'.")
+                    continue
+                
+                break
+
+        print("\nProcess completed successfully!")
         return 0
     elif args.command == 'validate':
         output_dir = args.directory.resolve()
