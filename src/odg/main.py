@@ -84,7 +84,15 @@ class ConfigGenerator:
                 "name": "John Doe",
                 "email": "john.doe@example.com",
                 "phone": "+1 234 567 890"
-            }
+            },
+            "products": [{
+                "name": "Web Application Security Assessment",
+                "sections": [
+                    "Introduction",
+                    "Product Overview", 
+                    "Technical Specifications"
+                ]
+            }]
         }
 
         config_path = self.output_dir / "config.yaml"
@@ -154,14 +162,18 @@ class ConfigGenerator:
             doc.add_heading("Introduction", level=1)
             doc.add_paragraph("Introduction content goes here...")
             
+            # Add sections based on document type
             if "product" in template_name.lower():
-                doc.add_heading("Product Overview", level=1)
-                doc.add_paragraph("Product overview content goes here...")
+                # Get product sections from config
+                if "products" in config_data and config_data["products"]:
+                    product = config_data["products"][0]
+                    for section in product["sections"]:
+                        doc.add_heading(section, level=1)
+                        doc.add_paragraph(f"{section} content goes here...")
             else:
                 doc.add_heading("General Information", level=1)
                 doc.add_paragraph("General information content goes here...")
-            
-            doc.add_heading("Technical Specifications", level=1)
+                doc.add_heading("Technical Specifications", level=1)
             
             # Add numbered list with proper nesting
             doc.add_paragraph("First item", style='List Number')
