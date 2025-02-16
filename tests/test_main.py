@@ -34,9 +34,8 @@ def config_generator(tmp_path):
     
     yield cg
     
-    # Cleanup after test if not in KEEP_TMP mode
-    keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-    if not keep_tmp:
+    # Only cleanup if TEST_OUTPUT_DIR is within tmp_path
+    if Path(test_output_dir).is_relative_to(tmp_path):
         shutil.rmtree(Path(test_output_dir), ignore_errors=True)
 
 def test_valid_config_generation(config_generator, tmp_path):
