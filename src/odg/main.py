@@ -321,7 +321,7 @@ class ConfigGenerator:
             doc = Document(base_template_path)
             
             # Add all required sections based on template type
-            if "product" in template_name.lower():
+            if "product" in base_template_name.lower():
                 required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
                 
                 # Get additional sections from config if available
@@ -348,7 +348,7 @@ class ConfigGenerator:
             bullet_para = doc.add_paragraph("Bullet Point 1", style='List Bullet')
             sub_bullet_para = doc.add_paragraph("Sub-bullet 1", style='List Bullet 2')
             
-            sample_output = generated_dir / f"sample_{template_name}"
+            sample_output = generated_dir / f"sample_{base_template_name}"
             doc.save(sample_output)
             
             print(f"Created sample document: {sample_output}")
