@@ -18,19 +18,30 @@ class EmojiFormatter(logging.Formatter):
             logging.CRITICAL: "🚨",
         }.get(record.levelno, "")
         
-        # Additional emojis based on message content using regex patterns
-        import re
         msg = record.getMessage()
-        additional_emoji = ""
+        # Preprocess the message to replace keywords with emojis
+        processed_msg = self._replace_keywords_with_emojis(msg)
         
-        if re.search(r'creating directory|creating output directory', msg, re.IGNORECASE):
-            additional_emoji += "📁"
-        elif 'deleting file' in msg.lower():
-            additional_emoji += "🗑️"
-        
-        full_emoji = base_emoji + additional_emoji
         formatted_message = super().format(record)
-        return f"{formatted_message} {full_emoji}" if full_emoji else formatted_message
+        # Replace the original message part with the processed one
+        formatted_parts = formatted_message.split(' - ')
+        if len(formatted_parts) > 2:
+            timestamp, levelname, original_msg = formatted_parts[0], formatted_parts[1], ' - '.join(formatted_parts[2:])
+        else:
+            timestamp, levelname, original_msg = formatted_parts
+        
+        # Construct the final message with emojis replacing parts of the text
+        final_message = f"{timestamp} - {levelname} - {processed_msg} {base_emoji}"
+        return final_message
+    
+    def _replace_keywords_with_emojis(self, msg):
+        import re
+        processed = msg
+        if re.search(r'creating directory|creating output directory', processed, re.IGNORECASE):
+            processed = re.sub(r'(creating directory|creating output directory)', '📁', processed, flags=re.IGNORECASE)
+        if 'deleting file' in processed.lower():
+            processed = re.sub(r'deleting file', '🗑️', processed, flags=re.IGNORECASE)
+        return processed
 
 def pytest_configure(config):
     """Configure test environment and logging"""
