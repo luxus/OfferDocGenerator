@@ -322,17 +322,14 @@ class ConfigGenerator:
             
             # Add all required sections based on template type
             if "product" in base_template_name.lower():
-                required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
-                
-                # Get additional sections from config if available
+                # Get sections from config for the specific product
                 if "products" in config_data and config_data["products"]:
                     product = next((p for p in config_data["products"] if p["name"] == product_name), None)
                     if product and "sections" in product:
-                        required_sections.extend([s for s in product["sections"] if s not in required_sections])
-                
-                for section in required_sections:
-                    doc.add_heading(section, level=1)
-                    doc.add_paragraph(f"{section} content goes here...")
+                        required_sections = product["sections"]
+                        for section in required_sections:
+                            doc.add_heading(section, level=1)
+                            doc.add_paragraph(f"{section} content goes here...")
             else:
                 doc.add_heading("General Information", level=1)
                 doc.add_paragraph("General information content goes here...")
