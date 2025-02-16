@@ -188,18 +188,17 @@ class ConfigGenerator:
                     raise FileNotFoundError(f"Could not create template: {template_name}")
             
             # Create generated directory if needed
+            generated_dir = self.output_dir / "generated"
             generated_dir.mkdir(exist_ok=True)
             
             # Create a sample document with unique name
             sample_output = generated_dir / f"sample_{template_name}"
             
             # Copy template to sample output
-            if template_path.exists():
-                shutil.copy2(template_path, sample_output)
-            elif generated_path.exists():
-                shutil.copy2(generated_path, sample_output)
-            else:
-                raise FileNotFoundError(f"Template not found in either location: {template_name}")
+            if not template_path.exists():
+                raise FileNotFoundError(f"Template not found: {template_name}")
+                
+            shutil.copy2(template_path, sample_output)
             
             if not sample_output.exists():
                 raise FileNotFoundError(f"Failed to create sample file: {sample_output}")
