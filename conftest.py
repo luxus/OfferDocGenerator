@@ -8,3 +8,8 @@ def pytest_configure(config):
         "markers",
         "end_to_end: mark tests as end-to-end integration tests"
     )
+    
+def pytest_sessionstart(session):
+    """Set up test environment variables."""
+    os.environ["TESTING"] = "True"
+    os.environ["KEEP_TMP"] = "False"

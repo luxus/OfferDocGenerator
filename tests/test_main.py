@@ -5,6 +5,7 @@ import yaml
 import pytest
 import shutil
 import tempfile
+import tempfile
 
 # Add src directory to Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -31,21 +32,17 @@ def keep_tmp():
 
 @pytest.fixture(scope="function")
 def config_generator(keep_tmp):
-    # Create temp directory within script's location
-    script_dir = Path(__file__).parent
-    output_dir = script_dir / "tmp"
-    
-    # Initialize config generator
-    cg = ConfigGenerator(output_dir=str(output_dir))
-    
-    yield cg
-    
-    if not keep_tmp:
-        # Clean up after test
-        cg._clean_temp_directory(output_dir)
-        print(f"Temporary files deleted from: {output_dir}")
-    else:
-        print(f"Temporary files preserved at: {output_dir}")
+    # Create temporary directory
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Initialize config generator with temporary directory
+        cg = ConfigGenerator(output_dir=str(tmpdir))
+        yield cg
+        
+        if not keep_tmp:
+            # Clean up happens automatically when tempdir context exits
+            print(f"Temporary files deleted from: {tmpdir}")
+        else:
+            print(f"Temporary files preserved at: {tmpdir}")
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""

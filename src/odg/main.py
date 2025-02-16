@@ -29,10 +29,9 @@ class ConfigGenerator:
             and not is_validating):
             self._clean_temp_directory(self.output_dir)
         
-        # Create fresh directory structure based on documentation
-        self.output_dir.mkdir(exist_ok=True)
-        for dir_name in ["templates", "common", "products", "output", "generated"]:
-            (self.output_dir / dir_name).mkdir(exist_ok=True)
+        # Only create directories if not in test mode or explicitly needed
+        if not testing or not is_validating:
+            self.output_dir.mkdir(exist_ok=True)
 
     def generate_config(self) -> Path:
         """Generate config.yaml based on documentation files"""
