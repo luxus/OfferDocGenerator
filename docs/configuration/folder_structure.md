@@ -1,52 +1,57 @@
-# Project Folder Structure
+# Default Folder Structure
 
-## Overview
-The project uses a structured folder layout to organize templates, configurations, and resources:
+The default folder structure assumes a root directory where all configuration and assets are stored. This can be overwritten in the main configuration file.
 
+```text
+base/
+├── templates/               # Main template files (e.g., main_DE.docx, section1_1_EN.docx)
+│   ├── [language]/         # Optional: language-specific templates
+│   └── common/             # Common template fragments used across sections/languages
+│       └── section1_2.docx # Example fragment
+├── products/               # Product-specific configuration and data (optional)
+│   └── [product_name]/     # Folder for product-specific settings
+│       └── config.yaml     # Only needed if product requires special configuration
+├── common/                 # Shared DOCX files, images, or other assets
+└── output/                 # Generated documents
 ```
-project/
-├── base/                 # Base files (templates, common assets)
-├── templates/            # Docx template files
-├── products/            # Product-specific configuration and data
-│   ├── product1/
-│   │   ├── config.yaml
-│   │   └── data/
-│   └── product2/
-├── common/              # Shared resources (images, styles)
-└── output/              # Generated documents
-```
 
-## Default Paths
-The following paths are used by default but can be customized in the configuration:
+## Explanation of Folders
 
-- `base_path`: `./base`
-  - Contains base templates and common resources
-  - Used as the foundation for all document generation
+### `templates/`
+- Contains the main template files
+- Naming convention: `[section]_[subsection]_[LANG].docx`
+- Language-specific templates go in subfolders (e.g., `templates/en/`, `templates/de/`)
+- The `common/` subfolder contains reusable DOCX fragments
 
-- `templates_path`: `./templates`
-  - Stores all document templates
-  - Templates use the .docx format with variable placeholders
+### `products/`
+- Optional folder for product-specific configuration
+- Only needed if a product requires special settings or overrides
+- Each product folder can contain:
+  - `config.yaml`: Custom variables and settings
+  - `templates/`: Product-specific template overrides
+  - `assets/`: Product-specific images or resources
 
-- `products_path`: `./products`
-  - Product-specific configurations
-  - Each product has its own subfolder with config.yaml
+### `common/`
+- Shared resources used across multiple templates
+- Contains:
+  - Images and media files
+  - Style definitions
+  - Common DOCX fragments
+  - Shared configuration files
 
-- `common_path`: `./common`
-  - Shared resources like images and styles
-  - Used across multiple products and templates
+### `output/`
+- Default directory for generated documents
+- Maintains source folder structure
+- Files named according to template: `[product]_[section]_[LANG]_[date].docx`
 
-- `output_path`: `./output`
-  - Destination for generated documents
-  - Follows the configured naming scheme
-
-## Customization
+## Configuration
 Paths can be customized in the main configuration file:
 
 ```yaml
 paths:
-  base: ./custom/base
-  templates: ./custom/templates
-  products: ./custom/products
-  common: ./custom/shared
-  output: ./custom/output
+  base: ./base
+  templates: ${base}/templates
+  products: ${base}/products
+  common: ${base}/common
+  output: ${base}/output
 ```
