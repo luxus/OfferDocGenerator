@@ -33,10 +33,6 @@ def config_generator(tmp_path):
 
 def test_valid_config_generation(config_generator, tmp_path):
     """Test valid config generation and validation process"""
-    # Set testing environment
-    os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "config_test")
-    
     # Generate config file
     config_path = config_generator.generate_config()
     
@@ -149,10 +145,6 @@ def test_cli_create_folder_structure(tmp_path):
 def test_cli_config_contents(cli_test_directory):
     output_dir = cli_test_directory / "test_project"
     
-    # Set testing environment variables
-    os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(output_dir)
-    
     config_gen = ConfigGenerator(output_dir=str(output_dir))
     config_path = config_gen.generate_config()
     
@@ -160,7 +152,7 @@ def test_cli_config_contents(cli_test_directory):
         loaded_config = yaml.safe_load(f)
         
     assert "base_path" in loaded_config["settings"], "Missing base_path"
-    expected_base_path = str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve())
+    expected_base_path = str(Path(output_dir).resolve())
     assert loaded_config["settings"]["base_path"] == expected_base_path, f"Base path not set to: {expected_base_path}"
 
 def test_cli_output(cli_test_directory):
