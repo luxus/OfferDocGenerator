@@ -51,24 +51,6 @@ def pytest_configure(config):
     root_logger.addHandler(stream_handler)
     root_logger.setLevel(logging.DEBUG)
     
-    # Add colors to log levels using the pytest logging plugin
-    logging_plugin = config.pluginmanager.get_plugin("logging-plugin")
-    if logging_plugin:
-        cli_handler = logging_plugin.log_cli_handler
-        formatter = cli_handler.formatter
-        
-        # Define colors for each level
-        formatter.add_color_level(logging.DEBUG, "green")
-        formatter.add_color_level(logging.INFO, "cyan")
-        formatter.add_color_level(logging.WARNING, "yellow")
-        formatter.add_color_level(logging.ERROR, "red")
-        formatter.add_color_level(logging.CRITICAL, "magenta")
-        
-        # Add color to custom log level SPAM
-        logging.SPAM = 5  # Define the SPAM level if not already defined
-        logging.addLevelName(logging.SPAM, "SPAM")
-        formatter.add_color_level(logging.SPAM, "blue")
-    
     # Mark that we're in testing mode
     os.environ["TESTING"] = "True"
     
