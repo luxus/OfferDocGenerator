@@ -30,8 +30,8 @@ class ConfigGenerator:
         
         if output_dir == "tmp":
             if testing_mode:
-                # Use the provided output_dir directly in testing mode
-                self.output_dir = Path(output_dir)
+                # Use tests/tmp as the temporary directory during testing
+                self.output_dir = Path("tests") / "tmp"
                 logger.debug(f"Using test directory: {self.output_dir}")
             else:
                 # Create a new temp dir when not in testing mode
@@ -264,8 +264,8 @@ def setup_default_folders(output_dir: Path = None):
     """Create default folder structure for quick setup"""
     if not output_dir:
         if os.getenv("TESTING", "False").lower() == "true":
-            output_dir = Path(tempfile.mkdtemp())
-            logger.debug(f"Created temporary test directory: {output_dir}")
+            output_dir = Path("tests") / "tmp"
+            logger.debug(f"Using test directory: {output_dir}")
         else:
             output_dir = Path.cwd() / "tmp"
             logger.debug(f"Using default output directory: {output_dir}")

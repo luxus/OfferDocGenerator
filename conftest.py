@@ -15,13 +15,27 @@ def pytest_configure(config):
         "end_to_end: mark tests as end-to-end integration tests"
     )
     
-def pytest_sessionstart(session):
-    """Set up test environment variables."""
+@pytest.fixture(autouse=True)
+def setup_testing_env():
+    """Set up and clean test environment."""
     os.environ["TESTING"] = "True"
-    os.environ["KEEP_TMP"] = "False"
-
-def pytest_sessionfinish(session, exitstatus):
-    """Clean up after all tests complete."""
-    # Reset environment variables
+    temp_dir = Path("tests") / "tmp"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    
+    yield
+    
+    # Cleanup if KEEP_TMP is not set
+    keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
+    if not keep_tmp and temp_dir.exists():
+        import shutil
+        for file in temp_dir.glob('*'):
+            try:
+                if file.is_file():
+                    file.unlink()
+                else:
+                    shutil.rmtree(file)
+            except Exception as e:
+                print(f"Error cleaning up {file}: {e}")
+    
     os.environ["TESTING"] = "False"
     os.environ["KEEP_TMP"] = "False"

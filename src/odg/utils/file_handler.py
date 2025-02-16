@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class FileHandler:
     def __init__(self, config: Config):
         self.config = config
+        if os.getenv("TESTING", "False").lower() == "true":
+            self.output_dir = Path("tests") / "tmp"
+        else:
+            self.output_dir = config.output_dir
 
     def find_templates(self, language: str = None) -> List[Path]:
         """Find all template files in the templates directory."""
@@ -28,7 +32,7 @@ class FileHandler:
     def save_output(self, content: bytes, filename: str) -> Path:
         """Save generated document to output directory."""
         # Ensure the file is saved within the output_dir's output subdirectory
-        output_path = self.config.output_path / "output" / filename
+        output_path = self.output_dir / "output" / filename
         output_path.parent.mkdir(exist_ok=True, parents=True)
         
         logger.info(f"Saving document to {output_path}")
