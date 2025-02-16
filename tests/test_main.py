@@ -125,6 +125,11 @@ def test_multi_language_support(config_generator, language, expected):
     pass
 
 def test_cli_create_folder_structure(cli_test_directory):
+    # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR
+    os.environ["TESTING"] = "True"
+    if "TEST_OUTPUT_DIR" in os.environ:
+        del os.environ["TEST_OUTPUT_DIR"]
+        
     output_dir = cli_test_directory / "offers"
     
     # Run CLI command to create structure
@@ -138,13 +143,19 @@ def test_cli_create_folder_structure(cli_test_directory):
         output_dir / "templates",
         output_dir / "common",
         output_dir / "products",
-        output_dir / "output"
+        output_dir / "output",
+        output_dir / "generated"
     ]
     
     for dir_ in required_dirs:
         assert dir_.exists(), f"Directory {dir_} does not exist"
 
 def test_cli_config_contents(cli_test_directory):
+    # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR
+    os.environ["TESTING"] = "True"
+    if "TEST_OUTPUT_DIR" in os.environ:
+        del os.environ["TEST_OUTPUT_DIR"]
+        
     # Create a new project structure
     output_dir = cli_test_directory / "test_project"
     
