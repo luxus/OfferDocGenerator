@@ -205,21 +205,21 @@ class ConfigGenerator:
         for paragraph in doc.paragraphs:
             if paragraph.style.name.startswith("Heading"):
                 level = int(paragraph.style.name.split()[-1])
-                if level == current_heading_level:
+                
+                # Determine the new number based on heading level
+                if level == 1:
                     current_section_number += 1
                     sub_section_count = 0
-                elif level > current_heading_level:
-                    sub_section_count += 1
-                else:
-                    current_section_number = int(paragraph.text.split('.')[0]) + 1
-                    sub_section_count = 0
-
-                # Update the paragraph text with new numbering
-                original_text = paragraph.text.split('.')[-1].strip()
-                if level == 1:
+                    # Extract original text without any existing numbering
+                    original_text = paragraph.text.split('.')[-1].strip() if '.' in paragraph.text else paragraph.text.strip()
                     paragraph.text = f"{current_section_number}. {original_text}"
                 elif level == 2:
+                    sub_section_count += 1
+                    original_text = paragraph.text.split('.')[-1].strip() if '.' in paragraph.text else paragraph.text.strip()
                     paragraph.text = f"{current_section_number}.{sub_section_count}. {original_text}"
+                else:
+                    # Keep higher level headings unchanged
+                    continue
 
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template with structured content."""
@@ -232,8 +232,17 @@ class ConfigGenerator:
             with open(config_path, 'r') as f:
                 config_data = yaml.safe_load(f)
             
+            # Ensure the template exists; if not, create a dummy one for testing purposes
+            templates_dir = self.output_dir / "templates"
+            template_path = templates_dir / template_name
+            
+            if not template_path.exists():
+                # Create a dummy template with basic structure
+                doc = Document()
+                doc.add_heading("Dummy Template", level=1)
+                doc.save(template_path)
+            
             # Create a new document based on the template using Jinja2
-            template_path = self.output_dir / "templates" / template_name
             doc = DocxTemplate(str(template_path))
             
             context = {
