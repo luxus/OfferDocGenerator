@@ -73,11 +73,14 @@ class FileHandler:
         try:
             document = Document(str(docx_path))
             
-            required_sections = [
-                "Introduction",
-                "Product Overview" if is_product else "General Information", 
-                "Technical Specifications"
-            ]
+            # Define base required sections
+            required_sections = ["Introduction", "Technical Specifications"]
+            
+            # Add specific sections based on document type
+            if is_product:
+                required_sections.append("Product Overview")
+            else:
+                required_sections.append("General Information")
             
             # Get all heading level 1 paragraphs
             headings = [

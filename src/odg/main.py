@@ -136,8 +136,13 @@ class ConfigGenerator:
             doc.add_heading("Introduction", level=1)
             doc.add_paragraph("Introduction content goes here...")
             
-            doc.add_heading("General Information", level=1)
-            doc.add_paragraph("General information content goes here...")
+            # Add Product Overview section for product templates
+            if "product" in template_name.lower():
+                doc.add_heading("Product Overview", level=1)
+                doc.add_paragraph("Product overview content goes here...")
+            else:
+                doc.add_heading("General Information", level=1)
+                doc.add_paragraph("General information content goes here...")
             
             doc.add_heading("Technical Specifications", level=1)
             

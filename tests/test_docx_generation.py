@@ -63,7 +63,7 @@ def test_validate_product_template(tmp_path):
     # Generate sample product config
     products_config = {
         "products": [
-            {"name": "Product Test", "sections": ["Section 1", "Section 2"]}
+            {"name": "Product Test", "sections": ["Introduction", "Product Overview", "Technical Specifications"]}
         ]
     }
     
