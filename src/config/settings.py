@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Dict
-from pydantic import BaseSettings, validator
+from pydantic_settings import BaseSettings
+from pydantic import validator
 
 class Config(BaseSettings):
     prefix: str = "Offer"
