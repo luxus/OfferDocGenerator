@@ -15,9 +15,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Text Processing :: Markup"
 ]
 dependencies = [
@@ -36,4 +34,12 @@ Homepage = "https://github.com/username/offer-doc-generator"
 Documentation = "https://github.com/username/offer-doc-generator/wiki"
 
 [project.scripts]
-odg = "odg.main:main"
+odg = "src.odg.main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "--strict-markers"
+markers = [
+    "end_to_end: mark tests as end-to-end integration tests",
+]
