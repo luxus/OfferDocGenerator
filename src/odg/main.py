@@ -5,6 +5,8 @@ import yaml
 from datetime import date
 import shutil
 from typing import Dict, Any
+from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 VERSION = "1.0.0"
 
@@ -89,6 +91,84 @@ class ConfigGenerator:
         for key in required_keys:
             if key not in config_data:
                 raise ValueError(f"Missing required key: {key}")
+
+    def create_docx_template(self, template_name: str = "base_en.docx") -> Path:
+        """Create a basic DOCX template with placeholders"""
+        try:
+            # Ensure templates directory exists
+            templates_dir = self.output_dir / "templates"
+            templates_dir.mkdir(exist_ok=True)
+            
+            # Create the template file path
+            template_path = templates_dir / template_name
+            
+            if template_path.exists():
+                print(f"Template already exists: {template_path}")
+                return template_path
+            
+            # Create a new Word document
+            doc = Document()
+            
+            # Add title
+            doc.add_heading("Base Offer Template", level=1)
+            doc.add_paragraph("")
+            
+            # Add customer information section
+            customer_section = doc.add_section()
+            customer_para = doc.add_paragraph("Customer Information:")
+            customer_para.style = 'Heading 2'
+            customer_para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            
+            placeholders = [
+                "customer_company",
+                "customer_address",
+                "sales_contact_name",
+                "sales_contact_email",
+                "offer_number",
+                "validity_period"
+            ]
+            
+            # Add placeholder fields
+            for ph in placeholders:
+                doc.add_paragraph(f"{{{{ {ph} }}}}")
+            
+            # Save the document
+            doc.save(template_path)
+            
+            print(f"Created template file: {template_path}")
+            return template_path
+            
+        except Exception as e:
+            print(f"Error creating template: {e}")
+            return None
+
+    def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
+        """Create a sample DOCX file from the template"""
+        try:
+            # Get the template path
+            templates_dir = self.output_dir / "templates"
+            template_path = templates_dir / template_name
+            
+            if not template_path.exists():
+                print(f"Template not found: {template_path}")
+                return None
+                
+            # Create a sample document in the output directory
+            sample_output = (
+                self.output_dir /
+                "output" /
+                f"sample_offer_{date.today().isoformat()}.docx"
+            )
+            
+            # Copy template to sample output
+            shutil.copy2(template_path, sample_output)
+            
+            print(f"Created sample document: {sample_output}")
+            return sample_output
+            
+        except Exception as e:
+            print(f"Error creating sample docx: {e}")
+            return None
 
     @staticmethod
     def _clean_temp_directory(path):
@@ -216,6 +296,30 @@ def main():
         help='Directory to search for config.yaml (default: current directory)'
     )
 
+    # Create template command
+    create_template_parser = subparsers.add_parser(
+        'create-template',
+        help='Create a base DOCX template with placeholders'
+    )
+    create_template_parser.add_argument(
+        '--name', 
+        type=str, 
+        default="base_en.docx",
+        help='Name of the template file (default: base_en.docx)'
+    )
+
+    # Create sample command
+    create_sample_parser = subparsers.add_parser(
+        'create-sample',
+        help='Create a sample DOCX file from the template'
+    )
+    create_sample_parser.add_argument(
+        '--template', 
+        type=str, 
+        default="base_en.docx",
+        help='Name of the template file to use (default: base_en.docx)'
+    )
+
     args = parser.parse_args()
     
     if args.command == 'create':
@@ -252,6 +356,18 @@ def main():
             return 1
         
         print("All configurations are valid!")
+        return 0
+    elif args.command == 'create-template':
+        config_gen = ConfigGenerator()
+        template_path = config_gen.create_docx_template(args.name)
+        if not template_path:
+            return 1
+        return 0
+    elif args.command == 'create-sample':
+        config_gen = ConfigGenerator()
+        sample_path = config_gen.create_sample_docx(args.template)
+        if not sample_path:
+            return 1
         return 0
     else:
         parser.print_help()
