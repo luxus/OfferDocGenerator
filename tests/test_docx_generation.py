@@ -5,7 +5,7 @@ from src.odg.utils.file_handler import FileHandler
 from src.odg.main import ConfigGenerator
 from src.config.settings import Config
 
-def test_generate_base_template_with_numbered_lists(tmp_path):
+def test_generate_base_template_with_jinja_variables(tmp_path):
     """Test base template generation with numbered lists"""
     output_dir = tmp_path / "base_templates"
     
@@ -16,8 +16,18 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
     docx_path = config_generator.create_docx_template("base_en.docx")
     
-    # Verify all files are within tmp_path
+    # Create sample document with variables
+    sample_path = config_generator.create_sample_docx("base_en.docx")
+    
+    # Verify template and sample files exist
     assert docx_path.exists()
+    assert sample_path.exists()
+    
+    # Verify Jinja2 variables were replaced
+    with open(sample_path, 'rb') as doc_file:
+        doc = Document(doc_file)
+        doc_text = '\n'.join([paragraph.text for paragraph in doc.paragraphs])
+        assert '{{' not in doc_text, "Unrendered Jinja2 variables found in document"
     assert docx_path.is_relative_to(tmp_path)
     assert docx_path.parent == output_dir / "templates"
     assert docx_path.name == "base_en.docx"

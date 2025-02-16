@@ -4,9 +4,10 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator
 
 class Config(BaseSettings):
-    output_dir: Path = Path("./tmp")  # Add output_dir field
+    output_dir: Path = Path("./tmp")
     prefix: str = "Offer"
     base_path: Path = Path("./base")
+    variables: Dict[str, Any] = {}  # For custom template variables
     folders: Dict[str, Path] = {
         "templates": "./templates",
         "common": "./common",

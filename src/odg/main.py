@@ -10,6 +10,7 @@ from typing import Dict, Any, List
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docxtpl import DocxTemplate
+from jinja2 import Environment, FileSystemLoader, Template
 
 VERSION = "1.0.0"
 
@@ -210,21 +211,32 @@ class ConfigGenerator:
             logger.error(f"Error creating template: {e}")
             return None
 
-    def merge_docx_files(self, input_paths: List[Path], output_path: Path) -> None:
+    def merge_docx_files(self, input_paths: List[Path], output_path: Path, context: Dict[str, Any] = None) -> None:
         """Merge multiple DOCX files into a single document with continuous numbering."""
         merged_document = Document()
 
         for path in input_paths:
-            sub_doc = Document(path)
-            for element in sub_doc.element.body:
-                merged_document.element.body.append(element)
+            # If the input is a template, render it first
+            if str(path).endswith('.docx'):
+                if context:
+                    doc = DocxTemplate(str(path))
+                    with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as tmp:
+                        doc.render(context)
+                        doc.save(tmp.name)
+                        sub_doc = Document(tmp.name)
+                    os.unlink(tmp.name)
+                else:
+                    sub_doc = Document(path)
+                
+                for element in sub_doc.element.body:
+                    merged_document.element.body.append(element)
 
         # Ensure continuous section numbering
         self._update_section_numbering(merged_document)
 
         # Save the merged document
         merged_document.save(output_path)
-        print(f"Merged document saved to {output_path}")
+        logger.info(f"Merged document saved to {output_path}")
 
     def _update_section_numbering(self, doc: Document) -> None:
         """Update section headings to ensure continuous numbering."""
@@ -272,17 +284,26 @@ class ConfigGenerator:
                 doc.add_heading("Dummy Template", level=1)
                 doc.save(template_path)
             
-            # Create a new document based on the template using Jinja2
+            # Create a new document based on the template using DocxTemplate
             doc = DocxTemplate(str(template_path))
             
+            # Build comprehensive context from config
             context = {
                 "customer_company": config_data["customer"]["name"],
                 "customer_address": config_data["customer"]["address"],
                 "sales_contact_name": config_data["sales"]["name"],
                 "sales_contact_email": config_data["sales"]["email"],
                 "offer_number": config_data["offer"]["number"],
-                "validity_period": config_data["offer"]["validity"]["en"]
+                "validity_period": config_data["offer"]["validity"]["en"],
+                "config": config_data,  # Pass entire config for flexible templating
+                "date": date.today().isoformat()
             }
+            
+            # Add any additional dynamic variables
+            if "variables" in config_data:
+                context.update(config_data["variables"])
+                
+            # Render template with context
             doc.render(context)
             
             # Add all required sections based on template type
