@@ -325,12 +325,29 @@ class ConfigGenerator:
                 # Get sections from config for the specific product
                 if "products" in config_data and config_data["products"]:
                     product = next((p for p in config_data["products"] if p["name"] == product_name), None)
-                    if product and "sections" in product:
-                        required_sections = product["sections"]
+                    if product:
+                        # Get sections, falling back to default if none specified
+                        required_sections = product.get("sections", [
+                            "Introduction",
+                            "Product Overview",
+                            "Technical Specifications"
+                        ])
+                        # Ensure we don't duplicate the Introduction section
+                        if "Introduction" in required_sections and doc.paragraphs and "Introduction" in doc.paragraphs[0].text:
+                            required_sections.remove("Introduction")
+                        
                         for section in required_sections:
                             doc.add_heading(section, level=1)
                             doc.add_paragraph(f"{section} content goes here...")
+                else:
+                    # Fallback to default sections if no products defined
+                    default_sections = ["Introduction", "Product Overview", "Technical Specifications"]
+                    for section in default_sections:
+                        if not (doc.paragraphs and section in doc.paragraphs[0].text):
+                            doc.add_heading(section, level=1)
+                            doc.add_paragraph(f"{section} content goes here...")
             else:
+                # Default sections for non-product templates
                 doc.add_heading("General Information", level=1)
                 doc.add_paragraph("General information content goes here...")
                 doc.add_heading("Technical Specifications", level=1)
