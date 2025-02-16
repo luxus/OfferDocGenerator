@@ -162,6 +162,11 @@ class ConfigGenerator:
             doc.add_heading("Introduction", level=1)
             doc.add_paragraph("Introduction content goes here...")
             
+            # Load config data
+            config_path = self.output_dir / "config.yaml"
+            with open(config_path, 'r') as f:
+                config_data = yaml.safe_load(f)
+
             # Add sections based on document type
             if "product" in template_name.lower():
                 # Get product sections from config
