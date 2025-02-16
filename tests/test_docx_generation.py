@@ -46,7 +46,7 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     assert tmp_path.exists(), "Temporary test directory not created"
     
     # Generate DOCX templates for each product
-    config_generator = ConfigGenerator(output_dir=str(output_dir))
+    config_generator = ConfigGenerator(output_dir=output_dir_str)
     file_handler = FileHandler(Config())
     
     for product in products_config["products"]:
