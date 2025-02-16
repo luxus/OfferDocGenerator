@@ -37,10 +37,17 @@ class EmojiFormatter(logging.Formatter):
     def _replace_keywords_with_emojis(self, msg):
         import re
         processed = msg
-        if re.search(r'creating directory|creating output directory', processed, re.IGNORECASE):
-            processed = re.sub(r'(creating directory|creating output directory)', '📁', processed, flags=re.IGNORECASE)
-        if 'deleting file' in processed.lower():
-            processed = re.sub(r'deleting file', '🗑️', processed, flags=re.IGNORECASE)
+        
+        # Replace directory creation messages with folder emoji
+        directory_pattern = r'(?:creating\s+(?:output\s+)?directory:?\s*)(.*)'
+        if re.search(directory_pattern, processed, re.IGNORECASE):
+            processed = re.sub(directory_pattern, r'📁: \1', processed, flags=re.IGNORECASE)
+        
+        # Replace file deletion messages with trash emoji
+        delete_pattern = r'(?:deleting\s+file:?\s*)(.*)'
+        if re.search(delete_pattern, processed, re.IGNORECASE):
+            processed = re.sub(delete_pattern, r'🗑️: \1', processed, flags=re.IGNORECASE)
+        
         return processed
 
 def pytest_configure(config):
