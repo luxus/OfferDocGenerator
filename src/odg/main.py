@@ -281,101 +281,66 @@ class ConfigGenerator:
             templates_dir = self.output_dir / "templates"
             base_template_path = templates_dir / base_template_name
             
+            # Create base template if it doesn't exist
             if not base_template_path.exists():
-                # Create a dummy base template for testing purposes
                 doc = Document()
-                doc.add_heading("Dummy Base Template", level=1)
-                doc.save(base_template_path)
+                # Add required sections
+                doc.add_heading("Introduction", level=1)
+                doc.add_paragraph("Introduction content goes here...")
+                
+                doc.add_heading("Product Overview", level=1)
+                doc.add_paragraph(f"Overview of {product_name}")
+                
+                doc.add_heading("Technical Specifications", level=1)
+                doc.add_paragraph("Technical specifications content...")
+                
+                # Save the base template
+                templates_dir.mkdir(exist_ok=True)
+                doc.save(str(base_template_path))
             
-            # Collect product-specific sections from the products directory
-            product_sections_dir = self.output_dir / "products" / product_name
-            if not product_sections_dir.exists():
-                product_sections_dir.mkdir(parents=True, exist_ok=True)
-            product_sections = list(product_sections_dir.glob("*.docx"))
-            
-            input_paths = [base_template_path] + product_sections
-            
-            # Build comprehensive context from config
+            # Build context
             context = {
-                "customer_company": config_data["customer"]["name"],
-                "customer_address": config_data["customer"]["address"],
-                "sales_contact_name": config_data["sales"]["name"],
-                "sales_contact_email": config_data["sales"]["email"],
-                "offer_number": config_data["offer"]["number"],
-                "validity_period": config_data["offer"]["validity"]["en"],
-                "config": config_data,  # Pass entire config for flexible templating
+                "customer_company": config_data.get("customer", {}).get("name", "Sample Customer"),
+                "customer_address": config_data.get("customer", {}).get("address", "Sample Address"),
+                "sales_contact_name": config_data.get("sales", {}).get("name", "Sample Contact"),
+                "sales_contact_email": config_data.get("sales", {}).get("email", "sample@example.com"),
+                "offer_number": config_data.get("offer", {}).get("number", "SAMPLE-001"),
+                "validity_period": config_data.get("offer", {}).get("validity", {}).get(language, "30 days"),
+                "product_name": product_name,
+                "currency": currency,
                 "date": date.today().isoformat()
             }
             
-            # Add any additional dynamic variables
-            if "variables" in config_data:
-                context.update(config_data["variables"])
-                
-            # Load the template using DocxTemplate
-            template = DocxTemplate(base_template_path)
+            # Create output document
+            doc = Document(str(base_template_path))
             
-            # Render the template with context
-            template.render(context)
-            
-            # Convert to Document for additional modifications
-            doc = Document(base_template_path)
-            
-            # Get existing headings
-            existing_headings = [p.text.split('.')[-1].strip() for p in doc.paragraphs 
+            # Ensure required sections exist
+            existing_headings = [p.text.strip() for p in doc.paragraphs 
                                if p.style.name.startswith("Heading")]
-
-            # Add all required sections based on template type
-            if "product" in base_template_name.lower():
-                # Get sections from config for the specific product
-                if "products" in config_data and config_data["products"]:
-                    product = next((p for p in config_data["products"] if p["name"] == product_name), None)
-                    if product:
-                        # Get sections from product config
-                        required_sections = product.get("sections", [])
-                        if not required_sections:
-                            # Fallback to default sections if none specified
-                            required_sections = [
-                                "Introduction",
-                                "Product Overview",
-                                "Technical Specifications"
-                            ]
-                        
-                        # Add each required section if not already present
-                        for section in required_sections:
-                            if section not in existing_headings:
-                                doc.add_heading(section, level=1)
-                                doc.add_paragraph(f"{section} content goes here...")
-                else:
-                    # Fallback to default sections if no products defined
-                    default_sections = ["Introduction", "Product Overview", "Technical Specifications"]
-                    for section in default_sections:
-                        if section not in existing_headings:
-                            doc.add_heading(section, level=1)
-                            doc.add_paragraph(f"{section} content goes here...")
-            else:
-                # Default sections for non-product templates
-                for section in ["General Information", "Technical Specifications"]:
-                    if section not in existing_headings:
-                        doc.add_heading(section, level=1)
-                        doc.add_paragraph(f"{section} content goes here...")
             
-            # Add numbered list with nested items
-            paragraph = doc.add_paragraph("First item", style='List Number')
-            sub_paragraph = doc.add_paragraph("Sub-item 1", style='List Number 2')
-            paragraph = doc.add_paragraph("Second item", style='List Number')
+            required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
+            for section in required_sections:
+                if not any(section in heading for heading in existing_headings):
+                    doc.add_heading(section, level=1)
+                    doc.add_paragraph(f"{section} content goes here...")
             
-            # Add bullet points with nested items
-            bullet_para = doc.add_paragraph("Bullet Point 1", style='List Bullet')
-            sub_bullet_para = doc.add_paragraph("Sub-bullet 1", style='List Bullet 2')
+            # Add example content
+            doc.add_paragraph("First item", style='List Number')
+            doc.add_paragraph("Sub-item 1", style='List Number 2')
+            doc.add_paragraph("Second item", style='List Number')
             
-            sample_output = generated_dir / f"sample_{base_template_name}"
-            doc.save(sample_output)
+            doc.add_paragraph("Bullet Point 1", style='List Bullet')
+            doc.add_paragraph("Sub-bullet 1", style='List Bullet 2')
             
-            print(f"Created sample document: {sample_output}")
-            return sample_output
+            # Save the final document
+            output_path = generated_dir / f"sample_base_{language}.docx"
+            doc.save(str(output_path))
+            
+            print(f"Created sample document: {output_path}")
+            return output_path
             
         except Exception as e:
-            print(f"Error creating sample docx: {e}")
+            logger.error(f"Error creating sample docx: {e}")
             raise
 
 
