@@ -1,29 +1,43 @@
-# Overview
+# Offer Document Generator (ODG)
 
-This project provides tools for generating offer documents based on configurable templates.
+A command-line tool for generating and managing offer documents with multi-language support and configurable templates.
 
-## Key Features:
+## Key Features
 - Template-based document generation
-- Multi-language support
-- Configurable output paths and formats
+- Multi-language support (en, de, fr)
+- Configurable project structure
+- Built-in configuration validation
 - Security-aware file handling
-- Extensible configuration system
-
-## Architecture
-
-The system is built around several core components:
-
-1. Configuration Management
-2. Document Rendering
-3. File Operations
-4. Error Handling
 
 ## Quick Start
 
-To get started:
+Install the package:
+```bash
+pip install odg
+```
 
-1. Create a configuration file following the template in `docs/configuration.md`
-2. Prepare your document templates
-3. Run the generator with your configured settings
+Create a new project:
+```bash
+odg create my_project
+```
 
-For detailed setup instructions, see the full documentation.
+This creates a directory structure with:
+- templates/
+- common/
+- products/
+- output/
+- config.yaml
+
+## Commands
+
+Check version:
+```bash
+odg --version
+```
+
+Create new project:
+```bash
+odg create <output_directory>
+```
+
+For detailed configuration options, see the configuration guide.
