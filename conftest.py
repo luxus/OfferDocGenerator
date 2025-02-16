@@ -7,17 +7,23 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 def pytest_configure(config):
+    """Configure test environment and logging"""
     # Configure logging for tests to avoid duplication
     root_logger = logging.getLogger()
+    
     # Remove existing handlers to prevent duplicates
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
     
+    # Set up a single handler for all test logging
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
     root_logger.addHandler(stream_handler)
     root_logger.setLevel(logging.DEBUG)
+    
+    # Mark that we're in testing mode
+    os.environ["TESTING"] = "True"
     
     config.addinivalue_line(
         "markers",

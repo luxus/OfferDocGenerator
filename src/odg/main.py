@@ -16,13 +16,15 @@ VERSION = "1.0.0"
 logger = logging.getLogger(__name__)
 
 def setup_logging():
-    # Ensure only one handler is added to the logger
-    if not logger.handlers:
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
+    # Only set up logging if we're not in a testing environment
+    if os.getenv("TESTING") != "True":
+        # Ensure only one handler is added to the logger
+        if not logger.handlers:
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+            handler = logging.StreamHandler()
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
 
 setup_logging()
 
