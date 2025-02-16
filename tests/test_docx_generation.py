@@ -31,16 +31,19 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     os.environ["TESTING"] = "True"
     os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
     
+    # Use a relative path that will be resolved within tmp_path
     output_dir_str = "product_templates"
-    output_dir = Path(output_dir_str)  # Convert to Path
     
-    # Generate sample product config with .docx extension within tmp_path
+    # Generate sample product config with .docx extension
     products_config = {
         "products": [
             {"name": "Product1.docx", "sections": ["Section A", "Section B"]},
             {"name": "Product2.docx", "sections": ["Section C", "Section D"]}
         ]
     }
+
+    # Verify tmp_path is set
+    assert tmp_path.exists(), "Temporary test directory not created"
     
     # Generate DOCX templates for each product
     config_generator = ConfigGenerator(output_dir=str(output_dir))
@@ -56,6 +59,7 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
             expected_filename = product['name'].replace('.docx', '')
             expected_path = Path(tmp_path) / output_dir_str / "generated" / f"sample_{expected_filename}.docx"
             assert expected_path.exists(), f"Expected file not found at: {expected_path}"
+            assert expected_path.is_relative_to(tmp_path), f"Generated file {expected_path} not within {tmp_path}"
             assert file_handler.has_numbered_lists(docx_path), f"Missing numbered lists in {docx_path}"
         except Exception as e:
             pytest.fail(f"Failed to process {product['name']}: {str(e)}")

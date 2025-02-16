@@ -33,8 +33,14 @@ class ConfigGenerator:
         # Always use the provided output_dir, but resolve it relative to TEST_OUTPUT_DIR if testing
         if os.getenv("TESTING") == "True":
             test_output_dir = os.environ.get('TEST_OUTPUT_DIR', '')
-            base_dir = Path(test_output_dir).resolve() if test_output_dir else Path('.')
+            if not test_output_dir:
+                raise ValueError("TEST_OUTPUT_DIR must be set when TESTING=True")
+            base_dir = Path(test_output_dir).resolve()
+            # Ensure output_dir is treated as relative to base_dir
             self.output_dir = (base_dir / output_dir).resolve()
+            # Verify the resolved path is within test_output_dir
+            if not self.output_dir.is_relative_to(base_dir):
+                raise ValueError(f"Output directory {self.output_dir} must be within {base_dir}")
         else:
             self.output_dir = Path(output_dir).resolve()
 
