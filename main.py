@@ -10,13 +10,14 @@ class ConfigGenerator:
         self.script_dir = Path(__file__).parent
         self.output_dir = self.script_dir / output_dir
         
-        # Clean existing temp directory if it exists
-        if self.output_dir.exists():
+        # Clean existing temp directory if it exists and KEEP_TMP is not set
+        keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
+        if self.output_dir.exists() and not keep_tmp:
             self._clean_temp_directory(self.output_dir)
         
         # Create fresh directory structure based on documentation
         self.output_dir.mkdir(exist_ok=True)
-        for dir_name in ["templates", "common", "products"]:
+        for dir_name in ["templates", "common", "products", "output"]:
             (self.output_dir / dir_name).mkdir(exist_ok=True)
 
     def generate_config(self) -> Path:
@@ -29,10 +30,11 @@ class ConfigGenerator:
             },
             # From docs/configuration/folder_structure.md
             "settings": {
-                "base_path": str(self.output_dir),
-                "templates": str(self.output_dir / "templates"),
-                "common": str(self.output_dir / "common"),
-                "products": str(self.output_dir / "products")
+                "base_path": "./",
+                "templates": "./templates",
+                "common": "./common",
+                "products": "./products",
+                "output": "./output"
             },
             # From docs/configuration/internationalization.md
             "internationalization": {
@@ -88,10 +90,27 @@ class ConfigGenerator:
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         
         if not keep_tmp:
-            # Ensure path is a Path object
             if isinstance(path, str):
                 path = Path(path)
             
-            # Clean up only if the directory exists and KEEP_TMP is False
             if isinstance(path, Path) and path.exists():
                 shutil.rmtree(path, ignore_errors=True)
+
+# Helper function to create base directory structure
+def setup_default_folders(output_dir: Path = None):
+    """Create default folder structure for quick setup"""
+    if not output_dir:
+        output_dir = Path(__file__).parent / "tmp"
+    
+    # Create main directories
+    output_dir.mkdir(exist_ok=True)
+    (output_dir / "templates").mkdir(exist_ok=True)
+    (output_dir / "common").mkdir(exist_ok=True)
+    (output_dir / "products").mkdir(exist_ok=True)
+    (output_dir / "output").mkdir(exist_ok=True)
+
+    # Create example product folder
+    example_product = output_dir / "products" / "Web Application Security Assessment"
+    example_product.mkdir(parents=True, exist_ok=True)
+
+    print(f"Default structure created at: {output_dir}")
