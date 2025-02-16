@@ -155,7 +155,6 @@ def test_cli_config_contents(cli_test_directory):
     with open(config_path, 'r') as f:
         loaded_config = yaml.safe_load(f)
         
-    # Verify that base_path is set correctly
     assert "base_path" in loaded_config["settings"], "Missing base_path"
     expected_base_path = str(output_dir.resolve())
     assert loaded_config["settings"]["base_path"] == expected_base_path, f"Base path not set to: {expected_base_path}"

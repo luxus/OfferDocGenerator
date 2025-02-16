@@ -34,15 +34,12 @@ class ConfigGenerator:
         if 'TEST_OUTPUT_DIR' in os.environ:
             self.output_dir = Path(os.environ['TEST_OUTPUT_DIR']).resolve()
         elif output_dir == "tmp":
-            # Create a new temp dir
             tmp_dir = tempfile.mkdtemp()
             self.output_dir = Path(tmp_dir)
         else:
-            # Use provided directory
             self.output_dir = Path(output_dir).resolve()
 
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
-        logger.debug(f"Creating output directory: {self.output_dir}")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_config(self) -> Path:
