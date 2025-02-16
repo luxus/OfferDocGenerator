@@ -10,6 +10,10 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     output_dir = tmp_path / "base_templates"
     
     config_generator = ConfigGenerator(output_dir=str(output_dir))
+    # Generate the config.yaml file
+    config_path = config_generator.generate_config()
+    assert config_path.exists(), f"Config file not generated at {config_path}"
+    
     docx_path = config_generator.create_docx_template("base_en.docx")
     
     # Verify all files are within tmp_path
@@ -40,6 +44,10 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     
     # Generate DOCX templates for each product
     config_generator = ConfigGenerator(output_dir=str(output_dir))
+    # Generate the config.yaml file
+    config_path = config_generator.generate_config()
+    assert config_path.exists(), f"Config file not generated at {config_path}"
+    
     file_handler = FileHandler(Config())
     
     for product in products_config["products"]:
@@ -106,6 +114,10 @@ def test_validate_product_template(tmp_path):
     
     # Generate DOCX template for test product
     config_generator = ConfigGenerator(output_dir=str(output_dir))
+    # Generate the config.yaml file
+    config_path = config_generator.generate_config()
+    assert config_path.exists(), f"Config file not generated at {config_path}"
+    
     file_handler = FileHandler(Config())
     
     try:
