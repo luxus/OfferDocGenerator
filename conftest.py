@@ -90,14 +90,10 @@ def setup_testing_env(tmp_path):
     # Cleanup if KEEP_TMP is not set
     keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
     if not keep_tmp:
-        for file in tmp_path.glob('*'):
-            try:
-                if file.is_file():
-                    file.unlink()
-                else:
-                    shutil.rmtree(file)
-            except Exception as e:
-                print(f"Error cleaning up {file}: {e}")
+        # Clean both tmp_path and TEST_OUTPUT_DIR if it's a subdirectory of tmp_path
+        test_output_dir = Path(os.getenv("TEST_OUTPUT_DIR", ""))
+        if test_output_dir.is_relative_to(tmp_path):
+            shutil.rmtree(test_output_dir, ignore_errors=True)
     
     os.environ["TESTING"] = "False"
-    os.environ["KEEP_TMP"] = "False"
+    os.environ.pop("KEEP_TMP", None)
