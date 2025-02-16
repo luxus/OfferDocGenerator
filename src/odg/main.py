@@ -30,8 +30,9 @@ class ConfigGenerator:
         
         if output_dir == "tmp":
             if testing_mode:
-                self.output_dir = Path(tempfile.mkdtemp())
-                logger.debug(f"Created temporary test directory: {self.output_dir}")
+                # Use the provided output_dir instead of creating a new temp dir
+                self.output_dir = Path(output_dir)
+                logger.debug(f"Using test directory: {self.output_dir}")
             else:
                 self.output_dir = Path(os.getcwd()) / "tmp"
         else:
