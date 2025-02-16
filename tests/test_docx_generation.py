@@ -9,14 +9,27 @@ from src.config.settings import Config
 
 @pytest.fixture
 def config_generator(tmp_path):
-    # Create minimal config.yaml
+    # Create minimal config.yaml with required nested structures
     config_data = {
         "output_dir": str(tmp_path),
         "prefix": "Offer",
         "default_language": "en",
         "supported_languages": ["en", "de", "fr"],
+        "customer": {
+            "name": "Test Customer Inc.",
+            "address": "123 Test St, Testville"
+        },
+        "sales": {
+            "name": "John Doe",
+            "email": "john.doe@example.com"
+        },
+        "offer": {
+            "number": "OFF-001",
+            "validity": {
+                "en": "30 days from the date of issue"
+            }
+        },
         "variables": {
-            "customer": "Test Customer",
             "product_name": "Test Product",
             "currency": "EUR"
         }
@@ -28,6 +41,7 @@ def config_generator(tmp_path):
     # Create necessary directories
     (tmp_path / "templates").mkdir(parents=True, exist_ok=True)
     (tmp_path / "output").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "products").mkdir(parents=True, exist_ok=True)
     
     return ConfigGenerator(output_dir=tmp_path)
 
