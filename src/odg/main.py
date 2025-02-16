@@ -12,9 +12,16 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 VERSION = "1.0.0"
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging with more detailed format
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
@@ -28,7 +35,6 @@ class ConfigGenerator:
                 
         # Convert output_dir to absolute path
         self.output_dir = Path(output_dir).expanduser().resolve()
-        logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         
         # Determine if we are in a test context
