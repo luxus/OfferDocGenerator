@@ -108,8 +108,13 @@ class ConfigGenerator:
             generated_dir = self.output_dir / "generated"
             generated_dir.mkdir(exist_ok=True)
             
-            # Create the template file path
-            template_path = generated_dir / template_name
+            # Create templates directory
+            templates_dir = self.output_dir / "templates"
+            templates_dir.mkdir(exist_ok=True)
+            
+            # Create the template file paths
+            template_path = templates_dir / template_name
+            generated_path = generated_dir / template_name
             
             if template_path.exists():
                 print(f"Template already exists: {template_path}")
@@ -195,7 +200,11 @@ class ConfigGenerator:
             sample_output = generated_dir / f"sample_{template_name}"
             
             # Copy template to sample output
-            shutil.copy2(template_path, sample_output)
+            if template_path.exists():
+                shutil.copy2(template_path, sample_output)
+            else:
+                # If template doesn't exist in templates dir, try generated dir
+                shutil.copy2(generated_path, sample_output)
             
             if not sample_output.exists():
                 raise FileNotFoundError(f"Failed to create sample file: {sample_output}")

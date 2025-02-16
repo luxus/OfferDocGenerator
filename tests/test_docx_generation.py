@@ -17,6 +17,7 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     docx_path = config_generator.create_docx_template("base_en.docx")
     
     assert docx_path.exists()
+    assert (output_dir / "templates" / "base_en.docx").exists()
     file_handler = FileHandler(Config())
     assert file_handler.has_numbered_lists(docx_path)
     
@@ -42,9 +43,10 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     
     for product in products_config["products"]:
         try:
-            docx_path = config_generator.create_sample_docx(template_name=product["name"])
+            docx_path = config_generator.create_sample_docx(template_name=f"{product['name']}.docx")
             assert docx_path is not None, f"Failed to create sample for {product['name']}"
             assert docx_path.exists(), f"Sample file does not exist: {docx_path}"
+            assert (output_dir / "generated" / f"sample_{product['name']}.docx").exists()
             assert file_handler.has_numbered_lists(docx_path), f"Missing numbered lists in {docx_path}"
         except Exception as e:
             pytest.fail(f"Failed to process {product['name']}: {str(e)}")
