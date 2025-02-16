@@ -29,7 +29,7 @@ def setup_logging():
 setup_logging()
 
 class ConfigGenerator:
-    def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
+    def __init__(self, output_dir: str = "tmp"):
         # Check if TEST_OUTPUT_DIR is in environment variables and use it
         if 'TEST_OUTPUT_DIR' in os.environ:
             self.output_dir = Path(os.environ['TEST_OUTPUT_DIR']).resolve()
@@ -42,11 +42,8 @@ class ConfigGenerator:
             self.output_dir = Path(output_dir).resolve()
 
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
-        
-        # Create output directory unless we're just validating
-        if not is_validating:
-            logger.debug(f"Creating output directory: {self.output_dir}")
-            self.output_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Creating output directory: {self.output_dir}")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_config(self) -> Path:
         """Generate config.yaml based on documentation files"""

@@ -34,6 +34,8 @@ def config_generator():
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""
+    # Set TEST_OUTPUT_DIR for this test
+    os.environ["TEST_OUTPUT_DIR"] = str(config_generator.output_dir)
     # Generate config file
     config_path = config_generator.generate_config()
     

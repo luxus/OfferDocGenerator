@@ -6,10 +6,11 @@ from src.config.settings import Config
 
 def test_generate_base_template_with_numbered_lists(tmp_path):
     """Test base template generation with numbered lists"""
-    # Set TESTING environment variable for cleanup checks
+    # Set environment variables for testing
     os.environ["TESTING"] = "True"
+    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "base_templates")
     
-    output_dir = tmp_path / "base_templates"
+    output_dir = Path(os.environ["TEST_OUTPUT_DIR"])
     
     # Initialize Config with the test output directory
     config = Config(output_dir=output_dir)
