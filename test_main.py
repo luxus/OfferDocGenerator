@@ -115,7 +115,14 @@ def test_full_config_validation(config_generator):
     assert "date" in loaded_config["offer"]
     
     assert "default_language" in loaded_config["internationalization"]
-    assert len(loaded_config["settings"]) == 4
+    
+    # Verify required settings exist
+    settings = loaded_config["settings"]
+    assert "base_path" in settings, "Missing base_path in settings"
+    assert "templates" in settings, "Missing templates in settings"
+    assert "common" in settings, "Missing common in settings"
+    assert "products" in settings, "Missing products in settings"
+    assert "output" in settings, "Missing output in settings"
 
 @pytest.mark.parametrize("language,expected", [
     ("en", "Hello"),
