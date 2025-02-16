@@ -1,6 +1,7 @@
 # Internationalization
 
 ## Language Configuration
+
 Configure supported languages in the configuration file:
 
 ```yaml
@@ -11,6 +12,7 @@ internationalization:
 ```
 
 ## Multi-Language Variables
+
 Variables support different values for each language:
 
 ```yaml
@@ -26,21 +28,19 @@ multi_language_variables:
 ## Best Practices
 
 ### 1. Language Codes
+
 - Use standard ISO language codes (e.g., 'en', 'de', 'fr')
 - Always include the default language
 - Define all variables for all supported languages
 
 ### 2. Currency Handling
-- Use standard currency codes (e.g., 'EUR', 'USD')
+
+- Use standard currency codes (e.g., 'CHF', EUR', 'USD')
 - Format numbers according to locale conventions
 - Include currency symbols in templates
 
 ### 3. Date Formats
+
 - Use ISO date formats (YYYY-MM-DD)
 - Convert dates based on locale preferences
 - Include timezone information when relevant
-
-### 4. Text Direction
-- Support RTL (Right-to-Left) languages when needed
-- Use appropriate CSS/styling for RTL content
-- Test templates with RTL content
