@@ -10,6 +10,7 @@ from typing import Dict, Any, List
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docxtpl import DocxTemplate
+from docx.shared import Pt
 from jinja2 import Environment, FileSystemLoader, Template
 
 VERSION = "1.0.0"
@@ -219,10 +220,10 @@ class ConfigGenerator:
             # If the input is a template, render it first
             if str(path).endswith('.docx'):
                 if context:
-                    doc = DocxTemplate(str(path))
+                    doc_template = DocxTemplate(str(path))
                     with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as tmp:
-                        doc.render(context)
-                        doc.save(tmp.name)
+                        doc_template.render(context)
+                        doc_template.save(tmp.name)
                         sub_doc = Document(tmp.name)
                     os.unlink(tmp.name)
                 else:
@@ -309,8 +310,14 @@ class ConfigGenerator:
             if "variables" in config_data:
                 context.update(config_data["variables"])
                 
-            # Render template with context
-            doc.render(context)
+            # Load the template using DocxTemplate
+            template = DocxTemplate(base_template_path)
+            
+            # Render the template with context
+            template.render(context)
+            
+            # Convert to Document for additional modifications
+            doc = Document(base_template_path)
             
             # Add all required sections based on template type
             if "product" in template_name.lower():
