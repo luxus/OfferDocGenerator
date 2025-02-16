@@ -136,8 +136,9 @@ class ConfigGenerator:
             # Always create a new template to ensure it has the correct structure
             doc = Document()
             
-            # Add title and basic structure
-            doc.add_heading("Base Offer Template", level=1)
+            # Add title and basic structure with proper styling
+            title = doc.add_heading("Base Offer Template", level=1)
+            title.runs[0].font.size = Pt(16)
             
             # Add required sections for base template
             doc.add_heading("Introduction", level=1)
