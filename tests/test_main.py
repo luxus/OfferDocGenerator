@@ -13,16 +13,15 @@ from odg.main import ConfigGenerator
 @pytest.fixture
 def cli_test_directory(tmp_path):
     """Create a temporary directory for CLI tests using pytest's tmp_path"""
-    test_dir = Path("tests") / "tmp" / "cli"
+    test_dir = tmp_path / "cli"
     test_dir.mkdir(parents=True, exist_ok=True)
     yield test_dir
 
 @pytest.fixture(scope="function")
-def config_generator(cli_test_directory):
+def config_generator(tmp_path):
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    test_dir = cli_test_directory / "config"
+    test_dir = tmp_path / "config"
     test_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Creating test ConfigGenerator with tmpdir: {test_dir}")
     cg = ConfigGenerator(output_dir=str(test_dir.resolve()))
     
     # Ensure environment is clean
@@ -126,21 +125,17 @@ def test_multi_language_support(config_generator, language, expected):
     # This would require more complex setup but demonstrates pytest's capabilities
     pass
 
-def test_cli_create_folder_structure(cli_test_directory):
-    # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR
+def test_cli_create_folder_structure(tmp_path):
     os.environ["TESTING"] = "True"
     if "TEST_OUTPUT_DIR" in os.environ:
         del os.environ["TEST_OUTPUT_DIR"]
         
-    output_dir = cli_test_directory / "offers"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = tmp_path / "offers"
     
-    # Run CLI command to create structure
     config_gen = ConfigGenerator(output_dir=str(output_dir.resolve()))
     config_path = config_gen.generate_config()
     assert config_path.exists(), f"Config file not created at: {config_path}"
     
-    # Check required directories exist
     required_dirs = [
         output_dir,
         output_dir / "templates",
@@ -152,7 +147,7 @@ def test_cli_create_folder_structure(cli_test_directory):
     
     for dir_ in required_dirs:
         assert dir_.exists(), f"Directory {dir_} does not exist"
-        assert dir_.is_relative_to(cli_test_directory), f"Directory {dir_} is outside test directory"
+        assert dir_.is_relative_to(tmp_path), f"Directory {dir_} is outside test directory"
 
 def test_cli_config_contents(cli_test_directory):
     # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR

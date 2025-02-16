@@ -78,19 +78,16 @@ def pytest_configure(config):
     )
     
 @pytest.fixture(autouse=True)
-def setup_testing_env():
+def setup_testing_env(tmp_path):
     """Set up and clean test environment."""
     os.environ["TESTING"] = "True"
-    temp_dir = Path("tests") / "tmp"
-    temp_dir.mkdir(parents=True, exist_ok=True)
     
     yield
     
     # Cleanup if KEEP_TMP is not set
     keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-    if not keep_tmp and temp_dir.exists():
-        import shutil
-        for file in temp_dir.glob('*'):
+    if not keep_tmp:
+        for file in tmp_path.glob('*'):
             try:
                 if file.is_file():
                     file.unlink()
