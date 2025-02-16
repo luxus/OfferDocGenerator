@@ -31,10 +31,13 @@ class ConfigGenerator:
             # From docs/configuration/folder_structure.md
             "settings": {
                 "base_path": str(self.output_dir.resolve()),
-                "templates": "./templates",
-                "common": "./common",
-                "products": "./products",
-                "output": "./output"
+                "folders": {
+                    "templates": "./templates",
+                    "common": "./common",
+                    "products": "./products",
+                    "output": "./output"
+                },
+                "output_prefix": "DOC-"
             },
             # From docs/configuration/internationalization.md
             "internationalization": {

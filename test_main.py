@@ -51,8 +51,9 @@ def test_valid_config_generation(config_generator):
     # Validate paths exist
     required_paths = [
         Path(config_generator.output_dir / "templates"),
-        Path(config_generator.output_dir / "common"), 
-        Path(config_generator.output_dir / "products")
+        Path(config_generator.output_dir / "common"),
+        Path(config_generator.output_dir / "products"),
+        Path(config_generator.output_dir / "output")
     ]
 
     for path in required_paths:
