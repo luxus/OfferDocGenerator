@@ -35,6 +35,11 @@ def test_generate_base_template_with_jinja_variables(config_generator, tmp_path)
     output_path = config_generator.create_sample_docx(product_name, language, currency)
     assert output_path.exists()
     
+    # Get template and output paths
+    templates_dir = tmp_path / "templates"
+    docx_path = templates_dir / f"base_{language}.docx"
+    sample_path = output_path
+    
     # Verify template and sample files exist
     assert docx_path.exists()
     assert sample_path.exists()
@@ -45,7 +50,7 @@ def test_generate_base_template_with_jinja_variables(config_generator, tmp_path)
         doc_text = '\n'.join([paragraph.text for paragraph in doc.paragraphs])
         assert '{{' not in doc_text, "Unrendered Jinja2 variables found in document"
     assert docx_path.is_relative_to(tmp_path)
-    assert docx_path.parent == output_dir / "templates"
+    assert docx_path.parent == templates_dir
     assert docx_path.name == "base_en.docx"
     
     # Create and verify sample document
