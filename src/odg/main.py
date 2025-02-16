@@ -9,13 +9,13 @@ from typing import Dict, Any
 VERSION = "1.0.0"
 
 class ConfigGenerator:
-    def __init__(self, output_dir: str = "tmp"):
+    def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
         self.script_dir = Path(__file__).parent
         self.output_dir = Path(output_dir).resolve()
         
         # Clean existing temp directory if it exists and KEEP_TMP is not set
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
-        if self.output_dir.exists() and not keep_tmp:
+        if self.output_dir.exists() and not keep_tmp and not is_validating:
             self._clean_temp_directory(self.output_dir)
         
         # Create fresh directory structure based on documentation
@@ -100,7 +100,12 @@ class ConfigGenerator:
                 path = Path(path)
             
             if isinstance(path, Path) and path.exists():
-                shutil.rmtree(path, ignore_errors=True)
+                # Only remove temporary files, preserve existing config.yaml
+                for item in path.iterdir():
+                    if item.is_file() and item.name != "config.yaml":
+                        item.unlink()
+                    elif item.is_dir():
+                        shutil.rmtree(item, ignore_errors=True)
 
 # Helper function to create base directory structure
 def setup_default_folders(output_dir: Path = None):
@@ -121,6 +126,20 @@ def setup_default_folders(output_dir: Path = None):
 
     print(f"Default structure created at: {output_dir}")
 
+def validate_single_config(config_path: Path) -> bool:
+    """Validate a single config.yaml file"""
+    try:
+        with open(config_path, "r") as f:
+            loaded_config = yaml.safe_load(f)
+        
+        # Verify required sections
+        _verify_required_keys(loaded_config)
+        return True
+            
+    except Exception as e:
+        print(f"Config validation failed: {e}")
+        return False
+
 def validate_config_files(directory: Path):
     """Validate all config.yaml files in specified directory and subdirectories"""
     
@@ -135,11 +154,7 @@ def validate_config_files(directory: Path):
     for config_file in config_files:
         print(f"Validating {config_file}...")
         try:
-            # Create a temporary ConfigGenerator instance with the same directory
-            output_dir = config_file.parent
-            config_gen = ConfigGenerator(output_dir=str(output_dir))
-            
-            if not config_gen.validate_config(config_file):
+            if not validate_single_config(config_file):
                 print(f"Validation failed for: {config_file}")
                 return False
                 
