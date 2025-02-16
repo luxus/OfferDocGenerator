@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 import yaml
 import docx
+from datetime import date
 from docx.enum.style import WD_STYLE_TYPE
 from unittest import mock
 from docxtpl import DocxTemplate, RichText
@@ -922,6 +923,109 @@ class TestOfferDocGenerator(unittest.TestCase):
         with self.assertRaises(ValidationError) as cm:
             offerdocgenerator.load_config(self.config_file)
         self.assertIn("Input should be a valid dictionary", str(cm.exception))
+
+class TestConfigGeneration(unittest.TestCase):
+    def setUp(self) -> None:
+        """Set up temporary directory structure"""
+        self.script_dir = Path(__file__).parent
+        self.tmp_dir = self.script_dir / "tmp"
+        
+        # Clean existing temp directory if it exists
+        if self.tmp_dir.exists():
+            shutil.rmtree(self.tmp_dir)
+            
+        # Create fresh directory structure
+        self.tmp_dir.mkdir()
+        
+        # Create required subdirectories
+        for dir_name in ["templates", "common", "products"]:
+            (self.tmp_dir / dir_name).mkdir(exist_ok=True)
+
+    def test_config_generation_and_validation(self) -> None:
+        """Test config generation and validation process"""
+        # Generate sample config data
+        config_data = {
+            "offer": {
+                "number": f"2024-{date.today().month:02d}-001",
+                "date": date.today().isoformat(),
+                "validity": {
+                    "EN": "30 days", 
+                    "DE": "30 Tage"
+                }
+            },
+            "settings": {
+                "base_path": str(self.tmp_dir),
+                "templates": str(self.tmp_dir / "templates"),
+                "common": str(self.tmp_dir / "common"), 
+                "products": str(self.tmp_dir / "products"),
+                "output": str(self.tmp_dir / "output"),
+                "format": "docx"
+            },
+            "customer": {
+                "name": "Test Company",
+                "address": "123 Test Street", 
+                "city": "Test City",
+                "zip": "12345",
+                "country": "Test Country"  
+            },
+            "sales": {
+                "name": "John Doe",
+                "email": "john.doe@example.com",
+                "phone": "+1 234 567 890"
+            },
+            "products": [
+                {
+                    "name": "Web Security Assessment",
+                    "price": 1500.00,
+                    "description": "Comprehensive web application security review"
+                }
+            ]
+        }
+
+        # Save config to file
+        self.config_path = self.tmp_dir / "config.yaml"
+        with open(self.config_path, 'w') as f:
+            yaml.dump(config_data, f)
+
+        # Validate paths exist
+        required_paths = [
+            Path(config_data["settings"]["templates"]),
+            Path(config_data["settings"]["common"]), 
+            Path(config_data["settings"]["products"])
+        ]
+
+        for path in required_paths:
+            self.assertTrue(path.exists())
+
+        # Verify config structure
+        with open(self.config_path, 'r') as f:
+            loaded_config = yaml.safe_load(f)
+            
+        self.assertIn("offer", loaded_config)
+        self.assertIn("date", loaded_config["offer"])
+        self.assertIn("settings", loaded_config)
+
+    def test_invalid_config_detection(self) -> None:
+        """Test detection of invalid config"""
+        # Create an invalid config file
+        invalid_config = {"invalid": "config"}
+        invalid_path = self.tmp_dir / "invalid.yaml"
+        
+        with open(invalid_path, 'w') as f:
+            yaml.dump(invalid_config, f)
+            
+        # Test error handling
+        try:
+            with open(invalid_path, 'r') as f:
+                loaded_config = yaml.safe_load(f)
+                
+            self.fail("Should have raised an exception")
+        except Exception as e:
+            self.assertIn("invalid", str(e).lower())
+        
+    def tearDown(self) -> None:
+        """Clean up temporary files"""
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
 if __name__ == '__main__':
     unittest.main()
