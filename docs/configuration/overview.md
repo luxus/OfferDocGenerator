@@ -22,12 +22,12 @@ The configuration system is organized into several key components:
 
 The following environment variables can be used to customize the behavior of ODG:
 
-- **TEST_OUTPUT_DIR**: Specifies the directory where test files (e.g., templates, sample documents) will be generated. This is particularly useful during testing to ensure output is isolated.
+- **TEST_OUTPUT_DIR**: Specifies the directory where test files (e.g., templates, sample documents) will be generated during testing. This is particularly useful when running pytest to ensure output is isolated.
 
 Example usage:
 ```bash
 export TEST_OUTPUT_DIR=/path/to/test/dir
-odg create-template --name=test_template.docx
+pytest
 ```
 
 For detailed information about specific aspects of the configuration system, please refer to:

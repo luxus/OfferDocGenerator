@@ -27,12 +27,12 @@ odg --version
 
 ## Environment Variables
 
-- **TEST_OUTPUT_DIR**: Optional directory for test file generation. Useful during testing to isolate output files.
+- **TEST_OUTPUT_DIR**: Optional directory for test file generation (e.g., when running pytest). Useful to isolate output files during testing.
 
-Example:
+Example usage in tests:
 ```bash
 export TEST_OUTPUT_DIR=/path/to/test/dir
-odg create-template --name=test_template.docx
+pytest
 ```
 
 ## License

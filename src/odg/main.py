@@ -30,7 +30,7 @@ setup_logging()
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
-        if 'TEST_OUTPUT_DIR' in os.environ and is_validating:
+        if 'TESTING' in os.environ and is_validating:
             self.output_dir = Path(os.environ['TEST_OUTPUT_DIR']).resolve()
         elif output_dir == "tmp":
             # Create a new temp dir
