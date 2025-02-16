@@ -168,10 +168,13 @@ class ConfigGenerator:
             
             doc.add_heading("Technical Specifications", level=1)
             
-            # Add a numbered list
-            numbered_list = doc.add_paragraph("First item").style = 'List Number'
-            numbered_list = doc.add_paragraph("Second item").style = 'List Number'
-            numbered_list = doc.add_paragraph("Third item").style = 'List Number'
+            # Add a numbered list with nested items
+            doc.add_paragraph("First item", style='List Number')
+            doc.add_paragraph("First sub-item", style='List Number 2')
+            doc.add_paragraph("Second sub-item", style='List Number 2')
+            doc.add_paragraph("Second item", style='List Number')
+            doc.add_paragraph("Third item", style='List Number')
+            doc.add_paragraph("Third sub-item", style='List Number 2')
             
             # Save the document
             doc.save(template_path)

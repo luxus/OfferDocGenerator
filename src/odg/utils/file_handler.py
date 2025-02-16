@@ -40,23 +40,35 @@ class FileHandler:
         return output_path
 
     def has_numbered_lists(self, docx_path: Path) -> bool:
-        """Check if DOCX file contains numbered lists"""
+        """Check if DOCX file contains numbered lists and nested numbering"""
         try:
             document = Document(str(docx_path))
             
-            # Check both style name and numbering property
+            has_numbered = False
+            has_nested = False
+            prev_level = None
+            
             for paragraph in document.paragraphs:
                 # Check style name first
                 if paragraph.style is not None and paragraph.style.name.startswith("List Number"):
-                    return True
+                    has_numbered = True
                     
-                # Check numbering property
-                if (hasattr(paragraph, "_element") and 
-                    paragraph._element.pPr is not None and 
-                    paragraph._element.pPr.numPr is not None):
-                    return True
+                    # Check numbering property and level
+                    if (hasattr(paragraph, "_element") and 
+                        paragraph._element.pPr is not None and 
+                        paragraph._element.pPr.numPr is not None):
+                        
+                        # Get numbering level
+                        num_pr = paragraph._element.pPr.numPr
+                        current_level = num_pr.ilvl.val if num_pr.ilvl is not None else 0
+                        
+                        # Check for nested numbering
+                        if prev_level is not None and current_level > prev_level:
+                            has_nested = True
+                            
+                        prev_level = current_level
             
-            return False
+            return has_numbered and has_nested
         except Exception as e:
             logger.error(f"Error checking numbered lists: {e}")
             return False

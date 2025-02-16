@@ -18,7 +18,7 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     assert docx_path.parent == output_dir / "templates"
     assert docx_path.name == "base_en.docx"
     file_handler = FileHandler(Config())
-    assert file_handler.has_numbered_lists(docx_path)
+    assert file_handler.has_numbered_lists(docx_path), "Document should contain nested numbered lists"
     
 def test_generate_product_templates_with_numbered_lists(tmp_path):
     """Test product template generation with numbered lists"""
