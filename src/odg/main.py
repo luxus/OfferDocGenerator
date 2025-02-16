@@ -13,15 +13,18 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 VERSION = "1.0.0"
 
 # Configure logging with more detailed format
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+
+def setup_logging():
+    # Ensure only one handler is added to the logger
+    if not logger.handlers:
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+setup_logging()
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
