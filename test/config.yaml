@@ -17,14 +17,21 @@ offer:
   validity:
     de: 30 Tage
     en: 30 days
+products:
+- name: Web Application Security Assessment
+  sections:
+  - Introduction
+  - Product Overview
+  - Technical Specifications
 sales:
   email: john.doe@example.com
   name: John Doe
   phone: +1 234 567 890
 settings:
-  base_path: /Users/luxus/projects/OfferDocGenerator/cli_test/test_project
+  base_path: /Users/luxus/projects/OfferDocGenerator/test
   folders:
     common: ./common
+    generated: ./generated
     output: ./output
     products: ./products
     templates: ./templates

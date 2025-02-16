@@ -9,6 +9,7 @@
 {
   # https://devenv.sh/basics/
   env.GREET = "devenv";
+  env.TEST_OUTPUT_DIR = "/Users/luxus/projects/OfferDocGenerator/test_output";
 
   # https://devenv.sh/packages/
   packages = [
