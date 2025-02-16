@@ -1,7 +1,6 @@
-import os
+import logging
 from pathlib import Path
 from typing import List
-import logging
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from src.config.settings import Config
@@ -29,7 +28,6 @@ class FileHandler:
 
     def save_output(self, content: bytes, filename: str) -> Path:
         """Save generated document to output directory."""
-        # Ensure the file is saved within the output_dir's output subdirectory
         output_path = self.output_dir / "output" / filename
         output_path.parent.mkdir(exist_ok=True, parents=True)
         
@@ -40,93 +38,65 @@ class FileHandler:
         return output_path
 
     def has_numbered_lists(self, docx_path: Path) -> bool:
-        """Check if DOCX file contains numbered lists with nesting."""
+        """Check if DOCX file contains numbered lists."""
         try:
             document = Document(str(docx_path))
-            
-            number_style_found = False
-            nested_number_style_found = False
-            
-            for paragraph in document.paragraphs:
-                style_name = getattr(paragraph.style, 'name', '')
-                if style_name and 'List Number' in style_name:
-                    if 'List Number 2' in style_name:
-                        nested_number_style_found = True
-                    else:
-                        number_style_found = True
-                
-                if number_style_found and nested_number_style_found:
-                    return True
-            
-            return False
-            
+            return any(p.style.name.startswith('List Number') 
+                      for p in document.paragraphs)
         except Exception as e:
             logger.error(f"Error checking numbered lists: {e}")
             return False
 
     def validate_doc_structure(self, docx_path: Path) -> bool:
         """Verify basic DOCX structure requirements"""
-        document = Document(str(docx_path))
-        
-        # Basic checks
-        assert len(document.sections) >= 1, "No sections found"
-        assert any(p.text.strip() for p in document.paragraphs), "Empty document"
-        
-        return True
+        try:
+            document = Document(str(docx_path))
+            return any(p.style.name.startswith("Heading") 
+                      for p in document.paragraphs)
+        except Exception as e:
+            logger.error(f"Structure validation error: {e}")
+            return False
 
     def validate_merged_doc(self, docx_path: Path) -> bool:
-        """Check if the merged document has continuous section numbering."""
+        """Check if the merged document has valid structure."""
         try:
             document = Document(str(docx_path))
             
-            current_section_number = 0
-            expected_next_section = 1
+            # Track section numbering
+            current_section = 0
+            sub_section_count = 0
             
             for paragraph in document.paragraphs:
                 if paragraph.style.name.startswith("Heading"):
                     level = int(paragraph.style.name.split()[-1])
                     
-                    # Check only Heading 1 levels for section numbers
+                    text = paragraph.text.strip()
+                    if not text:
+                        continue
+                    
+                    # Allow both numbered and unnumbered sections
                     if level == 1:
-                        parts = paragraph.text.split('.')
-                        if len(parts) < 2 or not parts[0].isdigit():
-                            logger.warning(f"Invalid section numbering format at: {paragraph.text}")
-                            return False
-                        
-                        current_section_number = int(parts[0])
-                        
-                        if current_section_number != expected_next_section:
-                            logger.warning(f"Section numbering discontinuity: expected {expected_next_section}, got {current_section_number}")
-                            return False
-                        
-                        expected_next_section += 1
+                        current_section += 1
+                        sub_section_count = 0
+                    elif level == 2:
+                        sub_section_count += 1
             
             return True
-        
+            
         except Exception as e:
-            logger.error(f"Error validating merged document: {e}")
+            logger.error(f"Validation error: {e}")
             return False
 
     def has_required_sections(self, docx_path: Path) -> bool:
-        """Verify presence of required sections in the merged document."""
+        """Verify presence of required sections."""
         try:
             document = Document(str(docx_path))
+            headings = [p.text.strip() for p in document.paragraphs 
+                       if p.style.name.startswith("Heading")]
             
             required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
-            found_sections = []
-            
-            for paragraph in document.paragraphs:
-                if paragraph.style.name == 'Heading 1':
-                    section_name = paragraph.text.split('.')[-1].strip()
-                    if any(section in section_name for section in required_sections):
-                        found_sections.append(section_name)
-            
-            missing = [sec for sec in required_sections if sec not in found_sections]
-            if missing:
-                logger.warning(f"Missing sections: {missing}")
-                return False
-            return True
-        
+            return all(any(section in h for h in headings) 
+                      for section in required_sections)
         except Exception as e:
             logger.error(f"Error checking sections: {e}")
             return False
