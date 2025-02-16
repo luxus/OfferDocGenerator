@@ -85,11 +85,20 @@ def setup_testing_env(tmp_path):
     """Set up and clean test environment."""
     os.environ["TESTING"] = "True"
     
+    # Store original TEST_OUTPUT_DIR if it exists
+    original_test_output_dir = os.environ.get("TEST_OUTPUT_DIR")
+    
     yield
     
     # Cleanup if TEST_OUTPUT_DIR is a subdirectory of tmp_path
     test_output_dir = Path(os.getenv("TEST_OUTPUT_DIR", ""))
     if test_output_dir.is_relative_to(tmp_path):
         shutil.rmtree(test_output_dir, ignore_errors=True)
+    
+    # Restore original TEST_OUTPUT_DIR if it existed
+    if original_test_output_dir:
+        os.environ["TEST_OUTPUT_DIR"] = original_test_output_dir
+    elif "TEST_OUTPUT_DIR" in os.environ:
+        del os.environ["TEST_OUTPUT_DIR"]
     
     os.environ["TESTING"] = "False"

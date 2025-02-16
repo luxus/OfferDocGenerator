@@ -20,23 +20,21 @@ def cli_test_directory(tmp_path):
 @pytest.fixture(scope="function")
 def config_generator(tmp_path):
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    # Check if TEST_OUTPUT_DIR is already set (e.g., via command line)
-    test_output_dir = os.getenv("TEST_OUTPUT_DIR", str(tmp_path / "config"))
+    # Always use tmp_path during tests, ignore TEST_OUTPUT_DIR
+    test_output_dir = str(tmp_path / "config")
     
     # Ensure the output directory exists
     Path(test_output_dir).mkdir(parents=True, exist_ok=True)
     
     # Set testing environment variables
     os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = test_output_dir
     
     cg = ConfigGenerator(output_dir=test_output_dir)
     
     yield cg
     
-    # Only cleanup if TEST_OUTPUT_DIR is within tmp_path
-    if Path(test_output_dir).is_relative_to(tmp_path):
-        shutil.rmtree(Path(test_output_dir), ignore_errors=True)
+    # Always clean up our temporary directory
+    shutil.rmtree(Path(test_output_dir), ignore_errors=True)
 
 def test_valid_config_generation(config_generator, tmp_path):
     """Test valid config generation and validation process"""

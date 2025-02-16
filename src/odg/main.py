@@ -30,12 +30,12 @@ setup_logging()
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp"):
-        # Check if TEST_OUTPUT_DIR is in environment variables and use it only if not testing
-        if os.getenv("TESTING") != "True":
-            self.output_dir = Path(os.environ.get('TEST_OUTPUT_DIR', output_dir)).resolve()
-        else:
-            # Use the provided output_dir during tests to avoid interference
+        # During testing, always use the provided output_dir
+        if os.getenv("TESTING") == "True":
             self.output_dir = Path(output_dir).resolve()
+        else:
+            # In production, respect TEST_OUTPUT_DIR if set
+            self.output_dir = Path(os.environ.get('TEST_OUTPUT_DIR', output_dir)).resolve()
 
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         self.output_dir.mkdir(parents=True, exist_ok=True)
