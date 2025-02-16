@@ -22,11 +22,12 @@ def config_generator(tmp_path):
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
     test_dir = tmp_path / "config"
     test_dir.mkdir(parents=True, exist_ok=True)
-    cg = ConfigGenerator(output_dir=str(test_dir.resolve()))
     
-    # Ensure environment is clean
-    if "TEST_OUTPUT_DIR" in os.environ:
-        del os.environ["TEST_OUTPUT_DIR"]
+    # Set testing environment
+    os.environ["TESTING"] = "True"
+    os.environ["TEST_OUTPUT_DIR"] = str(test_dir.resolve())
+    
+    cg = ConfigGenerator(output_dir=str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve()))
     
     yield cg
     
@@ -34,8 +35,12 @@ def config_generator(tmp_path):
     if test_dir.exists():
         shutil.rmtree(test_dir)
 
-def test_valid_config_generation(config_generator):
+def test_valid_config_generation(config_generator, tmp_path):
     """Test valid config generation and validation process"""
+    # Set testing environment
+    os.environ["TESTING"] = "True"
+    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "config_test")
+    
     # Generate config file
     config_path = config_generator.generate_config()
     
@@ -126,9 +131,10 @@ def test_multi_language_support(config_generator, language, expected):
     pass
 
 def test_cli_create_folder_structure(tmp_path):
-    output_dir = tmp_path / "offers"
+    os.environ["TESTING"] = "True"
+    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "offers")
     
-    config_gen = ConfigGenerator(output_dir=str(output_dir.resolve()))
+    config_gen = ConfigGenerator(output_dir=str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve()))
     config_path = config_gen.generate_config()
     assert config_path.exists(), f"Config file not created at: {config_path}"
     
@@ -146,11 +152,12 @@ def test_cli_create_folder_structure(tmp_path):
         assert dir_.is_relative_to(tmp_path), f"Directory {dir_} is outside test directory"
 
 def test_cli_config_contents(cli_test_directory):
-    # Create a new project structure
-    output_dir = cli_test_directory / "test_project"
+    # Set testing environment
+    os.environ["TESTING"] = "True"
+    os.environ["TEST_OUTPUT_DIR"] = str(cli_test_directory / "test_project")
     
     # Generate config and update base_path as per CLI functionality
-    config_gen = ConfigGenerator(output_dir=str(output_dir.resolve()))
+    config_gen = ConfigGenerator(output_dir=str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve()))
     config_path = config_gen.generate_config()
     
     with open(config_path, 'r') as f:

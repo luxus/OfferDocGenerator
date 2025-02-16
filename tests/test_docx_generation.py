@@ -30,12 +30,11 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
 def test_generate_product_templates_with_numbered_lists(tmp_path):
     """Test product template generation with numbered lists"""
-    # Set TESTING environment variable for cleanup checks
+    # Set TESTING environment variable and output directory
     os.environ["TESTING"] = "True"
-    if "TEST_OUTPUT_DIR" in os.environ:
-        del os.environ["TEST_OUTPUT_DIR"]
+    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "product_templates")
     
-    output_dir = tmp_path / "product_templates"
+    output_dir = Path(os.environ["TEST_OUTPUT_DIR"])
     output_dir.mkdir(exist_ok=True)
     
     # Generate sample product config with .docx extension within tmp_path
