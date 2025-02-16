@@ -8,7 +8,7 @@ from typing import Dict, Any
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp"):
         self.script_dir = Path(__file__).parent
-        self.output_dir = self.script_dir / output_dir
+        self.output_dir = Path(output_dir).resolve()
         
         # Clean existing temp directory if it exists and KEEP_TMP is not set
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
@@ -114,3 +114,47 @@ def setup_default_folders(output_dir: Path = None):
     example_product.mkdir(parents=True, exist_ok=True)
 
     print(f"Default structure created at: {output_dir}")
+
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Generate project configuration')
+    parser.add_argument('--create', type=str, 
+                       help='Create a new project structure in specified folder')
+    
+    args = parser.parse_args()
+    
+    if args.create:
+        output_dir = Path(args.create).resolve()
+        
+        # Ensure the output directory exists
+        output_dir.mkdir(exist_ok=True)
+        
+        # Create configuration generator instance for this output dir
+        config_gen = ConfigGenerator(output_dir=str(output_dir))
+        
+        # Generate and save config file
+        config_path = config_gen.generate_config()
+        
+        # Update base_path in config.yaml to point to the new folder
+        with open(config_path, 'r') as f:
+            config_data = yaml.safe_load(f)
+            
+        config_data['settings']['base_path'] = str(output_dir.absolute())
+        
+        with open(config_path, 'w') as f:
+            yaml.dump(config_data, f)
+        
+        # Print success message
+        print(f"Created project structure in: {output_dir}")
+        print("Included files and folders:")
+        for root, dirs, files in os.walk(output_dir):
+            level = root.replace(str(output_dir), '').count(os.sep)
+            indent = '    ' * (level - 1) if level > 0 else ''
+            print(f"{indent}{'├──' if dirs or files else '└──'} {Path(root).name}")
+            
+        # Validate the generated config
+        if not config_gen.validate_config(config_path):
+            print("Config validation failed. Please check your configuration.")
+    else:
+        print("Please use --create [folder_name] to generate a new project structure")
