@@ -167,15 +167,23 @@ class ConfigGenerator:
             with open(config_path, 'r') as f:
                 config_data = yaml.safe_load(f)
 
-            # Add sections based on document type
+            # Add sections based on document type and config
             if "product" in template_name.lower():
                 # Get product sections from config
                 if "products" in config_data and config_data["products"]:
                     product = config_data["products"][0]
-                    for section in product["sections"]:
-                        doc.add_heading(section, level=1)
-                        doc.add_paragraph(f"{section} content goes here...")
+                    if "sections" in product:
+                        for section in product["sections"]:
+                            doc.add_heading(section, level=1)
+                            doc.add_paragraph(f"{section} content goes here...")
+                    else:
+                        # Fallback to required sections if none specified
+                        required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
+                        for section in required_sections:
+                            doc.add_heading(section, level=1)
+                            doc.add_paragraph(f"{section} content goes here...")
             else:
+                # Default sections for non-product templates
                 doc.add_heading("General Information", level=1)
                 doc.add_paragraph("General information content goes here...")
                 doc.add_heading("Technical Specifications", level=1)
