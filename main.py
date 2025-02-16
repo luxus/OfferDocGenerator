@@ -3,15 +3,16 @@ from pathlib import Path
 import yaml
 from datetime import date
 import shutil
+from typing import Dict, Any
 
 class ConfigGenerator:
-    def __init__(self, output_dir="tmp"):
+    def __init__(self, output_dir: str = "tmp"):
         self.script_dir = Path(__file__).parent
         self.output_dir = self.script_dir / output_dir
         
-        # Initialize or clean temp directory
+        # Clean existing temp directory if it exists
         if self.output_dir.exists():
-            shutil.rmtree(self.output_dir)
+            self._clean_temp_directory(self.output_dir)
         
         # Create fresh directory structure based on documentation
         self.output_dir.mkdir(exist_ok=True)
@@ -19,9 +20,8 @@ class ConfigGenerator:
             (self.output_dir / dir_name).mkdir(exist_ok=True)
 
     def generate_config(self) -> Path:
-        """Generate config.yaml based on your documentation files"""
-        config_data = {
-            # From docs/configuration.md
+        """Generate config.yaml based on documentation files"""
+        config_data: Dict[str, Any] = {
             "offer": {
                 "number": f"OFFER-{date.today().isoformat()}",
                 "date": date.today().isoformat(),
@@ -81,3 +81,8 @@ class ConfigGenerator:
         for key in required_keys:
             if key not in config_data:
                 raise ValueError(f"Missing required key: {key}")
+
+    @staticmethod
+    def _clean_temp_directory(path: Path):
+        """Clean up temporary files"""
+        shutil.rmtree(path, ignore_errors=True)
