@@ -132,6 +132,20 @@ class ConfigGenerator:
             for ph in placeholders:
                 doc.add_paragraph(f"{{{{ {ph} }}}}")
             
+            # Add required sections
+            doc.add_heading("Introduction", level=1)
+            doc.add_paragraph("Introduction content goes here...")
+            
+            doc.add_heading("General Information", level=1)
+            doc.add_paragraph("General information content goes here...")
+            
+            doc.add_heading("Technical Specifications", level=1)
+            
+            # Add a numbered list
+            numbered_list = doc.add_paragraph("First item").style = 'List Number'
+            numbered_list = doc.add_paragraph("Second item").style = 'List Number'
+            numbered_list = doc.add_paragraph("Third item").style = 'List Number'
+            
             # Save the document
             doc.save(template_path)
             

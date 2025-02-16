@@ -30,5 +30,6 @@ class Config(BaseSettings):
                 path.mkdir(parents=True, exist_ok=True)
             return v
 
-    class Config:
-        env_prefix = "offerdoc_"
+    model_config = {
+        "env_prefix": "offerdoc_"
+    }
