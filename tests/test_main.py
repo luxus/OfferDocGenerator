@@ -12,25 +12,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 from odg.main import ConfigGenerator
 
 @pytest.fixture
-def cli_test_directory():
-    # Create a temporary directory for CLI tests using pytest's tmp_path
-    with tempfile.TemporaryDirectory() as tmpdir:
-        temp_dir = Path(tmpdir)
-        yield temp_dir
+def cli_test_directory(tmp_path):
+    """Create a temporary directory for CLI tests using pytest's tmp_path"""
+    test_dir = Path("tests") / "tmp" / "cli"
+    test_dir.mkdir(parents=True, exist_ok=True)
+    yield test_dir
 
 @pytest.fixture(scope="function")
 def config_generator():
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        os.environ["TESTING"] = "True"
-        tmpdir_path = Path(tmpdir).resolve()
-        print(f"Creating test ConfigGenerator with tmpdir: {tmpdir_path}")
-        cg = ConfigGenerator(output_dir=str(tmpdir_path))
-        yield cg
-        # Cleanup happens automatically when context exits
-        if Path(tmpdir).exists():
-            shutil.rmtree(tmpdir, ignore_errors=True)
-        os.environ["TESTING"] = "False"
+    test_dir = Path("tests") / "tmp" / "config"
+    test_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Creating test ConfigGenerator with tmpdir: {test_dir}")
+    cg = ConfigGenerator(output_dir=str(test_dir))
+    yield cg
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""
