@@ -104,11 +104,11 @@ class ConfigGenerator:
     def create_docx_template(self, template_name: str = "base_en.docx") -> Path:
         """Create a basic DOCX template with placeholders"""
         try:
-            # Create templates directory
+            # Ensure all paths are relative to output_dir
             templates_dir = self.output_dir / "templates"
             templates_dir.mkdir(exist_ok=True)
             
-            # Create the template file path
+            # Create the template file path within output_dir
             template_path = templates_dir / template_name
             
             if template_path.exists():
@@ -173,11 +173,11 @@ class ConfigGenerator:
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template"""
         try:
-            # Ensure template name has .docx extension
+            # Ensure template name has .docx extension and all paths are within output_dir
             if not template_name.endswith('.docx'):
                 template_name = f"{template_name}.docx"
             
-            # Get template path
+            # Get template path relative to output_dir
             templates_dir = self.output_dir / "templates"
             template_path = templates_dir / template_name
             

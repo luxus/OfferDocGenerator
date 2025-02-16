@@ -11,11 +11,13 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
     output_dir = tmp_path / "base_templates"
     
-    # Generate base template in templates subdirectory
+    # Generate base template in templates subdirectory within tmp_path
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     docx_path = config_generator.create_docx_template("base_en.docx")
     
+    # Verify all files are within tmp_path
     assert docx_path.exists()
+    assert docx_path.is_relative_to(tmp_path)
     assert docx_path.parent == output_dir / "templates"
     assert docx_path.name == "base_en.docx"
     file_handler = FileHandler(Config())
@@ -27,8 +29,9 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     os.environ["TESTING"] = "True"
     
     output_dir = tmp_path / "product_templates"
+    output_dir.mkdir(exist_ok=True)
     
-    # Generate sample product config with .docx extension
+    # Generate sample product config with .docx extension within tmp_path
     products_config = {
         "products": [
             {"name": "Product1.docx", "sections": ["Section A", "Section B"]},
