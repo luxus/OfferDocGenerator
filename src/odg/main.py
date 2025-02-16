@@ -137,6 +137,13 @@ class ConfigGenerator:
             # Add title and basic structure
             doc.add_heading("Base Offer Template", level=1)
             
+            # Add required sections for base template
+            doc.add_heading("Introduction", level=1)
+            doc.add_paragraph("Introduction content goes here...")
+            
+            doc.add_heading("General Information", level=1)
+            doc.add_paragraph("General information content goes here...")
+            
             # Customer Information section
             customer_section = doc.add_section()
             customer_para = doc.add_paragraph("Customer Information:")

@@ -116,7 +116,8 @@ class FileHandler:
             if is_product:
                 required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
             else:
-                required_sections = ["Introduction", "General Information", "Technical Specifications"]
+                # Base template requires only Introduction and General Information
+                required_sections = ["Introduction", "General Information"]
             
             # Extract all Heading 1 paragraphs as section names
             headings = []
