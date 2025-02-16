@@ -13,22 +13,10 @@ from odg.main import ConfigGenerator
 
 @pytest.fixture
 def cli_test_directory():
-    # Create a temporary directory for CLI tests
-    temp_dir = Path("cli_test")
-    temp_dir.mkdir(exist_ok=True)
-    
-    yield temp_dir
-    
-    # Clean up after test
-    if os.getenv("KEEP_TMP", "False").lower() == "true":
-        print(f"Temporary files preserved at: {temp_dir}")
-    else:
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
-@pytest.fixture
-def keep_tmp():
-    """Control whether to keep temporary test files"""
-    return os.getenv("KEEP_TMP", "False").lower() == "true"
+    # Create a temporary directory for CLI tests using pytest's tmp_path
+    with tempfile.TemporaryDirectory() as tmpdir:
+        temp_dir = Path(tmpdir)
+        yield temp_dir
 
 @pytest.fixture(scope="function")
 def config_generator():
