@@ -7,10 +7,10 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 class EmojiFormatter(logging.Formatter):
-    """Custom formatter to add emojis based on log level."""
+    """Custom formatter to add emojis based on log level and message content."""
     def format(self, record):
-        # Add specific emojis for different log levels
-        emoji = {
+        # Base emoji from log level
+        base_emoji = {
             logging.DEBUG: "🐛",
             logging.INFO: "📢",
             logging.WARNING: "⚠️",
@@ -18,16 +18,19 @@ class EmojiFormatter(logging.Formatter):
             logging.CRITICAL: "🚨",
         }.get(record.levelno, "")
         
-        # Optionally add more dynamic emojis based on message content
+        # Additional emojis based on message content using regex patterns
+        import re
         msg = record.getMessage()
-        if 'folder' in msg:
-            emoji += "📁"
-        elif 'delete' in msg:
-            emoji += "🗑️"
+        additional_emoji = ""
         
-        # Format the original message with the emoji
+        if re.search(r'Creating directory|Creating output directory', msg):
+            additional_emoji += "📁"
+        elif 'Deleting file' in msg:
+            additional_emoji += "🗑️"
+        
+        full_emoji = base_emoji + additional_emoji
         formatted_message = super().format(record)
-        return f"{formatted_message} {emoji}"
+        return f"{formatted_message} {full_emoji}" if full_emoji else formatted_message
 
 def pytest_configure(config):
     """Configure test environment and logging"""
