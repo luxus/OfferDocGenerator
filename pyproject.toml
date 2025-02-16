@@ -34,7 +34,7 @@ Homepage = "https://github.com/username/offer-doc-generator"
 Documentation = "https://github.com/username/offer-doc-generator/wiki"
 
 [project.scripts]
-odg = "src.odg.main:main"
+odg = "odg.main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
