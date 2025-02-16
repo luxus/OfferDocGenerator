@@ -117,25 +117,21 @@ class ConfigGenerator:
     def create_docx_template(self, template_name: str = "base_en.docx") -> Path:
         """Create a basic DOCX template with placeholders"""
         try:
-            # Ensure all paths are relative to output_dir
             templates_dir = self.output_dir / "templates"
             templates_dir.mkdir(exist_ok=True)
             
-            # Create the template file path within output_dir
             template_path = templates_dir / template_name
             
             if template_path.exists():
                 print(f"Template already exists: {template_path}")
                 return template_path
             
-            # Create a new Word document
             doc = Document()
             
-            # Add title
+            # Add title and basic structure
             doc.add_heading("Base Offer Template", level=1)
-            doc.add_paragraph("")
             
-            # Add customer information section
+            # Customer Information section
             customer_section = doc.add_section()
             customer_para = doc.add_paragraph("Customer Information:")
             customer_para.style = 'Heading 2'
@@ -150,7 +146,6 @@ class ConfigGenerator:
                 "validity_period"
             ]
             
-            # Add placeholder fields
             for ph in placeholders:
                 doc.add_paragraph(f"{{{{ {ph} }}}}")
             
@@ -158,7 +153,6 @@ class ConfigGenerator:
             doc.add_heading("Introduction", level=1)
             doc.add_paragraph("Introduction content goes here...")
             
-            # Add Product Overview section for product templates
             if "product" in template_name.lower():
                 doc.add_heading("Product Overview", level=1)
                 doc.add_paragraph("Product overview content goes here...")
@@ -168,7 +162,7 @@ class ConfigGenerator:
             
             doc.add_heading("Technical Specifications", level=1)
             
-            # Add a numbered list with nested items
+            # Add numbered list with proper nesting
             doc.add_paragraph("First item", style='List Number')
             doc.add_paragraph("First sub-item", style='List Number 2')
             doc.add_paragraph("Second sub-item", style='List Number 2')
@@ -176,7 +170,6 @@ class ConfigGenerator:
             doc.add_paragraph("Third item", style='List Number')
             doc.add_paragraph("Third sub-item", style='List Number 2')
             
-            # Save the document
             doc.save(template_path)
             
             print(f"Created template file: {template_path}")
@@ -189,23 +182,33 @@ class ConfigGenerator:
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template with structured content."""
         try:
-            # Ensure all paths are relative to output_dir
             generated_dir = self.output_dir / "generated"
             generated_dir.mkdir(exist_ok=True)
             
-            # Create a new document based on the template
             doc = Document()
             
+            # Add required sections
+            doc.add_heading("Introduction", level=1)
+            doc.add_paragraph("Introduction content goes here...")
+            
+            if "product" in template_name.lower():
+                doc.add_heading("Product Overview", level=1)
+                doc.add_paragraph("Product overview content goes here...")
+            else:
+                doc.add_heading("General Information", level=1)
+                doc.add_paragraph("General information content goes here...")
+            
+            doc.add_heading("Technical Specifications", level=1)
+            
             # Add numbered list with nested items
-            paragraph = doc.add_paragraph("1. First item", style='List Number')
-            sub_paragraph = doc.add_paragraph("a. Sub-item 1", style='List Number 2')
-            paragraph = doc.add_paragraph("2. Second item", style='List Number')
+            paragraph = doc.add_paragraph("First item", style='List Number')
+            sub_paragraph = doc.add_paragraph("Sub-item 1", style='List Number 2')
+            paragraph = doc.add_paragraph("Second item", style='List Number')
             
             # Add bullet points with nested items
-            bullet_para = doc.add_paragraph("- Bullet Point 1", style='List Bullet')
-            sub_bullet_para = doc.add_paragraph("• Sub-bullet 1", style='List Bullet 2')
+            bullet_para = doc.add_paragraph("Bullet Point 1", style='List Bullet')
+            sub_bullet_para = doc.add_paragraph("Sub-bullet 1", style='List Bullet 2')
             
-            # Save the generated document with a unique name
             sample_output = generated_dir / f"sample_{template_name}"
             doc.save(sample_output)
             

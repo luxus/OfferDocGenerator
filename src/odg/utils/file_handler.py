@@ -44,18 +44,22 @@ class FileHandler:
         try:
             document = Document(str(docx_path))
             
-            # Check for List Number and List Number 2 styles
             number_style_found = False
             nested_number_style_found = False
             
             for paragraph in document.paragraphs:
                 style_name = getattr(paragraph.style, 'name', '')
-                if 'List Number' in style_name:
-                    number_style_found = True
-                elif 'List Number 2' in style_name:
-                    nested_number_style_found = True
+                if style_name and 'List Number' in style_name:
+                    if 'List Number 2' in style_name:
+                        nested_number_style_found = True
+                    else:
+                        number_style_found = True
+                
+                if number_style_found and nested_number_style_found:
+                    return True
             
-            return number_style_found and nested_number_style_found
+            return False
+            
         except Exception as e:
             logger.error(f"Error checking numbered lists: {e}")
             return False
