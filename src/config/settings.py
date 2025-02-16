@@ -17,6 +17,12 @@ class Config(BaseSettings):
     output_prefix: str = "DOC-"
     default_language: str = "en"
     supported_languages: List[str] = ["en", "de", "fr"]
+    products: List[Dict[str, Any]] = [
+        {
+            "name": "Web Application Security Assessment",
+            "sections": ["intro.docx", "methodology.docx"]
+        }
+    ]
     
     @field_validator('base_path', 'folders', mode='before')
     def validate_paths(cls, v):

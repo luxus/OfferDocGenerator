@@ -263,7 +263,7 @@ class ConfigGenerator:
                 
                 paragraph.text = new_heading
 
-    def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
+    def create_sample_docx(self, product_name: str, language: str, currency: str) -> Path:
         """Create a sample DOCX file from the template with structured content."""
         try:
             generated_dir = self.output_dir / "generated"
@@ -274,18 +274,24 @@ class ConfigGenerator:
             with open(config_path, 'r') as f:
                 config_data = yaml.safe_load(f)
             
-            # Ensure the template exists; if not, create a dummy one for testing purposes
+            # Determine base template based on language
+            base_template_name = f"base_{language}.docx"
             templates_dir = self.output_dir / "templates"
-            template_path = templates_dir / template_name
+            base_template_path = templates_dir / base_template_name
             
-            if not template_path.exists():
-                # Create a dummy template with basic structure
+            if not base_template_path.exists():
+                # Create a dummy base template for testing purposes
                 doc = Document()
-                doc.add_heading("Dummy Template", level=1)
-                doc.save(template_path)
+                doc.add_heading("Dummy Base Template", level=1)
+                doc.save(base_template_path)
             
-            # Create a new document based on the template using DocxTemplate
-            doc = DocxTemplate(str(template_path))
+            # Collect product-specific sections from the products directory
+            product_sections_dir = self.output_dir / "products" / product_name
+            if not product_sections_dir.exists():
+                product_sections_dir.mkdir(parents=True, exist_ok=True)
+            product_sections = list(product_sections_dir.glob("*.docx"))
+            
+            input_paths = [base_template_path] + product_sections
             
             # Build comprehensive context from config
             context = {
