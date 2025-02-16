@@ -1,3 +1,4 @@
+import os
 import pytest
 from src.odg.utils.file_handler import FileHandler
 from src.odg.main import ConfigGenerator
@@ -5,6 +6,9 @@ from src.config.settings import Config
 
 def test_generate_base_template_with_numbered_lists(tmp_path):
     """Test base template generation with numbered lists"""
+    # Set TESTING environment variable for cleanup checks
+    os.environ["TESTING"] = "True"
+    
     output_dir = tmp_path / "base_templates"
     output_dir.mkdir()
     
@@ -18,6 +22,9 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
 def test_generate_product_templates_with_numbered_lists(tmp_path):
     """Test product template generation with numbered lists"""
+    # Set TESTING environment variable for cleanup checks
+    os.environ["TESTING"] = "True"
+    
     output_dir = tmp_path / "product_templates"
     output_dir.mkdir()
     
@@ -44,6 +51,9 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
         
 def test_validate_base_template(tmp_path):
     """Verify base template structure and content"""
+    # Set TESTING environment variable for cleanup checks
+    os.environ["TESTING"] = "True"
+    
     output_dir = tmp_path / "base_templates"
     output_dir.mkdir()
     
@@ -57,6 +67,9 @@ def test_validate_base_template(tmp_path):
 
 def test_validate_product_template(tmp_path):
     """Verify product template structure and content"""
+    # Set TESTING environment variable for cleanup checks
+    os.environ["TESTING"] = "True"
+    
     output_dir = tmp_path / "product_templates"
     output_dir.mkdir()
     

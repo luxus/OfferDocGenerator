@@ -15,12 +15,16 @@ class ConfigGenerator:
         self.script_dir = Path(__file__).parent
         self.output_dir = Path(output_dir).expanduser().resolve()
         
-        # Ensure the output directory exists and is clean if not validating
+        # Determine if we are in a test context
+        testing = os.getenv("TESTING", "False").lower() == "true"
+        
+        # Ensure the output directory exists and is clean if not validating and in test context
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         parent_dir = self.output_dir.parent
         
         if (parent_dir.exists() 
             and (self.output_dir in parent_dir.iterdir()) 
+            and testing  # Only cleanup during tests
             and not keep_tmp 
             and not is_validating):
             self._clean_temp_directory(self.output_dir)
