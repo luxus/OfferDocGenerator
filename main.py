@@ -5,6 +5,8 @@ from datetime import date
 import shutil
 from typing import Dict, Any
 
+VERSION = "1.0.0"
+
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp"):
         self.script_dir = Path(__file__).parent
@@ -121,10 +123,35 @@ def setup_default_folders(output_dir: Path = None):
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description='Generate project configuration')
-    parser.add_argument('--create', type=str, 
-                       help='Create a new project structure in specified folder')
+    parser = argparse.ArgumentParser(
+        description='Generate project configuration',
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog='''
+        Example usage:
+          python main.py --create my_project
+          python main.py --help
+          python main.py --version
+        '''
+    )
     
+    # Add version argument
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=f'%(prog)s {VERSION}',
+        help='Show program version and exit'
+    )
+
+    # Create mutually exclusive group for commands
+    cmd_group = parser.add_mutually_exclusive_group()
+
+    cmd_group.add_argument(
+        '--create',
+        type=str,
+        dest='output_dir',
+        help='Create a new project structure in specified folder'
+    )
+
     args = parser.parse_args()
     
     if args.create:
