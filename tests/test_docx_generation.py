@@ -1,3 +1,7 @@
+from src.odg.utils.file_handler import FileHandler
+from src.odg.config.settings import Config
+from src.odg.generator.config_generator import ConfigGenerator
+
 def test_generate_base_template_with_numbered_lists(tmp_path):
     """Test base template generation with numbered lists"""
     output_dir = tmp_path / "base_templates"
