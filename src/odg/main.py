@@ -25,23 +25,27 @@ logger.addHandler(handler)
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
-        # Handle the default temp directory case
-        if output_dir == "tmp":
-            if os.getenv("TESTING", "False").lower() == "true":
-                output_dir = tempfile.mkdtemp()
-                logger.debug(f"Created temporary test directory: {output_dir}")
-            else:
-                output_dir = os.path.join(os.getcwd(), "tmp")
-                
-        # Convert output_dir to absolute path
-        self.output_dir = Path(output_dir).expanduser().resolve()
-        logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
-        
-        # Determine if we are in a test context
-        testing = os.getenv("TESTING", "False").lower() == "true"
+        testing_mode = os.getenv("TESTING", "False").lower() == "true"
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         
-        if testing and not keep_tmp and not is_validating:
+        if output_dir == "tmp":
+            if testing_mode:
+                self.output_dir = Path(tempfile.mkdtemp())
+                logger.debug(f"Created temporary test directory: {self.output_dir}")
+            else:
+                self.output_dir = Path(os.getcwd()) / "tmp"
+        else:
+            # Ensure output_dir is an absolute path
+            self.output_dir = Path(output_dir).expanduser().resolve()
+            # In testing mode, if path is not under /tmp, create a temp dir
+            if testing_mode and not str(self.output_dir).startswith('/tmp/'):
+                temp_dir = Path(tempfile.mkdtemp())
+                logger.debug(f"Moving specified path under temp directory: {temp_dir}")
+                self.output_dir = temp_dir / self.output_dir.name
+        
+        logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
+        
+        if testing_mode and not keep_tmp and not is_validating:
             logger.debug(f"Cleaning existing test directory: {self.output_dir}")
             # Clean up any existing test directory
             if self.output_dir.exists():
