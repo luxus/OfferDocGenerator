@@ -32,8 +32,9 @@ class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp"):
         # Always use the provided output_dir, but resolve it relative to TEST_OUTPUT_DIR if testing
         if os.getenv("TESTING") == "True":
-            base_dir = Path(os.environ.get('TEST_OUTPUT_DIR', '')).resolve()
-            self.output_dir = base_dir / output_dir if base_dir.as_posix() != '.' else Path(output_dir).resolve()
+            test_output_dir = os.environ.get('TEST_OUTPUT_DIR', '')
+            base_dir = Path(test_output_dir).resolve() if test_output_dir else Path('.')
+            self.output_dir = (base_dir / output_dir).resolve()
         else:
             self.output_dir = Path(output_dir).resolve()
 
