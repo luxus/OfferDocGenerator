@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "offer-doc-generator"
-version = "0.1"
+version = "0.1.1"
 description = "Offer Document Generator CLI Tool for multi-language document creation"
 requires-python = ">=3.12"
 authors = [

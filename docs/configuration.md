@@ -1,6 +1,6 @@
 # Configuration Reference
 
-The ODG tool uses a YAML configuration file (`config.yaml`) that defines all aspects of your offer document generation.
+The ODG tool uses a YAML configuration file (`config.yaml`) that defines all aspects of your offer document generation. Templates support Jinja2 syntax for dynamic content generation.
 
 ## Required Sections
 
