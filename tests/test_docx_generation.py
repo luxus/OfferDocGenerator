@@ -4,21 +4,19 @@ import pytest
 from docx import Document
 from src.odg.utils.file_handler import FileHandler
 from src.odg.main import ConfigGenerator
-from src.config.settings import Config
 
-def test_generate_base_template_with_jinja_variables(tmp_path):
+@pytest.fixture
+def config_generator(tmp_path):
+    return ConfigGenerator(output_dir=tmp_path)
+
+def test_generate_base_template_with_jinja_variables(config_generator, tmp_path):
     """Test base template generation with numbered lists"""
-    output_dir = tmp_path / "base_templates"
+    product_name = "Web Application Security Assessment"
+    language = "en"
+    currency = "EUR"
     
-    config_generator = ConfigGenerator(output_dir=str(output_dir))
-    # Generate the config.yaml file
-    config_path = config_generator.generate_config()
-    assert config_path.exists(), f"Config file not generated at {config_path}"
-    
-    docx_path = config_generator.create_docx_template("base_en.docx")
-    
-    # Create sample document with variables
-    sample_path = config_generator.create_sample_docx("base_en.docx")
+    output_path = config_generator.create_sample_docx(product_name, language, currency)
+    assert output_path.exists()
     
     # Verify template and sample files exist
     assert docx_path.exists()
