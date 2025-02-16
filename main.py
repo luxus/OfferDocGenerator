@@ -121,6 +121,35 @@ def setup_default_folders(output_dir: Path = None):
 
     print(f"Default structure created at: {output_dir}")
 
+def validate_config_files(directory: Path):
+    """Validate all config.yaml files in specified directory and subdirectories"""
+    
+    # Find all config.yaml files recursively
+    config_files = list(directory.rglob("config.yaml"))
+    
+    if not config_files:
+        print(f"No config.yaml files found in {directory}")
+        return True
+    
+    # Validate each file
+    for config_file in config_files:
+        print(f"Validating {config_file}...")
+        try:
+            # Create a temporary ConfigGenerator instance with the same directory
+            output_dir = config_file.parent
+            config_gen = ConfigGenerator(output_dir=str(output_dir))
+            
+            if not config_gen.validate_config(config_file):
+                print(f"Validation failed for: {config_file}")
+                return False
+                
+            print(f"Successfully validated: {config_file}")
+        except Exception as e:
+            print(f"Error validating {config_file}: {e}")
+            return False
+            
+    return True
+
 def main():
     """Main entry point for the ODG CLI tool"""
     parser = argparse.ArgumentParser(
@@ -151,6 +180,19 @@ def main():
         help='Directory where the project structure will be created'
     )
 
+    # Validate command
+    validate_parser = subparsers.add_parser(
+        'validate',
+        help='Validate config.yaml files in specified directory'
+    )
+    validate_parser.add_argument(
+        'directory',
+        type=Path,
+        nargs='?',  # Make it optional
+        default=Path.cwd(),
+        help='Directory to search for config.yaml (default: current directory)'
+    )
+
     args = parser.parse_args()
     
     if args.command == 'create':
@@ -177,6 +219,16 @@ def main():
         if not config_gen.validate_config(config_path):
             print("Config validation failed. Please check your configuration.")
             return 1
+        return 0
+    elif args.command == 'validate':
+        output_dir = args.directory.resolve()
+        
+        # Validate all config files in directory
+        if not validate_config_files(output_dir):
+            print("Validation failed. See above errors.")
+            return 1
+        
+        print("All configurations are valid!")
         return 0
     else:
         parser.print_help()
