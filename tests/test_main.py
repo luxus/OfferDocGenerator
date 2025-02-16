@@ -31,18 +31,12 @@ def keep_tmp():
     return os.getenv("KEEP_TMP", "False").lower() == "true"
 
 @pytest.fixture(scope="function")
-def config_generator(keep_tmp):
-    # Create temporary directory
+def config_generator():
+    """Fixture providing a ConfigGenerator instance with a temporary directory"""
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Initialize config generator with temporary directory
         cg = ConfigGenerator(output_dir=str(tmpdir))
         yield cg
-        
-        if not keep_tmp:
-            # Clean up happens automatically when tempdir context exits
-            print(f"Temporary files deleted from: {tmpdir}")
-        else:
-            print(f"Temporary files preserved at: {tmpdir}")
+        # Cleanup happens automatically when context exits
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""
