@@ -73,6 +73,22 @@ def test_validate_base_template(tmp_path):
     assert file_handler.validate_doc_structure(docx_path)
     assert file_handler.has_required_sections(docx_path)
 
+def test_merge_documents(tmp_path):
+    """Test merging multiple DOCX files with continuous numbering."""
+    output_dir = tmp_path / "merge_test"
+    config_generator = ConfigGenerator(output_dir=str(output_dir))
+    
+    # Create individual templates
+    template1 = config_generator.create_docx_template("section1.docx")
+    template2 = config_generator.create_docx_template("section2.docx")
+    
+    # Merge the documents
+    merged_path = output_dir / "merged.docx"
+    config_generator.merge_docx_files([template1, template2], merged_path)
+    
+    file_handler = FileHandler(Config())
+    assert file_handler.validate_merged_doc(merged_path), f"Merged document {merged_path} has invalid numbering"
+
 def test_validate_product_template(tmp_path):
     """Verify product template structure and content"""
     # Set TESTING environment variable for cleanup checks

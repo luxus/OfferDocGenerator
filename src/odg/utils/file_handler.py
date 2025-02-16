@@ -74,6 +74,29 @@ class FileHandler:
         
         return True
 
+    def validate_merged_doc(self, docx_path: Path) -> bool:
+        """Check if the merged document has continuous section numbering."""
+        try:
+            document = Document(str(docx_path))
+            
+            current_section_number = 0
+            for paragraph in document.paragraphs:
+                if paragraph.style.name.startswith("Heading"):
+                    level = int(paragraph.style.name.split()[-1])
+                    text_parts = paragraph.text.split('.')
+                    if len(text_parts) >= 2 and text_parts[0].isdigit():
+                        section_num = int(text_parts[0])
+                        if section_num != current_section_number + 1:
+                            logger.warning(f"Section numbering discontinuity at {paragraph.text}")
+                            return False
+                        current_section_number += 1
+            
+            return True
+        
+        except Exception as e:
+            logger.error(f"Error validating merged document: {e}")
+            return False
+
     def has_required_sections(self, docx_path: Path, is_product: bool = False) -> bool:
         """Verify presence of required sections"""
         try:

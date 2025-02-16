@@ -6,9 +6,10 @@ from pathlib import Path
 import yaml
 from datetime import date
 import shutil
-from typing import Dict, Any
+from typing import Dict, Any, List
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docxtpl import DocxTemplate
 
 VERSION = "1.0.0"
 
@@ -179,17 +180,71 @@ class ConfigGenerator:
             print(f"Error creating template: {e}")
             return None
 
+    def merge_docx_files(self, input_paths: List[Path], output_path: Path) -> None:
+        """Merge multiple DOCX files into a single document with continuous numbering."""
+        merged_document = Document()
+
+        for path in input_paths:
+            sub_doc = Document(path)
+            for element in sub_doc.element.body:
+                merged_document.element.body.append(element)
+
+        # Ensure continuous section numbering
+        self._update_section_numbering(merged_document)
+
+        # Save the merged document
+        merged_document.save(output_path)
+        print(f"Merged document saved to {output_path}")
+
+    def _update_section_numbering(self, doc: Document) -> None:
+        """Update section headings to ensure continuous numbering."""
+        current_heading_level = 1
+        current_section_number = 0
+        sub_section_count = 0
+
+        for paragraph in doc.paragraphs:
+            if paragraph.style.name.startswith("Heading"):
+                level = int(paragraph.style.name.split()[-1])
+                if level == current_heading_level:
+                    current_section_number += 1
+                    sub_section_count = 0
+                elif level > current_heading_level:
+                    sub_section_count += 1
+                else:
+                    current_section_number = int(paragraph.text.split('.')[0]) + 1
+                    sub_section_count = 0
+
+                # Update the paragraph text with new numbering
+                original_text = paragraph.text.split('.')[-1].strip()
+                if level == 1:
+                    paragraph.text = f"{current_section_number}. {original_text}"
+                elif level == 2:
+                    paragraph.text = f"{current_section_number}.{sub_section_count}. {original_text}"
+
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template with structured content."""
         try:
             generated_dir = self.output_dir / "generated"
             generated_dir.mkdir(exist_ok=True)
             
-            doc = Document()
+            # Load config data
+            config_path = self.output_dir / "config.yaml"
+            with open(config_path, 'r') as f:
+                config_data = yaml.safe_load(f)
             
-            # Add required sections
-            doc.add_heading("Introduction", level=1)
-            doc.add_paragraph("Introduction content goes here...")
+            # Create a new document based on the template using Jinja2
+            template_path = self.output_dir / "templates" / template_name
+            doc = DocxTemplate(str(template_path))
+            
+            context = {
+                "customer_company": config_data["customer"]["name"],
+                "customer_address": config_data["customer"]["address"],
+                "sales_contact_name": config_data["sales"]["name"],
+                "sales_contact_email": config_data["sales"]["email"],
+                "offer_number": config_data["offer"]["number"],
+                "validity_period": config_data["offer"]["validity"]["en"]
+            }
+            doc.render(context)
             
             if "product" in template_name.lower():
                 doc.add_heading("Product Overview", level=1)
