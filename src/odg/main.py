@@ -126,6 +126,14 @@ def setup_default_folders(output_dir: Path = None):
 
     print(f"Default structure created at: {output_dir}")
 
+def _verify_required_keys(config_data):
+    """Verify presence of required configuration keys"""
+    required_keys = ["offer", "settings", "customer", "sales"]
+    
+    for key in required_keys:
+        if key not in config_data:
+            raise ValueError(f"Missing required key: {key}")
+
 def validate_single_config(config_path: Path) -> bool:
     """Validate a single config.yaml file"""
     try:
