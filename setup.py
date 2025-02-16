@@ -1,4 +1,10 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-# Minimal setup.py, all configuration is in pyproject.toml
-setup()
+setup(
+    packages=find_packages(),
+    entry_points={
+        'console_scripts': [
+            'odg=odg.main:main',
+        ],
+    },
+)
