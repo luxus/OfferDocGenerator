@@ -53,7 +53,8 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
             docx_path = config_generator.create_sample_docx(template_name=product['name'])
             assert docx_path is not None, f"Failed to create sample for {product['name']}"
             assert docx_path.exists(), f"Sample file does not exist: {docx_path}"
-            assert (output_dir / "generated" / f"sample_{product['name']}.docx").exists()
+            expected_path = output_dir / "generated" / f"sample_{product['name'].replace('.docx', '')}.docx"
+            assert expected_path.exists()
             assert file_handler.has_numbered_lists(docx_path), f"Missing numbered lists in {docx_path}"
         except Exception as e:
             pytest.fail(f"Failed to process {product['name']}: {str(e)}")

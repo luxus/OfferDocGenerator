@@ -14,7 +14,8 @@ base/
 │   │   ├── config.yaml      # Product-specific configuration (optional)
 │   └── Another Product/      # Another product example
 ├── common/                   # Shared DOCX fragments and assets used across all products
-└── output/                   # Generated documents
+├── output/                   # Final output documents
+└── generated/                # Temporary generated documents and samples
 ```
 
 ## Explanation of Folders
@@ -58,7 +59,8 @@ paths:
   templates: ${base}/templates # Main template files
   common: ${base}/common # Shared DOCX fragments and assets
   products: ${base}/products # Product-specific configurations
-  output: ${base}/output # Output directory
+  output: ${base}/output # Final output directory
+  generated: ${base}/generated # Temporary generated files
 
 internationalization:
   default_language: en # Default language code

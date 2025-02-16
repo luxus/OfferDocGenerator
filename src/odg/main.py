@@ -48,7 +48,7 @@ class ConfigGenerator:
         
         # Create necessary directories
         logger.debug(f"Creating subdirectories in: {self.output_dir}")
-        for subdir in ["templates", "common", "products", "output"]:
+        for subdir in ["templates", "common", "products", "output", "generated"]:
             dir_path = self.output_dir / subdir
             if not dir_path.exists():
                 logger.debug(f"Creating directory: {dir_path}")
@@ -64,12 +64,13 @@ class ConfigGenerator:
             },
             # From docs/configuration/folder_structure.md
             "settings": {
-                "base_path": str(self.output_dir.resolve()),
+                "base_path": str(self.output_dir),
                 "folders": {
                     "templates": "./templates",
                     "common": "./common",
                     "products": "./products",
-                    "output": "./output"
+                    "output": "./output",
+                    "generated": "./generated"
                 },
                 "output_prefix": "DOC-"
             },
