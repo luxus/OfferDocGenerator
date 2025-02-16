@@ -120,47 +120,45 @@ def setup_default_folders(output_dir: Path = None):
 
     print(f"Default structure created at: {output_dir}")
 
-if __name__ == "__main__":
-    import argparse
-    
+def main():
+    """Main entry point for the ODG CLI tool"""
     parser = argparse.ArgumentParser(
-        description='Generate project configuration',
+        description='Offer Document Generator (ODG) CLI Tool',
         formatter_class=argparse.RawTextHelpFormatter,
         epilog='''
         Example usage:
-          python main.py --create my_project
-          python main.py --help
-          python main.py --version
+          odg create my_project
+          odg --help
+          odg --version
         '''
     )
     
-    # Add version argument
     parser.add_argument(
         '--version',
         action='version',
-        version=f'%(prog)s {VERSION}',
+        version=f'odg {VERSION}',
         help='Show program version and exit'
     )
 
-    # Create mutually exclusive group for commands
-    cmd_group = parser.add_mutually_exclusive_group()
-
-    cmd_group.add_argument(
-        '--create',
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    
+    # Create command
+    create_parser = subparsers.add_parser('create', help='Create a new project structure')
+    create_parser.add_argument(
+        'output_dir',
         type=str,
-        dest='output_dir',
-        help='Create a new project structure in specified folder'
+        help='Directory where the project structure will be created'
     )
 
     args = parser.parse_args()
     
-    if args.create:
-        output_dir = Path(args.create).resolve()
+    if args.command == 'create':
+        output_dir = Path(args.output_dir).resolve()
         
         # Ensure the output directory exists
         output_dir.mkdir(exist_ok=True)
         
-        # Create configuration generator instance for this output dir
+        # Create configuration generator instance
         config_gen = ConfigGenerator(output_dir=str(output_dir))
         
         # Generate and save config file
@@ -177,5 +175,12 @@ if __name__ == "__main__":
         # Validate the generated config
         if not config_gen.validate_config(config_path):
             print("Config validation failed. Please check your configuration.")
+            return 1
+        return 0
     else:
-        print("Please use --create [folder_name] to generate a new project structure")
+        parser.print_help()
+        return 1
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())
