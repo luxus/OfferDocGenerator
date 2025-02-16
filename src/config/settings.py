@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Dict
 from pydantic_settings import BaseSettings
-from pydantic import validator
+from pydantic import field_validator
 
 class Config(BaseSettings):
     prefix: str = "Offer"
@@ -16,11 +16,19 @@ class Config(BaseSettings):
     default_language: str = "en"
     supported_languages: List[str] = ["en", "de", "fr"]
     
-    @validator("base_path", "folders")
+    @field_validator('base_path', 'folders', mode='before')
     def validate_paths(cls, v):
-        if not v.exists():
-            v.mkdir(parents=True, exist_ok=True)
-        return v
+        if isinstance(v, dict):  # Handle folders as a dictionary
+            for key, path in v.items():
+                path = Path(path)
+                if not path.exists():
+                    path.mkdir(parents=True, exist_ok=True)
+            return v
+        else:
+            path = Path(v)
+            if not path.exists():
+                path.mkdir(parents=True, exist_ok=True)
+            return v
 
     class Config:
         env_prefix = "offerdoc_"

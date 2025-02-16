@@ -9,7 +9,7 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
     # Generate base template
     config_generator = ConfigGenerator(output_dir=str(output_dir))
-    docx_path = config_generator.create_emplate("base_en.docx")
+    docx_path = config_generator.create_docx_template("base_en.docx")
     
     assert docx_path.exists()
     file_handler = FileHandler(Config())
@@ -33,7 +33,7 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     file_handler = FileHandler(Config())
     
     for product in products_config["products"]:
-        docx_path = config_generator.create_sample_docx(product["name"])
+        docx_path = config_generator.create_sample_docx(template_name=product["name"])
         
         assert docx_path.exists()
         assert file_handler.has_numbered_lists(docx_path)
@@ -45,7 +45,7 @@ def test_validate_base_template(tmp_path):
     
     # Generate base template
     config_generator = ConfigGenerator(output_dir=str(output_dir))
-    docx_path = config_generator.create_emplate("base_en.docx")
+    docx_path = config_generator.create_docx_template("base_en.docx")
     
     file_handler = FileHandler(Config())
     assert file_handler.validate_doc_structure(docx_path)
@@ -66,7 +66,7 @@ def test_validate_product_template(tmp_path):
     # Generate DOCX template for test product
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     file_handler = FileHandler(Config())
-    docx_path = config_generator.create_sample_docx(products_config["products"][0]["name"])
+    docx_path = config_generator.create_sample_docx(template_name=products_config["products"][0]["name"])
     
     assert file_handler.validate_doc_structure(docx_path)
     assert file_handler.has_required_sections(docx_path, is_product=True)
