@@ -5,7 +5,6 @@ import yaml
 import pytest
 import shutil
 import tempfile
-import tempfile
 
 # Add src directory to Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -19,27 +18,35 @@ def cli_test_directory(tmp_path):
     yield test_dir
 
 @pytest.fixture(scope="function")
-def config_generator():
+def config_generator(tmp_path):
     """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    test_dir = Path("tests") / "tmp" / "config"
+    test_dir = tmp_path / "config"
     test_dir.mkdir(parents=True, exist_ok=True)
     print(f"Creating test ConfigGenerator with tmpdir: {test_dir}")
     cg = ConfigGenerator(output_dir=str(test_dir))
+    
+    # Ensure environment is clean
+    if "TEST_OUTPUT_DIR" in os.environ:
+        del os.environ["TEST_OUTPUT_DIR"]
+    
     yield cg
+    
+    # Cleanup after test
+    if test_dir.exists():
+        shutil.rmtree(test_dir)
 
 def test_valid_config_generation(config_generator):
     """Test valid config generation and validation process"""
-    # Set TEST_OUTPUT_DIR for this test
-    os.environ["TEST_OUTPUT_DIR"] = str(config_generator.output_dir)
     # Generate config file
     config_path = config_generator.generate_config()
     
     # Validate paths exist
+    output_dir = Path(config_generator.output_dir)
     required_paths = [
-        Path(config_generator.output_dir / "templates"),
-        Path(config_generator.output_dir / "common"),
-        Path(config_generator.output_dir / "products"),
-        Path(config_generator.output_dir / "output")
+        output_dir / "templates",
+        output_dir / "common",
+        output_dir / "products",
+        output_dir / "output"
     ]
 
     for path in required_paths:
@@ -119,13 +126,13 @@ def test_multi_language_support(config_generator, language, expected):
     # This would require more complex setup but demonstrates pytest's capabilities
     pass
 
-def test_cli_create_folder_structure(cli_test_directory):
+def test_cli_create_folder_structure(tmp_path):
     # Ensure we're in testing mode and clear any TEST_OUTPUT_DIR
     os.environ["TESTING"] = "True"
     if "TEST_OUTPUT_DIR" in os.environ:
         del os.environ["TEST_OUTPUT_DIR"]
         
-    output_dir = cli_test_directory / "offers"
+    output_dir = tmp_path / "offers"
     
     # Run CLI command to create structure
     config_gen = ConfigGenerator(output_dir=str(output_dir))
