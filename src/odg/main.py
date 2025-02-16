@@ -23,7 +23,7 @@ class ConfigGenerator:
         
         # Create fresh directory structure based on documentation
         self.output_dir.mkdir(exist_ok=True)
-        for dir_name in ["templates", "common", "products", "output"]:
+        for dir_name in ["templates", "common", "products", "output", "generated"]:
             (self.output_dir / dir_name).mkdir(exist_ok=True)
 
     def generate_config(self) -> Path:
@@ -96,12 +96,12 @@ class ConfigGenerator:
     def create_docx_template(self, template_name: str = "base_en.docx") -> Path:
         """Create a basic DOCX template with placeholders"""
         try:
-            # Ensure templates directory exists
-            templates_dir = self.output_dir / "templates"
-            templates_dir.mkdir(exist_ok=True)
+            # Ensure generated directory exists
+            generated_dir = self.output_dir / "generated"
+            generated_dir.mkdir(exist_ok=True)
             
             # Create the template file path
-            template_path = templates_dir / template_name
+            template_path = generated_dir / template_name
             
             if template_path.exists():
                 print(f"Template already exists: {template_path}")
@@ -179,12 +179,12 @@ class ConfigGenerator:
                 if template_path is None or not template_path.exists():
                     raise FileNotFoundError(f"Could not create template: {template_name}")
             
-            # Create output directory if needed
-            output_dir = self.output_dir / "output"
-            output_dir.mkdir(exist_ok=True)
+            # Create generated directory if needed
+            generated_dir = self.output_dir / "generated"
+            generated_dir.mkdir(exist_ok=True)
             
             # Create a sample document with unique name
-            sample_output = output_dir / f"sample_{template_name}"
+            sample_output = generated_dir / f"sample_{template_name}"
             
             # Copy template to sample output
             shutil.copy2(template_path, sample_output)
