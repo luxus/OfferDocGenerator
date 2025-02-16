@@ -132,10 +132,8 @@ def test_multi_language_support(config_generator, language, expected):
     pass
 
 def test_cli_create_folder_structure(tmp_path):
-    os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path / "offers")
-    
-    config_gen = ConfigGenerator(output_dir=str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve()))
+    output_dir = tmp_path / "offers"
+    config_gen = ConfigGenerator(output_dir=str(output_dir))
     config_path = config_gen.generate_config()
     assert config_path.exists(), f"Config file not created at: {config_path}"
     
@@ -154,12 +152,8 @@ def test_cli_create_folder_structure(tmp_path):
         assert dir_.is_relative_to(tmp_path), f"Directory {dir_} is outside test directory"
 
 def test_cli_config_contents(cli_test_directory):
-    # Set testing environment
-    os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(cli_test_directory / "test_project")
-    
-    # Generate config and update base_path as per CLI functionality
-    config_gen = ConfigGenerator(output_dir=str(Path(os.environ["TEST_OUTPUT_DIR"]).resolve()))
+    output_dir = cli_test_directory / "test_project"
+    config_gen = ConfigGenerator(output_dir=str(output_dir))
     config_path = config_gen.generate_config()
     
     with open(config_path, 'r') as f:

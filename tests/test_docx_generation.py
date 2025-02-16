@@ -7,12 +7,7 @@ from src.config.settings import Config
 
 def test_generate_base_template_with_numbered_lists(tmp_path):
     """Test base template generation with numbered lists"""
-    # Set environment variables for testing
-    os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
-    
-    output_dir_str = "base_templates"
-    output_dir = Path(output_dir_str)  # Convert to Path
+    output_dir = tmp_path / "base_templates"
     
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     docx_path = config_generator.create_docx_template("base_en.docx")
@@ -27,12 +22,7 @@ def test_generate_base_template_with_numbered_lists(tmp_path):
     
 def test_generate_product_templates_with_numbered_lists(tmp_path):
     """Test product template generation with numbered lists"""
-    # Set TESTING environment variable and output directory
-    os.environ["TESTING"] = "True"
-    os.environ["TEST_OUTPUT_DIR"] = str(tmp_path)
-    
-    # Use a relative path that will be resolved within tmp_path
-    output_dir_str = "product_templates"
+    output_dir = tmp_path / "product_templates"
     
     # Generate sample product config with .docx extension
     products_config = {
