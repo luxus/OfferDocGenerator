@@ -1,6 +1,7 @@
 import os
 import argparse
 import logging
+import tempfile
 from pathlib import Path
 import yaml
 from datetime import date
@@ -17,12 +18,17 @@ logger = logging.getLogger(__name__)
 
 class ConfigGenerator:
     def __init__(self, output_dir: str = "tmp", is_validating: bool = False):
-        # If output_dir is relative, make it relative to current working directory
+        # Handle the default temp directory case
         if output_dir == "tmp":
-            output_dir = os.path.join(os.getcwd(), "tmp")
-            
+            if os.getenv("TESTING", "False").lower() == "true":
+                output_dir = tempfile.mkdtemp()
+                logger.debug(f"Created temporary test directory: {output_dir}")
+            else:
+                output_dir = os.path.join(os.getcwd(), "tmp")
+                
         # Convert output_dir to absolute path
         self.output_dir = Path(output_dir).expanduser().resolve()
+        logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         logger.debug(f"Initializing ConfigGenerator with output_dir: {self.output_dir}")
         
         # Determine if we are in a test context
@@ -45,10 +51,14 @@ class ConfigGenerator:
         logger.debug(f"Generating config in: {self.output_dir}")
         
         # Create necessary directories
+        logger.debug(f"Creating subdirectories in: {self.output_dir}")
         for subdir in ["templates", "common", "products", "output"]:
             dir_path = self.output_dir / subdir
-            logger.debug(f"Creating directory: {dir_path}")
-            dir_path.mkdir(parents=True, exist_ok=True)
+            if not dir_path.exists():
+                logger.debug(f"Creating directory: {dir_path}")
+                dir_path.mkdir(parents=True, exist_ok=True)
+            else:
+                logger.debug(f"Directory already exists: {dir_path}")
 
         config_data: Dict[str, Any] = {
             "offer": {
@@ -230,14 +240,24 @@ class ConfigGenerator:
         keep_tmp = os.getenv("KEEP_TMP", "False").lower() == "true"
         
         if not keep_tmp:
-            # Remove the entire directory and all its contents
-            shutil.rmtree(path, ignore_errors=True)
+            logger.debug(f"Cleaning temporary directory: {path}")
+            try:
+                if Path(path).exists():
+                    shutil.rmtree(path, ignore_errors=True)
+                    logger.debug(f"Successfully removed directory: {path}")
+            except Exception as e:
+                logger.error(f"Error cleaning directory {path}: {e}")
 
 # Helper function to create base directory structure
 def setup_default_folders(output_dir: Path = None):
     """Create default folder structure for quick setup"""
     if not output_dir:
-        output_dir = Path.cwd() / "tmp"
+        if os.getenv("TESTING", "False").lower() == "true":
+            output_dir = Path(tempfile.mkdtemp())
+            logger.debug(f"Created temporary test directory: {output_dir}")
+        else:
+            output_dir = Path.cwd() / "tmp"
+            logger.debug(f"Using default output directory: {output_dir}")
     
     # Create main directories
     output_dir.mkdir(exist_ok=True)
