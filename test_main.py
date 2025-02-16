@@ -7,6 +7,20 @@ import tempfile
 from main import ConfigGenerator
 
 @pytest.fixture
+def cli_test_directory():
+    # Create a temporary directory for CLI tests
+    temp_dir = Path("cli_test")
+    temp_dir.mkdir(exist_ok=True)
+    
+    yield temp_dir
+    
+    # Clean up after test
+    if os.getenv("KEEP_TMP", "False").lower() == "true":
+        print(f"Temporary files preserved at: {temp_dir}")
+    else:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+@pytest.fixture
 def keep_tmp():
     """Control whether to keep temporary test files"""
     return os.getenv("KEEP_TMP", "False").lower() == "true"
@@ -132,3 +146,47 @@ def test_multi_language_support(config_generator, language, expected):
     """Test multi-language support"""
     # This would require more complex setup but demonstrates pytest's capabilities
     pass
+
+def test_cli_create_folder_structure(cli_test_directory):
+    output_dir = cli_test_directory / "offers"
+    
+    # Run CLI command to create structure
+    config_gen = ConfigGenerator(output_dir=str(output_dir))
+    config_path = config_gen.generate_config()
+    assert config_path.exists(), f"Config file not created at: {config_path}"
+    
+    # Check required directories exist
+    required_dirs = [
+        output_dir,
+        output_dir / "templates",
+        output_dir / "common",
+        output_dir / "products",
+        output_dir / "output"
+    ]
+    
+    for dir_ in required_dirs:
+        assert dir_.exists(), f"Directory {dir_} does not exist"
+
+def test_cli_config_contents(cli_test_directory):
+    # Create a new project structure
+    output_dir = cli_test_directory / "test_project"
+    
+    # Generate config and update base_path as per CLI functionality
+    config_gen = ConfigGenerator(output_dir=str(output_dir))
+    config_path = config_gen.generate_config()
+    
+    with open(config_path, 'r') as f:
+        loaded_config = yaml.safe_load(f)
+        
+    # Verify that base_path is set correctly
+    assert "base_path" in loaded_config["settings"], "Missing base_path"
+    expected_base_path = str(output_dir.resolve())
+    assert loaded_config["settings"]["base_path"] == expected_base_path, f"Base path not set to: {expected_base_path}"
+
+def test_cli_output(cli_test_directory):
+    # Test CLI output and validation
+    config_gen = ConfigGenerator(output_dir=cli_test_directory / "test_project")
+    config_path = config_gen.generate_config()
+    
+    # Ensure that the validation occurs
+    assert config_gen.validate_config(config_path), "Config validation failed during CLI test"
