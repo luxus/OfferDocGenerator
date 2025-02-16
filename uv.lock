@@ -193,7 +193,7 @@ wheels = [
 [[package]]
 name = "offer-doc-generator"
 version = "0.1"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "docxcompose" },
     { name = "docxtpl" },

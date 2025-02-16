@@ -1,5 +1,3 @@
-"""File handling utilities for the ODG package."""
-
 from pathlib import Path
 from typing import List
 import logging
