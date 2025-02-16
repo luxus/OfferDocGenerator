@@ -6,6 +6,29 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+class EmojiFormatter(logging.Formatter):
+    """Custom formatter to add emojis based on log level."""
+    def format(self, record):
+        # Add specific emojis for different log levels
+        emoji = {
+            logging.DEBUG: "🐛",
+            logging.INFO: "📢",
+            logging.WARNING: "⚠️",
+            logging.ERROR: "❌",
+            logging.CRITICAL: "🚨",
+        }.get(record.levelno, "")
+        
+        # Optionally add more dynamic emojis based on message content
+        msg = record.getMessage()
+        if 'folder' in msg:
+            emoji += "📁"
+        elif 'delete' in msg:
+            emoji += "🗑️"
+        
+        # Format the original message with the emoji
+        formatted_message = super().format(record)
+        return f"{formatted_message} {emoji}"
+
 def pytest_configure(config):
     """Configure test environment and logging"""
     # Configure logging for tests to avoid duplication
@@ -16,8 +39,8 @@ def pytest_configure(config):
         root_logger.removeHandler(handler)
     
     # Set up a single handler for all test logging
-    formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s 📢 - %(message)s',
+    formatter = EmojiFormatter(
+        '%(asctime)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     stream_handler = logging.StreamHandler()
