@@ -33,10 +33,13 @@ def test_generate_product_templates_with_numbered_lists(tmp_path):
     file_handler = FileHandler(Config())
     
     for product in products_config["products"]:
-        docx_path = config_generator.create_sample_docx(template_name=product["name"])
-        
-        assert docx_path.exists()
-        assert file_handler.has_numbered_lists(docx_path)
+        try:
+            docx_path = config_generator.create_sample_docx(template_name=product["name"])
+            assert docx_path is not None, f"Failed to create sample for {product['name']}"
+            assert docx_path.exists(), f"Sample file does not exist: {docx_path}"
+            assert file_handler.has_numbered_lists(docx_path), f"Missing numbered lists in {docx_path}"
+        except Exception as e:
+            pytest.fail(f"Failed to process {product['name']}: {str(e)}")
         
 def test_validate_base_template(tmp_path):
     """Verify base template structure and content"""
@@ -66,7 +69,12 @@ def test_validate_product_template(tmp_path):
     # Generate DOCX template for test product
     config_generator = ConfigGenerator(output_dir=str(output_dir))
     file_handler = FileHandler(Config())
-    docx_path = config_generator.create_sample_docx(template_name=products_config["products"][0]["name"])
     
-    assert file_handler.validate_doc_structure(docx_path)
-    assert file_handler.has_required_sections(docx_path, is_product=True)
+    try:
+        docx_path = config_generator.create_sample_docx(template_name=products_config["products"][0]["name"])
+        assert docx_path is not None, "Failed to create sample document"
+        assert docx_path.exists(), f"Sample file does not exist: {docx_path}"
+        assert file_handler.validate_doc_structure(docx_path), f"Invalid document structure: {docx_path}"
+        assert file_handler.has_required_sections(docx_path, is_product=True), f"Missing required sections: {docx_path}"
+    except Exception as e:
+        pytest.fail(f"Failed to validate product template: {str(e)}")

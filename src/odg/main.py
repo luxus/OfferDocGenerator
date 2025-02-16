@@ -159,30 +159,38 @@ class ConfigGenerator:
     def create_sample_docx(self, template_name: str = "base_en.docx") -> Path:
         """Create a sample DOCX file from the template"""
         try:
-            # Get the template path
+            # First ensure we have a template
+            if not template_name.endswith('.docx'):
+                template_name = f"{template_name}.docx"
+            
+            # Create template if it doesn't exist
             templates_dir = self.output_dir / "templates"
             template_path = templates_dir / template_name
             
             if not template_path.exists():
-                print(f"Template not found: {template_path}")
-                return None
-                
-            # Create a sample document in the output directory
-            sample_output = (
-                self.output_dir /
-                "output" /
-                f"sample_offer_{date.today().isoformat()}.docx"
-            )
+                template_path = self.create_docx_template(template_name)
+                if not template_path:
+                    raise FileNotFoundError(f"Could not create template: {template_name}")
+            
+            # Create output directory if needed
+            output_dir = self.output_dir / "output"
+            output_dir.mkdir(exist_ok=True)
+            
+            # Create a sample document with unique name
+            sample_output = output_dir / f"sample_{template_name}"
             
             # Copy template to sample output
             shutil.copy2(template_path, sample_output)
             
+            if not sample_output.exists():
+                raise FileNotFoundError(f"Failed to create sample file: {sample_output}")
+                
             print(f"Created sample document: {sample_output}")
             return sample_output
             
         except Exception as e:
             print(f"Error creating sample docx: {e}")
-            return None
+            raise
 
     @staticmethod
     def _clean_temp_directory(path):
