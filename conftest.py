@@ -1,66 +1,81 @@
-import sys
 import os
+import sys
 import logging
+import re
+from enum import StrEnum
+from typing import Final
 import pytest
-import shutil
 from pathlib import Path
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+class LogLevel(StrEnum):
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+
+class LogEmoji(StrEnum):
+    DEBUG = "🐛"
+    INFO = "📢"
+    WARNING = "⚠️"
+    ERROR = "❌"
+    CRITICAL = "🚨"
+
 class EmojiFormatter(logging.Formatter):
     """Custom formatter to add emojis based on log level and message content."""
-    def format(self, record):
-        # Base emoji from log level
-        base_emoji = {
-            logging.DEBUG: "🐛",
-            logging.INFO: "📢",
-            logging.WARNING: "⚠️",
-            logging.ERROR: "❌",
-            logging.CRITICAL: "🚨",
-        }.get(record.levelno, "")
+    EMOJI_MAP: Final[dict[LogLevel, str]] = {
+        LogLevel.DEBUG: LogEmoji.DEBUG,
+        LogLevel.INFO: LogEmoji.INFO,
+        LogLevel.WARNING: LogEmoji.WARNING,
+        LogLevel.ERROR: LogEmoji.ERROR,
+        LogLevel.CRITICAL: LogEmoji.CRITICAL,
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        level = LogLevel(record.levelname)
+        base_emoji = self.EMOJI_MAP[level]
         
         msg = record.getMessage()
-        # Preprocess the message to replace keywords with emojis
         processed_msg = self._replace_keywords_with_emojis(msg)
         
         formatted_message = super().format(record)
-        # Replace the original message part with the processed one
         formatted_parts = formatted_message.split(' - ')
-        if len(formatted_parts) > 2:
-            timestamp, levelname, original_msg = formatted_parts[0], formatted_parts[1], ' - '.join(formatted_parts[2:])
-        else:
-            timestamp, levelname, original_msg = formatted_parts
         
-        # Construct the final message with emojis replacing parts of the text
-        final_message = f"{timestamp} - {levelname} - {processed_msg} {base_emoji}"
-        return final_message
-    
-    def _replace_keywords_with_emojis(self, msg):
-        import re
+        match len(formatted_parts):
+            case 0 | 1:
+                return f"{base_emoji} {processed_msg}"
+            case 2:
+                return f"{formatted_parts[0]} - {base_emoji} {processed_msg}"
+            case _:
+                timestamp = formatted_parts[0]
+                level_info = formatted_parts[1]
+                return f"{timestamp} - {level_info} - {base_emoji} {processed_msg}"
+
+    def _replace_keywords_with_emojis(self, msg: str) -> str:
+        patterns = {
+            r'created?(?:\s+file)?\s+([^\s]+)': r'📝: \1',
+            r'generat(?:ed|ing)\s+([^\s]+)': r'⚙️: \1',
+            r'delet(?:ed|ing)\s+([^\s]+)': r'🗑️: \1',
+            r'error[:\s]\s*(.+)': r'❌: \1',
+            r'warn(?:ing)?[:\s]\s*(.+)': r'⚠️: \1',
+            r'success[:\s]\s*(.+)': r'✅: \1',
+        }
+        
         processed = msg
-        
-        # Replace directory creation messages with folder emoji
-        directory_pattern = r'(?:creating\s+(?:output\s+)?directory:?\s*)(.*)'
-        if re.search(directory_pattern, processed, re.IGNORECASE):
-            processed = re.sub(directory_pattern, r'📁: \1', processed, flags=re.IGNORECASE)
-        
-        # Replace file deletion messages with trash emoji
-        delete_pattern = r'(?:deleting\s+file:?\s*)(.*)'
-        if re.search(delete_pattern, processed, re.IGNORECASE):
-            processed = re.sub(delete_pattern, r'🗑️: \1', processed, flags=re.IGNORECASE)
+        for pattern, replacement in patterns.items():
+            processed = re.sub(pattern, replacement, processed, flags=re.IGNORECASE)
         
         return processed
 
-def pytest_configure(config):
+def pytest_configure(config: pytest.Config) -> None:
     """Configure test environment and logging"""
-    # Configure logging for tests to avoid duplication
     root_logger = logging.getLogger()
     
-    # Remove existing handlers to prevent duplicates
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
+    # Remove existing handlers
+    root_logger.handlers.clear()
     
-    # Set up a single handler for all test logging
     formatter = EmojiFormatter(
         '%(asctime)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
@@ -70,14 +85,13 @@ def pytest_configure(config):
     root_logger.addHandler(stream_handler)
     root_logger.setLevel(logging.DEBUG)
     
-    # Mark that we're in testing mode and clear any TEST_OUTPUT_DIR
     os.environ["TESTING"] = "True"
     if "TEST_OUTPUT_DIR" in os.environ:
         del os.environ["TEST_OUTPUT_DIR"]
     
     config.addinivalue_line(
         "markers",
-        "end_to_end: mark tests as end-to-end integration tests"
+        "integration: mark test as integration test"
     )
     
 @pytest.fixture(autouse=True)

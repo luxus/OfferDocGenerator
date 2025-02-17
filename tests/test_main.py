@@ -5,10 +5,13 @@ import yaml
 import pytest
 import shutil
 import tempfile
+from typing import assert_type, LiteralString
 
 # Add src directory to Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 from odg.main import ConfigGenerator
+from odg.document import DocumentMode, DocumentSection, SectionType
+from config.settings import Config, FolderConfig
 
 @pytest.fixture
 def cli_test_directory(tmp_path):
@@ -17,19 +20,27 @@ def cli_test_directory(tmp_path):
     test_dir.mkdir(parents=True, exist_ok=True)
     yield test_dir
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def config_generator(tmp_path):
-    """Fixture providing a ConfigGenerator instance with a temporary directory"""
-    # Set testing environment variables
-    os.environ["TESTING"] = "True"
+    """Create a ConfigGenerator instance for testing"""
+    test_dir = tmp_path / "test_project"
+    test_dir.mkdir(parents=True, exist_ok=True)
     
-    test_output_dir = str(tmp_path / "config")
-    cg = ConfigGenerator(output_dir=test_output_dir)
+    folders = FolderConfig(
+        templates=test_dir / "templates",
+        common=test_dir / "common",
+        products=test_dir / "products",
+        output=test_dir / "output",
+        generated=test_dir / "generated"
+    )
     
-    yield cg
+    config = Config(
+        base_path=test_dir,
+        output_dir=test_dir,
+        folders=folders
+    )
     
-    # Clean up
-    shutil.rmtree(Path(test_output_dir), ignore_errors=True)
+    return ConfigGenerator(output_dir=test_dir)
 
 def test_valid_config_generation(config_generator, tmp_path):
     """Test valid config generation and validation process"""
@@ -47,6 +58,7 @@ def test_valid_config_generation(config_generator, tmp_path):
 
     for path in required_paths:
         assert path.exists(), f"Path {path} does not exist"
+        assert path.is_relative_to(tmp_path), f"Path {path} is outside test directory"
         
     # Verify config structure
     with open(config_path, "r") as f:

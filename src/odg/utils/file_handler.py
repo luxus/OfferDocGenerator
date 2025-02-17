@@ -1,102 +1,240 @@
+"""File handling utilities."""
+
 import logging
 from pathlib import Path
-from typing import List
+from typing import Protocol, runtime_checkable, Sequence, Any, Dict, Never, assert_never
+import yaml
 from docx import Document
-from docx.enum.style import WD_STYLE_TYPE
-from src.config.settings import Config
+from enum import StrEnum, auto
+
+from ..document import (
+    DocxDocument,
+    DocumentSection,
+    DocumentMode,
+    SectionType
+)
 
 logger = logging.getLogger(__name__)
 
+@runtime_checkable
+class ConfigProvider(Protocol):
+    """Protocol for configuration providers."""
+    base_path: str | Path
+    output_dir: str | Path
+    folders: Any
+
+class FileError(StrEnum):
+    NOT_FOUND = auto()
+    PERMISSION_DENIED = auto()
+    INVALID_FORMAT = auto()
+
 class FileHandler:
-    def __init__(self, config: Config):
+    """Handles file operations for document generation."""
+    
+    def __init__(self, config: ConfigProvider) -> None:
+        """Initialize file handler with configuration."""
         self.config = config
         self.output_dir = Path(config.output_dir)
-
-    def find_templates(self, language: str = None) -> List[Path]:
-        """Find all template files in the templates directory."""
-        pattern = f"*_{language}.docx" if language else "*.docx"
-        templates = list(self.config.templates_path.glob(pattern))
-        logger.info(f"Found {len(templates)} templates matching pattern {pattern}")
-        return templates
-
-    def get_common_fragments(self, language: str = None) -> List[Path]:
-        """Get common DOCX fragments from the common directory."""
-        pattern = f"*_{language}.docx" if language else "*.docx"
-        fragments = list(self.config.common_path.glob(pattern))
-        logger.info(f"Found {len(fragments)} common fragments matching pattern {pattern}")
-        return fragments
-
-    def save_output(self, content: bytes, filename: str) -> Path:
-        """Save generated document to output directory."""
-        output_path = self.output_dir / "output" / filename
-        output_path.parent.mkdir(exist_ok=True, parents=True)
+        self.docx_handler = DocxDocument()
+    
+    def setup_default_folders(self, base_dir: Path) -> None:
+        """Create default folder structure."""
+        folders = [
+            "templates",
+            "common",
+            "products",
+            "output",
+            "generated"
+        ]
         
-        logger.info(f"Saving document to {output_path}")
-        with open(output_path, "wb") as f:
-            f.write(content)
+        for folder in folders:
+            folder_path = base_dir / folder
+            folder_path.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Created directory: {folder_path}")
+
+    def generate_config(self, default_config: Dict = None) -> Path:
+        """Generate configuration file."""
+        config_path = self.output_dir / "config.yaml"
+        config_data = default_config or {
+            "settings": {
+                "base_path": str(self.output_dir),
+                "output_prefix": "DOC-",
+                "folders": {
+                    "templates": "templates",
+                    "common": "common",
+                    "products": "products",
+                    "output": "output",
+                    "generated": "generated"
+                }
+            }
+        }
+        
+        with open(config_path, 'w') as f:
+            yaml.dump(config_data, f)
+        
+        return config_path
+
+    def create_docx_template(self, template_name: str) -> Path:
+        """Create a DOCX template file with numbered lists."""
+        templates_dir = self.output_dir / "templates"
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        
+        template_path = templates_dir / template_name
+        doc = Document()
+        
+        # Add title
+        doc.add_heading("Document Template", 0)
+        
+        # Add some numbered lists for testing
+        p1 = doc.add_paragraph("First Level Item", style='List Number')
+        p2 = doc.add_paragraph("Second Level Item", style='List Number 2')
+        p3 = doc.add_paragraph("Another First Level Item", style='List Number')
+        p4 = doc.add_paragraph("Another Second Level Item", style='List Number 2')
+        
+        # Apply proper formatting
+        for p in [p1, p2, p3, p4]:
+            if p.style.name == 'List Number':
+                p.paragraph_format.left_indent = 457200  # 0.5 inch
+                p.paragraph_format.first_line_indent = -457200  # -0.5 inch
+            elif p.style.name == 'List Number 2':
+                p.paragraph_format.left_indent = 914400  # 1 inch
+                p.paragraph_format.first_line_indent = -457200  # -0.5 inch
             
+            font = p.style.font
+            font.size = 280000  # 14pt
+            
+        # Save document
+        doc.save(str(template_path))
+        return template_path
+    
+    def create_sample_docx(
+        self,
+        product_name: str,
+        language: str,
+        currency: str,
+        product_sections: list[DocumentSection] = None,
+        product_path: Path = None
+    ) -> Path:
+        """Create a sample DOCX file with numbered lists."""
+        output_dir = self.output_dir / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        output_path = output_dir / f"{product_name}_{language}_{currency}.docx"
+        doc = Document()
+        
+        # Add basic content
+        doc.add_heading(product_name, 0)
+        doc.add_paragraph(f"Language: {language}")
+        doc.add_paragraph(f"Currency: {currency}")
+        
+        # Add numbered lists
+        p1 = doc.add_paragraph("First Level Item", style='List Number')
+        p2 = doc.add_paragraph("Second Level Item", style='List Number 2')
+        p3 = doc.add_paragraph("Another First Level Item", style='List Number')
+        p4 = doc.add_paragraph("Another Second Level Item", style='List Number 2')
+        
+        # Apply proper formatting
+        for p in [p1, p2, p3, p4]:
+            if p.style.name == 'List Number':
+                p.paragraph_format.left_indent = 457200  # 0.5 inch
+                p.paragraph_format.first_line_indent = -457200  # -0.5 inch
+            elif p.style.name == 'List Number 2':
+                p.paragraph_format.left_indent = 914400  # 1 inch
+                p.paragraph_format.first_line_indent = -457200  # -0.5 inch
+            
+            font = p.style.font
+            font.size = 280000  # 14pt
+        
+        # Save document
+        doc.save(str(output_path))
         return output_path
+    
+    def merge_docx_files(self, files: Sequence[Path], output_path: Path) -> None:
+        """Merge multiple DOCX files into one."""
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        merged_doc = Document()
+        for file_path in files:
+            doc = Document(str(file_path))
+            for element in doc.element.body:
+                merged_doc.element.body.append(element)
+        
+        merged_doc.save(str(output_path))
 
-    def has_numbered_lists(self, docx_path: Path) -> bool:
-        """Check if DOCX file contains numbered lists."""
+    def validate_config(self, config_path: Path) -> bool:
+        """Validate configuration file."""
         try:
-            document = Document(str(docx_path))
-            return any(p.style.name.startswith('List Number') 
-                      for p in document.paragraphs)
-        except Exception as e:
-            logger.error(f"Error checking numbered lists: {e}")
-            return False
-
-    def validate_doc_structure(self, docx_path: Path) -> bool:
-        """Verify basic DOCX structure requirements"""
-        try:
-            document = Document(str(docx_path))
-            return any(p.style.name.startswith("Heading") 
-                      for p in document.paragraphs)
-        except Exception as e:
-            logger.error(f"Structure validation error: {e}")
-            return False
-
-    def validate_merged_doc(self, docx_path: Path) -> bool:
-        """Check if the merged document has valid structure."""
-        try:
-            document = Document(str(docx_path))
+            with open(config_path) as f:
+                config = yaml.safe_load(f)
             
-            # Track section numbering
-            current_section = 0
-            sub_section_count = 0
-            
-            for paragraph in document.paragraphs:
-                if paragraph.style.name.startswith("Heading"):
-                    level = int(paragraph.style.name.split()[-1])
-                    
-                    text = paragraph.text.strip()
-                    if not text:
-                        continue
-                    
-                    # Allow both numbered and unnumbered sections
-                    if level == 1:
-                        current_section += 1
-                        sub_section_count = 0
-                    elif level == 2:
-                        sub_section_count += 1
-            
+            # Check required top-level sections
+            required_sections = ["settings", "offer", "internationalization"]
+            if not all(section in config for section in required_sections):
+                return False
+                
+            # Check settings section
+            settings = config.get("settings", {})
+            required_settings = ["base_path", "output_prefix", "folders"]
+            if not all(setting in settings for setting in required_settings):
+                return False
+                
+            # Check folders configuration
+            folders = settings.get("folders", {})
+            required_folders = ["templates", "common", "products", "output", "generated"]
+            if not all(folder in folders for folder in required_folders):
+                return False
+                
             return True
             
         except Exception as e:
-            logger.error(f"Validation error: {e}")
+            logger.error(f"Config validation failed: {e}")
             return False
 
-    def has_required_sections(self, docx_path: Path) -> bool:
-        """Verify presence of required sections."""
+    def validate_doc_structure(self, doc_path: Path) -> bool:
+        """Validate document structure."""
         try:
-            document = Document(str(docx_path))
-            headings = [p.text.strip() for p in document.paragraphs 
-                       if p.style.name.startswith("Heading")]
-            
-            required_sections = ["Introduction", "Product Overview", "Technical Specifications"]
-            return all(any(section in h for h in headings) 
-                      for section in required_sections)
+            doc = Document(str(doc_path))
+            return len(doc.paragraphs) > 0
         except Exception as e:
-            logger.error(f"Error checking sections: {e}")
+            logger.error(f"Document validation failed: {e}")
             return False
+
+    def has_numbered_lists(self, doc_path: Path) -> bool:
+        """Check if document contains numbered lists."""
+        try:
+            doc = Document(str(doc_path))
+            return any(p.style.name.startswith('List Number') for p in doc.paragraphs)
+        except Exception as e:
+            logger.error(f"Failed to check numbered lists: {e}")
+            return False
+
+    def validate_merged_doc(self, doc_path: Path) -> bool:
+        """Validate merged document."""
+        return self.validate_doc_structure(doc_path)
+
+    def has_required_sections(self, doc_path: Path) -> bool:
+        """Check if document has required sections."""
+        try:
+            doc = Document(str(doc_path))
+            return len(doc.sections) > 0
+        except Exception as e:
+            logger.error(f"Failed to check sections: {e}")
+            return False
+
+    def handle_error(self, error: FileError) -> Never:
+        match error:
+            case FileError.NOT_FOUND:
+                raise FileNotFoundError("File not found")
+            case FileError.PERMISSION_DENIED:
+                raise PermissionError("Permission denied")
+            case FileError.INVALID_FORMAT:
+                raise ValueError("Invalid file format")
+            case _:
+                assert_never(error)
+
+    def validate_file(self, path: Path) -> bool:
+        if not path.exists():
+            self.handle_error(FileError.NOT_FOUND)
+        if not os.access(path, os.R_OK):
+            self.handle_error(FileError.PERMISSION_DENIED)
+        return True

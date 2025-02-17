@@ -3,60 +3,44 @@ from pathlib import Path
 import pytest
 import yaml
 from docx import Document
-from src.odg.utils.file_handler import FileHandler
-from src.odg.main import ConfigGenerator
-from src.config.settings import Config
+from odg.utils.file_handler import FileHandler
+from odg.document import DocumentSection, SectionType, DocumentMode
+from odg.main import ConfigGenerator
+from config.settings import Config, FolderConfig
 
 @pytest.fixture
 def config_generator(tmp_path):
-    # Create minimal config.yaml with required nested structures
-    config_data = {
-        "output_dir": str(tmp_path),
-        "prefix": "Offer",
-        "default_language": "en",
-        "supported_languages": ["en", "de", "fr"],
-        "customer": {
-            "name": "Test Customer Inc.",
-            "address": "123 Test St, Testville"
-        },
-        "sales": {
-            "name": "John Doe",
-            "email": "john.doe@example.com"
-        },
-        "offer": {
-            "number": "OFF-001",
-            "validity": {
-                "en": "30 days from the date of issue"
-            }
-        },
-        "variables": {
-            "product_name": "Test Product",
-            "currency": "EUR"
-        },
-        "products": [
-            {
-                "name": "Web Application Security Assessment",
-                "sections": ["Introduction", "Product Overview", "Technical Specifications"]
-            }
-        ]
-    }
-    config_file = tmp_path / "config.yaml"
-    with open(config_file, 'w') as f:
-        yaml.dump(config_data, f)
+    """Fixture providing a ConfigGenerator instance with a temporary directory"""
+    test_dir = tmp_path / "test_project"
+    test_dir.mkdir(parents=True, exist_ok=True)
     
-    # Create necessary directories
-    (tmp_path / "templates").mkdir(parents=True, exist_ok=True)
-    (tmp_path / "output").mkdir(parents=True, exist_ok=True)
-    (tmp_path / "products").mkdir(parents=True, exist_ok=True)
+    folders = FolderConfig(
+        templates=test_dir / "templates",
+        common=test_dir / "common",
+        products=test_dir / "products",
+        output=test_dir / "output",
+        generated=test_dir / "generated"
+    )
     
-    return ConfigGenerator(output_dir=tmp_path)
+    config = Config(
+        base_path=test_dir,
+        output_dir=test_dir,
+        folders=folders
+    )
+    
+    return ConfigGenerator(output_dir=test_dir)
 
 def test_generate_base_template_with_jinja_variables(config_generator, tmp_path):
     """Test base template generation with numbered lists"""
+    # First create the base template
+    template_name = "base_en.docx"
+    template_path = config_generator.create_docx_template(template_name)
+    assert template_path.exists()
+    
+    # Then create the sample document
     product_name = "SampleProduct"
     language = "en"
     currency = "USD"
-    
     output_path = config_generator.create_sample_docx(product_name, language, currency)
     assert output_path.exists()
     
@@ -72,10 +56,14 @@ def test_generate_base_template_with_jinja_variables(config_generator, tmp_path)
     
 def test_generate_product_templates_with_numbered_lists(config_generator, tmp_path):
     """Test product template generation with numbered lists"""
+    # First create the base template
+    template_name = "base_en.docx"
+    template_path = config_generator.create_docx_template(template_name)
+    assert template_path.exists()
+    
     product_name = "Web Application Security Assessment"
     language = "en"
     currency = "EUR"
-    
     output_path = config_generator.create_sample_docx(product_name, language, currency)
     assert output_path.exists()
     
@@ -87,10 +75,14 @@ def test_generate_product_templates_with_numbered_lists(config_generator, tmp_pa
         
 def test_validate_base_template(config_generator, tmp_path):
     """Verify base template structure and content"""
+    # First create the base template
+    template_name = "base_en.docx"
+    template_path = config_generator.create_docx_template(template_name)
+    assert template_path.exists()
+    
     product_name = "SampleProduct"
     language = "en"
     currency = "USD"
-    
     output_path = config_generator.create_sample_docx(product_name, language, currency)
     assert output_path.exists()
     
@@ -116,10 +108,14 @@ def test_merge_documents(config_generator, tmp_path):
 
 def test_validate_product_template(config_generator, tmp_path):
     """Verify product template structure and content"""
+    # First create the base template
+    template_name = "base_en.docx"
+    template_path = config_generator.create_docx_template(template_name)
+    assert template_path.exists()
+    
     product_name = "Web Application Security Assessment"
     language = "en"
     currency = "EUR"
-    
     output_path = config_generator.create_sample_docx(product_name, language, currency)
     assert output_path.exists()
     

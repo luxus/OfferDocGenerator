@@ -1,19 +1,35 @@
 # Changelog
 
-## [v0.1.1] - 2025-02-16
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2024-01-24
+
 ### Added
-- Jinja2 templating support for dynamic content generation
-- Enhanced section validation for templates
-- Improved error handling and validation messages
+- Initial release
+- Document generation with multi-language support
+- Table of Contents generation in DOCX files
+- Template-based document creation
+- Configuration management with YAML
+- Product-specific document sections
+- File handling utilities
+- Automated testing setup
+- Logging with emoji support
+- Environment-based configuration
+
+### Changed
+- N/A
+
+### Deprecated
+- N/A
+
+### Removed
+- N/A
 
 ### Fixed
-- Product template validation issues
-- Missing sections in generated documents
+- N/A
 
-## [v0.1.0] - 2025-02-01
-### Added
-- Initial release of ODG tool
-- Multi-language document generation
-- Template-based document creation
-- YAML configuration support
-- Flexible folder structure
+### Security
+- N/A

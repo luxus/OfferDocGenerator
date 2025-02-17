@@ -1,37 +1,57 @@
-.. python-docx-template documentation master file, created by
-   sphinx-quickstart on Thu Mar 12 17:32:17 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+# Python-DOCX Template Guide
 
-Welcome to python-docx-template's documentation!
-================================================
-
-.. rubric:: Quickstart
-
-To install using pip::
-
-    pip install docxtpl
-
-or using conda::
-
-    conda install docxtpl --channel conda-forge
-
-Usage::
-
-    from docxtpl import DocxTemplate
-
-    doc = DocxTemplate("my_word_template.docx")
-    context = { 'company_name' : "World company" }
-    doc.render(context)
-    doc.save("generated_doc.docx")
-
-Introduction
-------------
-
-This package uses 2 major packages :
+This package uses 2 major packages:
 
 - python-docx for reading, writing and creating sub documents
 - jinja2 for managing tags inserted into the template docx
+
+## Overview
+
+python-docx-template enables document generation from Microsoft Word templates with embedded Jinja2 tags.
+
+## Template Creation Process
+
+1. Create your document template in Microsoft Word
+2. Insert Jinja2-style tags in the document
+3. Save as .docx
+4. Use ODG to generate documents from the template
+
+## Supported Features
+
+- Dynamic content insertion using {{ variable }}
+- Conditional sections with {% if condition %}
+- Loops with {% for item in items %}
+- Numbered sections (automatic handling)
+- Multi-language support through translation variables
+- Document merging with proper section numbering
+
+## Variables and Sections
+
+The ODG tool supports predefined sections:
+- Introduction
+- Product Overview
+- Technical Specifications
+
+Each section can contain variables like:
+- {{ project_duration }}
+- {{ project_start_date }}
+- {{ test_environment }}
+- {{ access_requirements }}
+
+## Best Practices
+
+1. Use consistent heading styles (Heading 1, Heading 2)
+2. Keep template structure aligned with DocumentSection definitions
+3. Use language-specific variables with suffixes (_en, _de, _fr)
+4. Validate templates using ODG's built-in validation tools
+
+## Error Handling
+
+The system provides detailed error messages for:
+- Invalid template structure
+- Missing required sections
+- Variable parsing errors
+- Document merging issues
 
 python-docx-template has been created because python-docx is powerful for creating documents but not for modifying them.
 

@@ -1,0 +1,31 @@
+customer:
+  details:
+    address: Default Address
+    contact: Default Contact
+    name: Default Customer
+internationalization:
+  default_language: en
+  supported_languages:
+  - en
+  - de
+  - fr
+offer:
+  date: '{% now ''Y-m-d'' %}'
+  number: '001'
+  prefix: OFFER-
+  variables:
+    company_name: Default Company
+    currency: EUR
+sales:
+  email: sales@example.com
+  name: Default Sales
+  phone: '+1234567890'
+settings:
+  base_path: offers
+  folders:
+    common: offers/config/common
+    generated: offers/config/generated
+    output: offers/config/output
+    products: offers/config/products
+    templates: offers/config/templates
+  output_prefix: DOC-
